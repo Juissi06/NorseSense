@@ -5,7 +5,7 @@ using BepInEx;
 using HarmonyLib;
 using UnityEngine;
 
-namespace QolPack
+namespace NorseSense
 {
     internal enum EditPermission { BuilderOrWard, AdminsOnly }
 

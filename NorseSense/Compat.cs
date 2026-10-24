@@ -6,7 +6,7 @@ using BepInEx.Bootstrap;
 using BepInEx.Logging;
 using HarmonyLib;
 
-namespace QolPack
+namespace NorseSense
 {
     // Finds other mods that touch the same game code and adjusts or warns, once all plugins have loaded.
     // Two sources: Harmony patch owners on the methods each feature relies on (works for any mod),
@@ -91,7 +91,7 @@ namespace QolPack
 
             if (Plugin.ShowCompatWarnings.Value && Player.m_localPlayer != null)
                 foreach (var note in notes)
-                    Player.m_localPlayer.Message(MessageHud.MessageType.TopLeft, "QoL Pack: " + note);
+                    Player.m_localPlayer.Message(MessageHud.MessageType.TopLeft, "Norse Sense: " + note);
         }
 
         static MethodBase Method(Type type, string name) => AccessTools.Method(type, name);

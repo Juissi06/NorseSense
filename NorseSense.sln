@@ -1,6 +1,6 @@
-﻿
+
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "QOLPack", "QOLPack\QOLPack.csproj", "{1AA82E37-9845-4818-8A04-28DCAA98B9A7}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NorseSense", "NorseSense\NorseSense.csproj", "{1AA82E37-9845-4818-8A04-28DCAA98B9A7}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

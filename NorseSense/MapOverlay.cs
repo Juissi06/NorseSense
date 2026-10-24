@@ -2,7 +2,7 @@ using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace QolPack
+namespace NorseSense
 {
     // Paints the spawn view onto the minimap and the large map. Scanning is spread over several
     // frames because a 96 m radius is ~9000 cells of physics checks.
@@ -70,14 +70,14 @@ namespace QolPack
         RawImage CreateImage(RawImage mapImage)
         {
             // A masked container the size of the map image, so the overlay never draws past the map edge.
-            var mask = new GameObject("QolPack_SpawnMask", typeof(RectTransform), typeof(RectMask2D));
+            var mask = new GameObject("NorseSense_SpawnMask", typeof(RectTransform), typeof(RectMask2D));
             var maskRect = (RectTransform)mask.transform;
             maskRect.SetParent(mapImage.transform, false);
             maskRect.anchorMin = Vector2.zero;
             maskRect.anchorMax = Vector2.one;
             maskRect.offsetMin = maskRect.offsetMax = Vector2.zero;
 
-            var go = new GameObject("QolPack_SpawnOverlay", typeof(RectTransform), typeof(RawImage));
+            var go = new GameObject("NorseSense_SpawnOverlay", typeof(RectTransform), typeof(RawImage));
             go.transform.SetParent(maskRect, false);
             var image = go.GetComponent<RawImage>();
             image.raycastTarget = false; // never eat map clicks or pin placement
@@ -149,7 +149,7 @@ namespace QolPack
                 {
                     filterMode = FilterMode.Point,
                     wrapMode = TextureWrapMode.Clamp,
-                    name = "QolPack_SpawnMap"
+                    name = "NorseSense_SpawnMap"
                 };
                 if (_small != null) _small.texture = _texture;
                 if (_large != null) _large.texture = _texture;

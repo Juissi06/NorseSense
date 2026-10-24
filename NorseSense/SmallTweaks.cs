@@ -2,7 +2,7 @@ using System.Linq;
 using HarmonyLib;
 using UnityEngine;
 
-namespace QolPack
+namespace NorseSense
 {
     // Portal hover lists exactly which carried items stop you from teleporting.
     [HarmonyPatch(typeof(TeleportWorld), nameof(TeleportWorld.GetHoverText))]

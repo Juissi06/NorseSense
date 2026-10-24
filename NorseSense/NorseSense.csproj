@@ -3,7 +3,7 @@
         <TargetFramework>net462</TargetFramework>
         <LangVersion>latest</LangVersion>
         <!-- Single source of truth for the mod version: plugin attribute, manifest and zip names. -->
-        <Version>0.7.0</Version>
+        <Version>0.8.0</Version>
         <ReleaseDir>$(MSBuildProjectDirectory)\..\dist</ReleaseDir>
         <ValheimDir Condition="'$(ValheimDir)' == ''">C:\Steam\steamapps\common\Valheim</ValheimDir>
         <ManagedDir>$(ValheimDir)\valheim_Data\Managed</ManagedDir>
@@ -77,7 +77,7 @@
             <ModInfoFile>$(IntermediateOutputPath)ModInfo.g.cs</ModInfoFile>
         </PropertyGroup>
         <WriteLinesToFile File="$(ModInfoFile)" Overwrite="true" WriteOnlyWhenDifferent="true"
-                          Lines="namespace QolPack { internal static class ModInfo { public const string Version = &quot;$(Version)&quot;%3B } }" />
+                          Lines="namespace NorseSense { internal static class ModInfo { public const string Version = &quot;$(Version)&quot;%3B } }" />
         <ItemGroup>
             <Compile Include="$(ModInfoFile)" />
             <FileWrites Include="$(ModInfoFile)" />
@@ -87,7 +87,7 @@
     <!-- Copy the built plugin into the game so it's always the latest build that loads. -->
     <Target Name="DeployToValheim" AfterTargets="Build" Condition="Exists('$(PluginsDir)')">
         <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(PluginsDir)" />
-        <Message Importance="high" Text="QOLPack deployed to $(PluginsDir)" />
+        <Message Importance="high" Text="Norse Sense deployed to $(PluginsDir)" />
     </Target>
 
     <!-- Release builds also produce upload-ready zips in dist/: one for Thunderstore/r2modman, one for Nexus/manual installs. -->
@@ -105,11 +105,11 @@
         <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(TsDir)\plugins" />
         <Copy SourceFiles="$(PackageAssets)\icon.png;..\README.md;..\CHANGELOG.md" DestinationFolder="$(TsDir)" />
         <WriteLinesToFile File="$(TsDir)\manifest.json" Lines="$(Manifest)" Overwrite="true" />
-        <ZipDirectory SourceDirectory="$(TsDir)" DestinationFile="$(ReleaseDir)\QoL_Pack-$(Version)-thunderstore.zip" Overwrite="true" />
+        <ZipDirectory SourceDirectory="$(TsDir)" DestinationFile="$(ReleaseDir)\NorseSense-$(Version)-thunderstore.zip" Overwrite="true" />
 
-        <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(NexusDir)\BepInEx\plugins\QOLPack" />
-        <Copy SourceFiles="..\README.md;..\CHANGELOG.md" DestinationFolder="$(NexusDir)\BepInEx\plugins\QOLPack" />
-        <ZipDirectory SourceDirectory="$(NexusDir)" DestinationFile="$(ReleaseDir)\QoL_Pack-$(Version)-nexus.zip" Overwrite="true" />
+        <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(NexusDir)\BepInEx\plugins\NorseSense" />
+        <Copy SourceFiles="..\README.md;..\CHANGELOG.md" DestinationFolder="$(NexusDir)\BepInEx\plugins\NorseSense" />
+        <ZipDirectory SourceDirectory="$(NexusDir)" DestinationFile="$(ReleaseDir)\NorseSense-$(Version)-nexus.zip" Overwrite="true" />
 
         <Message Importance="high" Text="Release zips written to $(ReleaseDir)" />
     </Target>

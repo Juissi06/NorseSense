@@ -1,4 +1,4 @@
-namespace QolPack
+namespace NorseSense
 {
     // Config value 0 means "leave vanilla", so the original values are remembered per player instance.
     static class PlayerTweaks

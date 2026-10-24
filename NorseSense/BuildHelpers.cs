@@ -3,7 +3,7 @@ using BepInEx;
 using HarmonyLib;
 using UnityEngine;
 
-namespace QolPack
+namespace NorseSense
 {
     // Fine rotation, rotation matching and a comfort preview while building.
     internal class BuildHelpers : MonoBehaviour

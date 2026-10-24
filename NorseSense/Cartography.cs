@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using HarmonyLib;
 using UnityEngine;
 
-namespace QolPack
+namespace NorseSense
 {
     internal enum MarkerImport { All, Filtered, None }
 
@@ -43,7 +43,7 @@ namespace QolPack
             catch (Exception e)
             {
                 // Unknown data layout (game update or another mod): fall back to vanilla import.
-                Debug.LogWarning($"[QoL Pack] Couldn't process cartography table markers, importing as vanilla: {e.Message}");
+                Debug.LogWarning($"[Norse Sense] Couldn't process cartography table markers, importing as vanilla: {e.Message}");
             }
         }
 

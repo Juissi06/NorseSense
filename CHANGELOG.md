@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.8.0
+- Renamed from QoL Pack to **Norse Sense**. New plugin ID (`juissi.norsesense`) and config file (`juissi.norsesense.cfg`).
+- Added requirements and installation instructions.
+
 ## 0.7.0
 - New: cartography table marker manager (Left Shift + E). Search, filter, sort, rename, change icon, cross out, delete, bulk actions, a duplicate finder with one-click merge, and safe saving that merges with the table's current data. Ward/builder/admin edit permission.
 - New: reading a table updates shared markers you already have when their name, icon or crossed-out state changed.

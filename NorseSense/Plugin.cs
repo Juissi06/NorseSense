@@ -3,13 +3,13 @@ using BepInEx.Configuration;
 using HarmonyLib;
 using UnityEngine;
 
-namespace QolPack
+namespace NorseSense
 {
-    [BepInPlugin(Guid, "QoL Pack", ModInfo.Version)]
+    [BepInPlugin(Guid, "Norse Sense", ModInfo.Version)]
     [BepInProcess("valheim.exe")]
     public class Plugin : BaseUnityPlugin
     {
-        const string Guid = "juissi.qolpack";
+        const string Guid = "juissi.norsesense";
 
         // Spawn view
         internal static ConfigEntry<bool> ShowSpawnRadius;
@@ -187,14 +187,14 @@ namespace QolPack
                     new AcceptableValueRange<float>(0f, 10f)));
 
             AutoCompat = Config.Bind("Compatibility", "Auto-adjust for other mods", true,
-                "Turn off QoL Pack features that another installed mod already handles (e.g. fine rotation when Gizmo is installed).");
+                "Turn off Norse Sense features that another installed mod already handles (e.g. fine rotation when Gizmo is installed).");
             ShowCompatWarnings = Config.Bind("Compatibility", "Show warnings in game", true,
-                "Show a message when joining a world if another mod overlaps with QoL Pack. Details are always written to the BepInEx log.");
+                "Show a message when joining a world if another mod overlaps with Norse Sense. Details are always written to the BepInEx log.");
 
             BuildDistance.SettingChanged += (s, e) => PlayerTweaks.Apply();
             PickupRange.SettingChanged += (s, e) => PlayerTweaks.Apply();
 
-            _spawnViewObject = new GameObject("QolPack_SpawnView");
+            _spawnViewObject = new GameObject("NorseSense_SpawnView");
             DontDestroyOnLoad(_spawnViewObject);
             _spawnViewObject.AddComponent<SpawnView>();
             _spawnViewObject.AddComponent<MapOverlay>();

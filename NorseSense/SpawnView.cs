@@ -3,7 +3,7 @@ using HarmonyLib;
 using UnityEngine;
 using UnityEngine.Rendering;
 
-namespace QolPack
+namespace NorseSense
 {
     // Shows Valheim's natural spawn rules on the ground around the player (see SpawnRules),
     // plus base coverage rings, nests/spawners, raid status and a legend.
@@ -70,7 +70,7 @@ namespace QolPack
 
             var gridObject = new GameObject("Grid");
             gridObject.transform.SetParent(_viewRoot.transform, false);
-            _mesh = new Mesh { name = "QolPack_SpawnGrid", indexFormat = IndexFormat.UInt32 };
+            _mesh = new Mesh { name = "NorseSense_SpawnGrid", indexFormat = IndexFormat.UInt32 };
             _mesh.MarkDynamic();
             gridObject.AddComponent<MeshFilter>().sharedMesh = _mesh;
             var mr = gridObject.AddComponent<MeshRenderer>();

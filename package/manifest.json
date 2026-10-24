@@ -1,9 +1,9 @@
 {
-  "name": "QoL_Pack",
+  "name": "Norse_Sense",
   "version_number": "$version$",
   "website_url": "",
-  "description": "Spawn-proofing view (ground + map), raid check, fine rotation, comfort preview, hull warnings, cartography marker manager and filters, portal item check. Client-side, vanilla-balanced.",
+  "description": "See what Valheim hides: spawn-proofing overlay, raid check, fine rotation, comfort preview, hull warnings, portal item check and a cartography marker manager. Client-side, vanilla-balanced.",
   "dependencies": [
-    "denikson-BepInExPack_Valheim-5.4.2333"
+    "denikson-BepInExPack_Valheim-5.4.2351"
   ]
 }

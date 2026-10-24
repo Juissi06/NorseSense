@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace QolPack
+namespace NorseSense
 {
     // While aboard a ship: a small hull readout, plus warnings when it takes damage or drops below set levels.
     internal class HullWarning : MonoBehaviour

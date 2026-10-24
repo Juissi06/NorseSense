@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using HarmonyLib;
 using UnityEngine;
 
-namespace QolPack
+namespace NorseSense
 {
     internal enum SpawnCell : byte { Unknown, Blocked, Protected, Steep, Exposed }
 

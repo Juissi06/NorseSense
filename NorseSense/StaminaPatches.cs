@@ -1,6 +1,6 @@
 using HarmonyLib;
 
-namespace QolPack
+namespace NorseSense
 {
     static class StaminaPatches
     {
