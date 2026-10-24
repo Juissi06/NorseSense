@@ -15,7 +15,7 @@ namespace NorseSense
     internal class MarkerManager : MonoBehaviour
     {
         internal static MarkerManager Instance;
-        internal static bool IsOpen => Instance != null && Instance._table != null;
+        internal static bool IsOpen => MarkerManagerHooks.WindowOpen;
 
         const float RowH = 28f;
         static readonly Minimap.PinType[] EditableIcons =
@@ -23,18 +23,39 @@ namespace NorseSense
             Minimap.PinType.Icon0, Minimap.PinType.Icon1, Minimap.PinType.Icon2, Minimap.PinType.Icon3, Minimap.PinType.Icon4
         };
 
-        static readonly Func<Minimap, Minimap.PinType, Sprite> GetSprite =
-            AccessTools.MethodDelegate<Func<Minimap, Minimap.PinType, Sprite>>(AccessTools.Method(typeof(Minimap), "GetSprite"));
-        static readonly AccessTools.FieldRef<Minimap, List<Minimap.PinData>> Pins =
-            AccessTools.FieldRefAccess<Minimap, List<Minimap.PinData>>("m_pins");
-        static readonly AccessTools.FieldRef<List<PrivateArea>> AllWards =
-            AccessTools.StaticFieldRefAccess<List<PrivateArea>>(AccessTools.Field(typeof(PrivateArea), "m_allAreas"));
-        static readonly Func<PrivateArea, bool> WardEnabled =
-            AccessTools.MethodDelegate<Func<PrivateArea, bool>>(AccessTools.Method(typeof(PrivateArea), "IsEnabled"));
-        static readonly Func<PrivateArea, Vector3, float, bool> WardIsInside =
-            AccessTools.MethodDelegate<Func<PrivateArea, Vector3, float, bool>>(AccessTools.Method(typeof(PrivateArea), "IsInside"));
-        static readonly Func<PrivateArea, bool> WardHasAccess =
-            AccessTools.MethodDelegate<Func<PrivateArea, bool>>(AccessTools.Method(typeof(PrivateArea), "HaveLocalAccess"));
+        // Private game members, looked up the first time the window opens. Kept out of MarkerManager's own
+        // static fields: if a lookup fails (other game or Harmony version), only the manager stops working.
+        // Before, the failure surfaced in the TextInput.IsVisible hook and broke all input and hover text.
+        static class Game
+        {
+            internal static readonly Func<Minimap, Minimap.PinType, Sprite> GetSprite =
+                AccessTools.MethodDelegate<Func<Minimap, Minimap.PinType, Sprite>>(AccessTools.Method(typeof(Minimap), "GetSprite"));
+            internal static readonly AccessTools.FieldRef<Minimap, List<Minimap.PinData>> Pins =
+                AccessTools.FieldRefAccess<Minimap, List<Minimap.PinData>>("m_pins");
+            internal static readonly AccessTools.FieldRef<List<PrivateArea>> AllWards =
+                AccessTools.StaticFieldRefAccess<List<PrivateArea>>(AccessTools.Field(typeof(PrivateArea), "m_allAreas"));
+            internal static readonly Func<PrivateArea, bool> WardEnabled =
+                AccessTools.MethodDelegate<Func<PrivateArea, bool>>(AccessTools.Method(typeof(PrivateArea), "IsEnabled"));
+            internal static readonly Func<PrivateArea, Vector3, float, bool> WardIsInside =
+                AccessTools.MethodDelegate<Func<PrivateArea, Vector3, float, bool>>(AccessTools.Method(typeof(PrivateArea), "IsInside"));
+            internal static readonly Func<PrivateArea, bool> WardHasAccess =
+                AccessTools.MethodDelegate<Func<PrivateArea, bool>>(AccessTools.Method(typeof(PrivateArea), "HaveLocalAccess"));
+
+            internal static bool Available(out string error)
+            {
+                error = null;
+                try
+                {
+                    return GetSprite != null && Pins != null && AllWards != null && WardEnabled != null &&
+                           WardIsInside != null && WardHasAccess != null;
+                }
+                catch (Exception e)
+                {
+                    error = (e.InnerException ?? e).Message;
+                    return false;
+                }
+            }
+        }
 
         // Names of players seen this session, so markers can show who placed them.
         static readonly Dictionary<long, string> KnownNames = new Dictionary<long, string>();
@@ -81,8 +102,15 @@ namespace NorseSense
         {
             var player = Player.m_localPlayer;
             if (player == null || Minimap.instance == null) return;
+            if (!Game.Available(out string error))
+            {
+                Debug.LogError("[Norse Sense] Marker manager unavailable on this game version: " + error);
+                player.Message(MessageHud.MessageType.Center, "Norse Sense: marker manager doesn't work on this game version");
+                return;
+            }
 
             _table = table;
+            MarkerManagerHooks.WindowOpen = true;
             _me = player.GetPlayerID();
             _canEdit = CheckPermission(table, out _whyReadOnly);
             _search = "";
@@ -97,6 +125,7 @@ namespace NorseSense
         internal void Close()
         {
             _table = null;
+            MarkerManagerHooks.WindowOpen = false;
             _rows.Clear();
             _shown.Clear();
         }
@@ -115,8 +144,8 @@ namespace NorseSense
             if (piece != null && piece.GetCreator() == Player.m_localPlayer.GetPlayerID()) return true;
 
             Vector3 pos = table.transform.position;
-            foreach (var ward in AllWards())
-                if (ward != null && WardEnabled(ward) && WardIsInside(ward, pos, 0f) && WardHasAccess(ward)) return true;
+            foreach (var ward in Game.AllWards())
+                if (ward != null && Game.WardEnabled(ward) && Game.WardIsInside(ward, pos, 0f) && Game.WardHasAccess(ward)) return true;
 
             why = "You can view this table. To edit, you must have built it or be permitted on a ward covering it.";
             return false;
@@ -158,7 +187,12 @@ namespace NorseSense
 
         void Update()
         {
-            if (_table == null) return;
+            if (_table == null)
+            {
+                // Table destroyed or unloaded: release the input lock too.
+                if (MarkerManagerHooks.WindowOpen) Close();
+                return;
+            }
             // Walked away, table destroyed, died or logged out.
             var player = Player.m_localPlayer;
             if (player == null || player.IsDead() || Vector3.Distance(player.transform.position, _table.transform.position) > 6f)
@@ -253,7 +287,7 @@ namespace NorseSense
         // Your own markers live on your map with owner 0; mirror edits to them so the table and your map agree.
         void ApplyToOwnMarkers(Minimap map)
         {
-            var pins = Pins(map);
+            var pins = Game.Pins(map);
             foreach (var row in _rows.Where(r => r.Dirty && r.Original.Owner == _me))
             {
                 var pin = pins.FirstOrDefault(p => p.m_ownerID == 0L && (p.m_pos - row.Original.Pos).sqrMagnitude <= 1f);
@@ -541,7 +575,7 @@ namespace NorseSense
         static void DrawIcon(Rect rect, Minimap.PinType type)
         {
             var map = Minimap.instance;
-            Sprite sprite = map != null ? GetSprite(map, type) : null;
+            Sprite sprite = map != null ? Game.GetSprite(map, type) : null;
             if (sprite == null) return;
             Rect tr = sprite.textureRect;
             var tex = sprite.texture;
@@ -602,6 +636,9 @@ namespace NorseSense
 
     static class MarkerManagerHooks
     {
+        // Plain flag so the hot input hooks above can never throw.
+        internal static bool WindowOpen;
+
         internal static bool Enabled => Plugin.EnableMarkerManager.Value && !Compat.CartographyManagerDisabled;
 
         internal static bool ModifierHeld()

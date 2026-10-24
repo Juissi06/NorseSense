@@ -1,6 +1,7 @@
 # Changelog
 
 ## Unreleased
+- Fixed: if the marker manager couldn't start on a player's setup, it broke all interaction, keys and hover text. Now only the marker manager turns off, with a message.
 - New: support readout. While building, looking at a piece that isn't grounded shows its exact structural support and the level where it falls, instead of just a colour.
 - Compatibility check also looks for mods that change plant growth or terrain editing.
 - New: fire status. Looking at a fire that has fuel but isn't burning, or burns low, tells you why: buried, something too close above the flames, rain without a roof, or wind without enough cover.
