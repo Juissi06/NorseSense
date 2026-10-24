@@ -256,22 +256,24 @@ namespace NorseSense
             if (ToggleKey.Value.IsDown())
             {
                 ShowSpawnRadius.Value = !ShowSpawnRadius.Value;
-                Player.m_localPlayer.Message(MessageHud.MessageType.TopLeft,
-                    $"Spawn view: {(ShowSpawnRadius.Value ? "ON" : "OFF")}");
+                Notify("Spawn view", ShowSpawnRadius.Value ? "on" : "off", ShowSpawnRadius.Value);
             }
             if (BuildInfoToggleKey.Value.IsDown())
             {
                 ShowBuildInfo.Value = !ShowBuildInfo.Value;
-                Player.m_localPlayer.Message(MessageHud.MessageType.TopLeft,
-                    $"Build info: {(ShowBuildInfo.Value ? "ON" : "OFF")}");
+                Notify("Build info", ShowBuildInfo.Value ? "shown" : "hidden", ShowBuildInfo.Value);
             }
             if (RemovalLockKey.Value.IsDown())
             {
                 RemovalLockPatch.Locked = !RemovalLockPatch.Locked;
-                Player.m_localPlayer.Message(MessageHud.MessageType.TopLeft,
-                    $"Piece removal: {(RemovalLockPatch.Locked ? "LOCKED" : "unlocked")}");
+                Notify("Piece removal", RemovalLockPatch.Locked ? "locked" : "unlocked", RemovalLockPatch.Locked);
             }
         }
+
+        // Toggle feedback in one consistent style: "Spawn view: on".
+        internal static void Notify(string what, string state, bool on) =>
+            Player.m_localPlayer?.Message(MessageHud.MessageType.TopLeft,
+                $"<color={Ui.Gold}>{what}</color>: <color={(on ? Ui.Good : Ui.Muted)}>{state}</color>");
 
         internal static bool IsTyping() =>
             (Chat.instance != null && Chat.instance.HasFocus()) ||

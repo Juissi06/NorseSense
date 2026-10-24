@@ -54,7 +54,7 @@ namespace NorseSense
 
             Vector3 pos = ghost.transform.position;
             string problem = WhyWontGrow(plant, pos);
-            string caveat = Compat.PlantRulesChangedBy != null ? $" <size=12>(may not be exact: {Compat.PlantRulesChangedBy})</size>" : "";
+            string caveat = Compat.PlantRulesChangedBy != null ? $" <size=12><color=#b9ad98>(may not be exact: {Compat.PlantRulesChangedBy})</color></size>" : "";
             Line = (problem == null
                 ? $"{Localization.instance.Localize(plant.m_name)}: <color=#9be07a>will grow here</color>"
                 : $"{Localization.instance.Localize(plant.m_name)}: <color=#ff6f55>won't grow, {problem}</color>") + caveat;

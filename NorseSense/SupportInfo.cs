@@ -40,7 +40,7 @@ namespace NorseSense
 
             if (support >= max) return null; // grounded: nothing to worry about, keep the screen clear
             string color = support < min ? "#ff6f55" : support < min * 2f ? "#f0b04a" : "#ffffff";
-            return $"{name}: support <color={color}><b>{support:0}</b></color> / {max:0}  <size=12>({material} falls below {min:0})</size>";
+            return $"{name}: support <color={color}><b>{support:0}</b></color> / {max:0}  <size=12><color=#b9ad98>({material} falls below {min:0})</color></size>";
         }
     }
 }

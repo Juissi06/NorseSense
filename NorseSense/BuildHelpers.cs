@@ -151,20 +151,23 @@ namespace NorseSense
             string plantLine = PlantPreview.Line;
             string shelterLine = PlantPreview.Line == null ? _shelterLine : null;
             string terrainLine = TerrainInfo.Line;
+            bool locked = RemovalLockPatch.Locked;
             if (!showRotation && !_showComfort && plantLine == null && shelterLine == null && terrainLine == null &&
-                _supportLine == null) return;
+                _supportLine == null && !locked) return;
 
-            var lines = new List<string>(6);
+            var lines = new List<string>(7);
+            // The lock is invisible otherwise, so say so while it's on.
+            if (locked) lines.Add($"<color={Ui.Warn}>Removal locked</color>  <size=12><color=#b9ad98>({Plugin.RemovalLockKey.Value} to unlock)</color></size>");
             if (plantLine != null) lines.Add(plantLine);
             if (terrainLine != null) lines.Add(terrainLine);
             if (showRotation)
-                lines.Add($"Rotation <b>{CurrentYaw(player):0.#}°</b>  <size=12>({Plugin.FineRotationModifier.Value} + scroll: {Plugin.FineRotationStep.Value:0.#}° steps, {Plugin.MatchRotationKey.Value}: match / reset, {Plugin.BuildInfoToggleKey.Value}: hide)</size>");
+                lines.Add($"Rotation <b>{CurrentYaw(player):0.#}°</b>  <size=12><color=#b9ad98>({Plugin.FineRotationModifier.Value} + scroll: {Plugin.FineRotationStep.Value:0.#}° steps, {Plugin.MatchRotationKey.Value}: match / reset, {Plugin.BuildInfoToggleKey.Value}: hide)</color></size>");
             if (_showComfort)
             {
                 if (!_inShelter)
                     lines.Add("Comfort: <color=#f0b04a>not in shelter here, comfort pieces don't count</color>");
                 else if (_comfortAfter > _comfortNow)
-                    lines.Add($"Comfort here: {_comfortNow} → <b><color=#9be07a>{_comfortAfter}</color></b>  <size=12>({Plugin.BuildInfoToggleKey.Value}: hide)</size>");
+                    lines.Add($"Comfort here: {_comfortNow} » <b><color=#9be07a>{_comfortAfter}</color></b>  <size=12><color=#b9ad98>({Plugin.BuildInfoToggleKey.Value}: hide)</color></size>");
                 else
                     lines.Add($"Comfort here: {_comfortNow} <color=#b9ad98>(no gain, out of range or same type already counted)</color>");
             }

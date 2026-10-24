@@ -1,6 +1,10 @@
 # Changelog
 
 ## Unreleased
+- New look: every panel (build info, spawn legend, hull readout, marker manager) uses a dark wood and gold style with Valheim's own fonts and shadowed text, so it reads well over snow and sky and fits the game's HUD.
+- Spawn legend shows a coverage bar. The hull readout is now a health bar that flashes when hit and pulses when critical.
+- The build info box shows "Removal locked" while the lock is on, and sizes itself to its text.
+- Toggle messages (spawn view, build info, removal lock) share one style.
 - Fixed: if the marker manager couldn't start on a player's setup, it broke all interaction, keys and hover text. Now only the marker manager turns off, with a message.
 - New: support readout. While building, looking at a piece that isn't grounded shows its exact structural support and the level where it falls, instead of just a colour.
 - Compatibility check also looks for mods that change plant growth or terrain editing.

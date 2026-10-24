@@ -60,7 +60,7 @@ namespace NorseSense
         {
             if (Event.current.type != EventType.Repaint) return;
             Color old = GUI.color;
-            GUI.color = new Color(GoldColor.r, GoldColor.g, GoldColor.b, 0.35f);
+            GUI.color = new Color(GoldColor.r, GoldColor.g, GoldColor.b, 0.25f);
             GUI.DrawTexture(new Rect(x, y, width, 1f), Texture2D.whiteTexture);
             GUI.color = old;
         }
@@ -125,11 +125,9 @@ namespace NorseSense
             if (_ready) return;
             _ready = true;
 
-            foreach (var font in Resources.FindObjectsOfTypeAll<Font>())
-            {
-                if (font.name == "AveriaSerifLibre-Bold") _body = font;
-                else if (font.name == "Norsebold") _title = font;
-            }
+            // Valheim's own fonts. They live in the game's Resources, so load them if nothing has yet.
+            FindFonts(Resources.FindObjectsOfTypeAll<Font>());
+            if (_body == null || _title == null) FindFonts(Resources.LoadAll<Font>(""));
             if (_title == null) _title = _body;
 
             _panel = Rounded(new Color(0.10f, 0.075f, 0.05f, 0.88f), new Color(0.80f, 0.64f, 0.36f, 0.75f),
@@ -163,6 +161,16 @@ namespace NorseSense
             _titleStyle.normal.textColor = GoldColor;
 
             BuildSkin();
+        }
+
+        static void FindFonts(Font[] fonts)
+        {
+            foreach (var font in fonts)
+            {
+                if (font == null) continue;
+                if (_body == null && font.name == "AveriaSerifLibre-Bold") _body = font;
+                else if (_title == null && font.name == "Norsebold") _title = font;
+            }
         }
 
         static void BuildSkin()

@@ -42,7 +42,7 @@ namespace NorseSense
             }
             float cover = (float)hits / Rays.Length;
             if (cover >= NeedCover && roof)
-                return $"Shelter: <color=#9be07a>yes</color> <size=12>(cover {cover * 100f:0}%)</size>";
+                return $"Shelter: <color=#9be07a>yes</color> <size=12><color=#b9ad98>(cover {cover * 100f:0}%)</color></size>";
 
             var reasons = new List<string>(2);
             if (!roof) reasons.Add("no roof above");

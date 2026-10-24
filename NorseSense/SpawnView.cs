@@ -496,7 +496,7 @@ namespace NorseSense
             int spawnable = _protected + _exposed + _steep;
             int pct = spawnable > 0 ? Mathf.RoundToInt(100f * (_protected + _preview) / spawnable) : 100;
             _coverage = pct / 100f;
-            _coverageText = $"Protected <b>{pct}%</b>{(_preview > 0 ? " <size=12>(with preview)</size>" : "")}";
+            _coverageText = $"Protected <b>{pct}%</b>{(_preview > 0 ? " <size=12><color=#b9ad98>(with preview)</color></size>" : "")}";
             float cell = Plugin.OverlayCellSize.Value;
             Add(Color.clear, _exposedLeft > 0
                 ? $"Exposed ground: <color=#ff6f55>~{_exposedLeft * cell * cell:0} m²</color>"
