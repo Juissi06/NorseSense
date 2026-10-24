@@ -30,7 +30,6 @@ namespace NorseSense
         float _comfortTimer;
         string _shelterLine;
         float _shelterTimer;
-        GUIStyle _style;
 
         internal static bool FineModifierHeld() =>
             !Compat.FineRotationDisabled &&
@@ -148,19 +147,12 @@ namespace NorseSense
             bool showRotation = FineModifierHeld() || Time.time < RotationShownUntil;
             string plantLine = PlantPreview.Line;
             string shelterLine = PlantPreview.Line == null ? _shelterLine : null;
-            if (!showRotation && !_showComfort && plantLine == null && shelterLine == null) return;
+            string terrainLine = TerrainInfo.Line;
+            if (!showRotation && !_showComfort && plantLine == null && shelterLine == null && terrainLine == null) return;
 
-            if (_style == null)
-            {
-                _style = new GUIStyle(GUI.skin.label)
-                {
-                    fontSize = 15, richText = true, alignment = TextAnchor.MiddleCenter
-                };
-                _style.normal.textColor = Color.white;
-            }
-
-            var lines = new List<string>(4);
+            var lines = new List<string>(5);
             if (plantLine != null) lines.Add(plantLine);
+            if (terrainLine != null) lines.Add(terrainLine);
             if (showRotation)
                 lines.Add($"Rotation <b>{CurrentYaw(player):0.#}°</b>  <size=12>({Plugin.FineRotationModifier.Value} + scroll: {Plugin.FineRotationStep.Value:0.#}° steps, {Plugin.MatchRotationKey.Value}: match / reset, {Plugin.BuildInfoToggleKey.Value}: hide)</size>");
             if (_showComfort)
@@ -173,6 +165,22 @@ namespace NorseSense
                     lines.Add($"Comfort here: {_comfortNow} <color=#c0c0c0>(no gain, out of range or same type already counted)</color>");
             }
             if (shelterLine != null) lines.Add(shelterLine);
+            DrawInfoBox(lines);
+        }
+
+        static GUIStyle _style;
+
+        // The build info box: centred, at the configured height. Call from OnGUI.
+        internal static void DrawInfoBox(List<string> lines)
+        {
+            if (_style == null)
+            {
+                _style = new GUIStyle(GUI.skin.label)
+                {
+                    fontSize = 15, richText = true, alignment = TextAnchor.MiddleCenter
+                };
+                _style.normal.textColor = Color.white;
+            }
 
             float scale = Screen.height / 1080f * Plugin.LegendScale.Value;
             Matrix4x4 oldMatrix = GUI.matrix;

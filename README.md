@@ -30,6 +30,7 @@ Shows where mobs can and can't spawn, using the same checks the game itself uses
 - **Match rotation:** **Left Alt + T** copies the exact rotation of the piece you're looking at. Looking at nothing resets fine rotation.
 - **Comfort preview:** when placing a chair, banner, rug and so on, shows the comfort level you'd have after placing it, or why it wouldn't add any.
 - **Shelter readout:** while building under a roof or placing a comfort piece, shows whether your spot counts as shelter, and if not, why: *no roof above* or *cover 71% of 80%, open behind, left (up)*. Directions are relative to where you look.
+- **Terrain limits:** with the hoe or pickaxe, shows how much further the ground can be dug or raised where you aim, e.g. *Ground: 6.2 m below original. Can dig 1.8 m deeper*. The game silently stops at 8 m above or below the original height.
 - **Removal lock (F9):** stops the hammer from removing pieces, so you can't delete your build by accident.
 - **F8** hides or shows the build info box.
 

@@ -37,6 +37,7 @@ namespace NorseSense
         internal static ConfigEntry<float> BuildInfoY;
         internal static ConfigEntry<KeyboardShortcut> RemovalLockKey;
         internal static ConfigEntry<bool> ShowShelterInfo;
+        internal static ConfigEntry<bool> ShowTerrainLimits;
 
         // Farming
         internal static ConfigEntry<bool> ShowPlantingPreview;
@@ -129,6 +130,9 @@ namespace NorseSense
             ShowShelterInfo = Config.Bind(build, "Shelter readout", true,
                 "While building under a roof or placing a comfort piece, show whether the spot you stand on counts as shelter, " +
                 "and if not, why: no roof, or which directions are still open (the game needs 80% cover).");
+            ShowTerrainLimits = Config.Bind(build, "Terrain limits", true,
+                "With the hoe or pickaxe, show how much further the ground can be dug or raised where you aim. " +
+                "The game keeps terrain within 8 m of its original height.");
             ShowBuildInfo = Config.Bind(build, "Show build info", true,
                 "Show the rotation angle and comfort preview while building.");
             BuildInfoToggleKey = Config.Bind(build, "Build info toggle key", new KeyboardShortcut(KeyCode.F8),
@@ -215,6 +219,7 @@ namespace NorseSense
             _spawnViewObject.AddComponent<MapOverlay>();
             _spawnViewObject.AddComponent<BuildHelpers>();
             _spawnViewObject.AddComponent<PlantPreview>();
+            _spawnViewObject.AddComponent<TerrainInfo>();
             _spawnViewObject.AddComponent<HullWarning>();
             _spawnViewObject.AddComponent<MarkerManager>();
 
