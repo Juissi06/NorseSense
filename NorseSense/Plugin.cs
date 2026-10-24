@@ -38,6 +38,7 @@ namespace NorseSense
         internal static ConfigEntry<KeyboardShortcut> RemovalLockKey;
         internal static ConfigEntry<bool> ShowShelterInfo;
         internal static ConfigEntry<bool> ShowTerrainLimits;
+        internal static ConfigEntry<bool> ShowSupportInfo;
 
         // Farming
         internal static ConfigEntry<bool> ShowPlantingPreview;
@@ -136,6 +137,9 @@ namespace NorseSense
             ShowTerrainLimits = Config.Bind(build, "Terrain limits", true,
                 "With the hoe or pickaxe, show how much further the ground can be dug or raised where you aim. " +
                 "The game keeps terrain within 8 m of its original height.");
+            ShowSupportInfo = Config.Bind(build, "Support readout", true,
+                "While building, show the exact structural support of the piece you're looking at, and the level where it falls. " +
+                "The game only tints pieces blue to red.");
             ShowBuildInfo = Config.Bind(build, "Show build info", true,
                 "Show the rotation angle and comfort preview while building.");
             BuildInfoToggleKey = Config.Bind(build, "Build info toggle key", new KeyboardShortcut(KeyCode.F8),

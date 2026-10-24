@@ -11,9 +11,10 @@ Ideas for Norse Sense, in rough order. Rules for anything on this list:
 2. [x] **Shelter readout.** While building, show cover % where you stand and whether it counts as shelter, so you know why "Sheltered" doesn't show up.
 3. [x] **Terrain limits.** With the hoe or pickaxe, show how much further the ground can be raised or lowered here (vanilla caps it at ±8 m from the original height).
 4. [x] **Fire status.** Hovering a fire that has fuel but won't burn, or burns low, says why (smoke blocked, buried, rain, wind). MyLittleUI covers fuel.
-5. [ ] **Translations.** Move player-facing text into one place so it can be translated.
+5. [x] **Support readout.** Exact structural support of the piece you look at while building.
 
 ## Maybe later
+- Translations: about 130 in-game strings would move into one table. Worth it once people ask for a language.
 - Grid planting with the cultivator (opt-in, conflicts with Plant Easily).
 - Server-controlled settings (ServerSync) for the balance options.
 

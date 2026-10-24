@@ -31,6 +31,7 @@ Shows where mobs can and can't spawn, using the same checks the game itself uses
 - **Comfort preview:** when placing a chair, banner, rug and so on, shows the comfort level you'd have after placing it, or why it wouldn't add any.
 - **Shelter readout:** while building under a roof or placing a comfort piece, shows whether your spot counts as shelter, and if not, why: *no roof above* or *cover 71% of 80%, open behind, left (up)*. Directions are relative to where you look.
 - **Terrain limits:** with the hoe or pickaxe, shows how much further the ground can be dug or raised where you aim, e.g. *Ground: 6.2 m below original. Can dig 1.8 m deeper*. The game silently stops at 8 m above or below the original height.
+- **Support readout:** looking at a piece that isn't on the ground shows its exact support, e.g. *Wood beam: support 34 / 100 (wood falls below 10)*. The game only tints pieces blue to red.
 - **Removal lock (F9):** stops the hammer from removing pieces, so you can't delete your build by accident.
 - **F8** hides or shows the build info box.
 

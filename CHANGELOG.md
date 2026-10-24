@@ -1,6 +1,7 @@
 # Changelog
 
 ## Unreleased
+- New: support readout. While building, looking at a piece that isn't grounded shows its exact structural support and the level where it falls, instead of just a colour.
 - Compatibility check also looks for mods that change plant growth or terrain editing.
 - New: fire status. Looking at a fire that has fuel but isn't burning, or burns low, tells you why: buried, something too close above the flames, rain without a roof, or wind without enough cover.
 - New: terrain limits. With the hoe or pickaxe, shows how much further the ground can be dug or raised where you aim. The game keeps terrain within 8 m of its original height and never tells you.

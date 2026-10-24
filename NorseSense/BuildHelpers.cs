@@ -29,6 +29,7 @@ namespace NorseSense
         bool _showComfort, _inShelter;
         float _comfortTimer;
         string _shelterLine;
+        string _supportLine;
         float _shelterTimer;
 
         internal static bool FineModifierHeld() =>
@@ -43,6 +44,7 @@ namespace NorseSense
             {
                 _showComfort = false;
                 _shelterLine = null;
+                _supportLine = null;
                 return;
             }
 
@@ -55,6 +57,7 @@ namespace NorseSense
             {
                 _comfortTimer = 0.25f;
                 UpdateComfort(player);
+                _supportLine = Plugin.ShowSupportInfo.Value ? SupportInfo.Describe(player.GetHoveringPiece()) : null;
             }
 
             _shelterTimer -= Time.deltaTime;
@@ -148,9 +151,10 @@ namespace NorseSense
             string plantLine = PlantPreview.Line;
             string shelterLine = PlantPreview.Line == null ? _shelterLine : null;
             string terrainLine = TerrainInfo.Line;
-            if (!showRotation && !_showComfort && plantLine == null && shelterLine == null && terrainLine == null) return;
+            if (!showRotation && !_showComfort && plantLine == null && shelterLine == null && terrainLine == null &&
+                _supportLine == null) return;
 
-            var lines = new List<string>(5);
+            var lines = new List<string>(6);
             if (plantLine != null) lines.Add(plantLine);
             if (terrainLine != null) lines.Add(terrainLine);
             if (showRotation)
@@ -165,6 +169,7 @@ namespace NorseSense
                     lines.Add($"Comfort here: {_comfortNow} <color=#c0c0c0>(no gain, out of range or same type already counted)</color>");
             }
             if (shelterLine != null) lines.Add(shelterLine);
+            if (_supportLine != null) lines.Add(_supportLine);
             DrawInfoBox(lines);
         }
 
