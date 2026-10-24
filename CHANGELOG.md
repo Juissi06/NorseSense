@@ -1,5 +1,8 @@
 # Changelog
 
+## Unreleased
+- New: planting preview. While planting with the cultivator, shows whether the seed will grow where you aim, and if not, why: too close to another plant or a rock, no open sky, wrong biome, too cold, ground not cultivated. Nearby plants get grow-space rings, red if they aren't growing.
+
 ## 0.8.0
 - Renamed from QoL Pack to **Norse Sense**. New plugin ID (`juissi.norsesense`) and config file (`juissi.norsesense.cfg`).
 - Added requirements and installation instructions.

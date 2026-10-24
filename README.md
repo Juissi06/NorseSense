@@ -32,6 +32,10 @@ Shows where mobs can and can't spawn, using the same checks the game itself uses
 - **Removal lock (F9):** stops the hammer from removing pieces, so you can't delete your build by accident.
 - **F8** hides or shows the build info box.
 
+### Farming
+- **Planting preview:** while planting with the cultivator, shows whether the seed will grow where you're aiming, and if not, why: *won't grow, too close to Carrot seedling*, *no open sky*, *wrong biome*, *too cold*...
+- **Plant spacing rings:** the grow space of the seed and of nearby plants is drawn on the ground. Plants that aren't growing are red.
+
 ### Portals
 - Looking at a portal lists exactly which items in your inventory stop you from teleporting, e.g. *Can't teleport: Copper ore x30, Tin x12*.
 

@@ -136,7 +136,8 @@ namespace NorseSense
             if (Hud.IsUserHidden() || Hud.IsPieceSelectionVisible() || Menu.IsVisible()) return;
 
             bool showRotation = FineModifierHeld() || Time.time < RotationShownUntil;
-            if (!showRotation && !_showComfort) return;
+            string plantLine = PlantPreview.Line;
+            if (!showRotation && !_showComfort && plantLine == null) return;
 
             if (_style == null)
             {
@@ -147,7 +148,8 @@ namespace NorseSense
                 _style.normal.textColor = Color.white;
             }
 
-            var lines = new List<string>(2);
+            var lines = new List<string>(3);
+            if (plantLine != null) lines.Add(plantLine);
             if (showRotation)
                 lines.Add($"Rotation <b>{CurrentYaw(player):0.#}°</b>  <size=12>({Plugin.FineRotationModifier.Value} + scroll: {Plugin.FineRotationStep.Value:0.#}° steps, {Plugin.MatchRotationKey.Value}: match / reset, {Plugin.BuildInfoToggleKey.Value}: hide)</size>");
             if (_showComfort)

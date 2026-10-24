@@ -37,6 +37,10 @@ namespace NorseSense
         internal static ConfigEntry<float> BuildInfoY;
         internal static ConfigEntry<KeyboardShortcut> RemovalLockKey;
 
+        // Farming
+        internal static ConfigEntry<bool> ShowPlantingPreview;
+        internal static ConfigEntry<bool> ShowPlantSpacing;
+
         // Portals
         internal static ConfigEntry<bool> ShowTeleportBlockers;
 
@@ -132,6 +136,13 @@ namespace NorseSense
             RemovalLockKey = Config.Bind(build, "Removal lock toggle key", new KeyboardShortcut(KeyCode.F9),
                 "Toggles a lock that stops the hammer from removing pieces, so you can't delete your build by accident. Always starts unlocked.");
 
+            const string farming = "Farming";
+            ShowPlantingPreview = Config.Bind(farming, "Planting preview", true,
+                "While planting with the cultivator, show whether the seed will grow where you're aiming, and if not, why " +
+                "(too close to another plant or a rock, no open sky, wrong biome, too cold...).");
+            ShowPlantSpacing = Config.Bind(farming, "Show plant spacing", true,
+                "While planting, draw the grow space of nearby plants. Plants that aren't growing are drawn red.");
+
             ShowTeleportBlockers = Config.Bind("Portals", "Show teleport blockers", true,
                 "When looking at a portal, list the carried items (ores, metals...) that stop you from teleporting.");
 
@@ -199,6 +210,7 @@ namespace NorseSense
             _spawnViewObject.AddComponent<SpawnView>();
             _spawnViewObject.AddComponent<MapOverlay>();
             _spawnViewObject.AddComponent<BuildHelpers>();
+            _spawnViewObject.AddComponent<PlantPreview>();
             _spawnViewObject.AddComponent<HullWarning>();
             _spawnViewObject.AddComponent<MarkerManager>();
 

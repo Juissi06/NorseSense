@@ -447,7 +447,7 @@ namespace NorseSense
             return _material;
         }
 
-        static LineRenderer CreateLine(Transform parent, string name, Color color, float width)
+        internal static LineRenderer CreateLine(Transform parent, string name, Color color, float width)
         {
             var go = new GameObject(name);
             go.transform.SetParent(parent, false);
@@ -463,7 +463,7 @@ namespace NorseSense
         }
 
         // Ring that follows the terrain, so it isn't buried on slopes.
-        static void DrawRing(LineRenderer lr, Vector3 center, float radius, bool followGround = true)
+        internal static void DrawRing(LineRenderer lr, Vector3 center, float radius, bool followGround = true)
         {
             var zs = ZoneSystem.instance;
             int segments = Mathf.Clamp(Mathf.CeilToInt(radius * 2f), 24, 200);
