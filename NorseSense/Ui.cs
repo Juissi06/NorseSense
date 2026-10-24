@@ -189,7 +189,13 @@ namespace NorseSense
             return sprite;
         }
 
-        internal static float LineWidth(string text, GUIStyle style) => style.CalcSize(new GUIContent(text)).x;
+        static readonly GUIContent Measure = new GUIContent();
+
+        internal static float LineWidth(string text, GUIStyle style)
+        {
+            Measure.text = text;
+            return style.CalcSize(Measure).x;
+        }
 
         // The shadow pass must not inherit <color> tags, or it would be drawn in colour.
         static readonly Regex ColorTags = new Regex("</?color[^>]*>", RegexOptions.Compiled);

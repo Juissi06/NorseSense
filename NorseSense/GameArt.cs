@@ -21,8 +21,22 @@ namespace NorseSense
             return _sprites.TryGetValue(name, out var found) && found != null ? found : null;
         }
 
+        static readonly Dictionary<Sprite, Rect> UvCache = new Dictionary<Sprite, Rect>();
+
         // The sprite's area of its texture in UV space. Works for atlas sprites, tight or not, unless rotated.
+        // Cached: Sprite.uv allocates a new array on every read, and icons are drawn every frame.
         internal static bool UvRect(Sprite sprite, out Rect uv)
+        {
+            uv = default;
+            if (sprite == null) return false;
+            if (UvCache.TryGetValue(sprite, out uv)) return uv.width > 0f;
+            bool ok = ComputeUvRect(sprite, out uv);
+            if (UvCache.Count > 512) UvCache.Clear();
+            UvCache[sprite] = ok ? uv : default;
+            return ok;
+        }
+
+        static bool ComputeUvRect(Sprite sprite, out Rect uv)
         {
             uv = default;
             if (sprite == null || sprite.texture == null) return false;
