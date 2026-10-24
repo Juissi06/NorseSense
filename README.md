@@ -119,6 +119,8 @@ Delete the `BepInEx/plugins/NorseSense` folder, and optionally `BepInEx/config/j
 ## Configuration
 Settings are in `BepInEx/config/juissi.norsesense.cfg`. With [Configuration Manager](https://thunderstore.io/c/valheim/p/shudnal/ConfigurationManager/) installed, press **F1** to change them in game. Changes take effect immediately.
 
+**General → Enabled** switches the whole mod on or off without restarting. Off removes every change Norse Sense makes to the game and hides all its overlays, as if it weren't installed.
+
 ## Compatibility
 Norse Sense only adds to the game's code and never replaces it, so other mods' changes to the same code still run. When you load into a world, it checks for mods that overlap with its features:
 

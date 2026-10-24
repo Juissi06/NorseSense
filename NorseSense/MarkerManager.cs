@@ -96,6 +96,12 @@ namespace NorseSense
 
         void Awake() => Instance = this;
 
+        // Mod switched off: close without saving, like walking away.
+        void OnDisable()
+        {
+            if (_table != null) Close();
+        }
+
         // ---------- Opening and permissions ----------
 
         internal void Open(MapTable table)

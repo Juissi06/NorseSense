@@ -15,8 +15,14 @@ namespace NorseSense
         internal static void Apply()
         {
             var player = Player.m_localPlayer;
-            if (player == null || Compat.PlayerTweaksDisabled)
+            if (player == null || Compat.PlayerTweaksDisabled || !Plugin.ModEnabled.Value)
             {
+                // Hand the player back with the values it had before we touched it.
+                if (player != null && player == _player)
+                {
+                    player.m_maxPlaceDistance = _origPlaceDistance;
+                    player.m_autoPickupRange = _origPickupRange;
+                }
                 _player = null;
                 return;
             }

@@ -1,6 +1,7 @@
 # Changelog
 
 ## Unreleased
+- New: General → Enabled switches the whole mod on or off in game. Off removes all its patches and overlays and restores build distance and pickup range, so the game is fully vanilla.
 - New look: every panel (build info, spawn legend, hull readout, marker manager) uses a dark wood and gold style with Valheim's own fonts and shadowed text, so it reads well over snow and sky and fits the game's HUD.
 - Spawn legend shows a coverage bar. The hull readout is now a health bar that flashes when hit and pulses when critical.
 - The build info box shows "Removal locked" while the lock is on, and sizes itself to its text.

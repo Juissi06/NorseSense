@@ -59,7 +59,14 @@ namespace NorseSense
             Align(_large, _map.m_mapImageLarge);
         }
 
-        void OnDisable() => _scanning = false;
+        void OnDisable()
+        {
+            // Mod switched off: the images live on the game's minimap, so hide them explicitly.
+            _scanning = false;
+            _visible = false;
+            if (_small != null) _small.enabled = false;
+            if (_large != null) _large.enabled = false;
+        }
 
         void EnsureImages()
         {

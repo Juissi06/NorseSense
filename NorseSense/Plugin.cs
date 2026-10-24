@@ -11,6 +11,9 @@ namespace NorseSense
     {
         const string Guid = "juissi.norsesense";
 
+        // General
+        internal static ConfigEntry<bool> ModEnabled;
+
         // Spawn view
         internal static ConfigEntry<bool> ShowSpawnRadius;
         internal static ConfigEntry<KeyboardShortcut> ToggleKey;
@@ -85,6 +88,10 @@ namespace NorseSense
 
         void Awake()
         {
+            ModEnabled = Config.Bind("General", "Enabled", true,
+                "Turn all of Norse Sense on or off. Off removes every change it makes to the game, " +
+                "hides all its overlays and ignores its keys, as if it weren't installed. Takes effect immediately.");
+
             const string spawn = "Spawn Display";
             ShowSpawnRadius = Config.Bind(spawn, "Enabled", false,
                 "Show the spawn view: a ground overlay of where mobs can spawn, base coverage rings, and nests/spawners.");
@@ -235,8 +242,29 @@ namespace NorseSense
             _spawnViewObject.AddComponent<MarkerManager>();
 
             _harmony = new Harmony(Guid);
-            _harmony.PatchAll(typeof(Plugin).Assembly);
+            ModEnabled.SettingChanged += (s, e) => ApplyEnabled();
+            ApplyEnabled();
             Logger.LogInfo($"Loaded. Building stamina x{BuildStaminaMultiplier.Value}, sowing stamina x{SowStaminaMultiplier.Value}, spawn view key: {ToggleKey.Value}");
+        }
+
+        bool _patched;
+
+        // Patches and components follow the master switch, so "off" really is vanilla.
+        void ApplyEnabled()
+        {
+            bool on = ModEnabled.Value;
+            if (on && !_patched) _harmony.PatchAll(typeof(Plugin).Assembly);
+            else if (!on && _patched)
+            {
+                _harmony.UnpatchSelf();
+                RemovalLockPatch.Locked = false;
+                BuildHelpers.FineOffset = 0f;
+            }
+            _patched = on;
+            _spawnViewObject.SetActive(on);
+            PlayerTweaks.Apply();
+            if (Player.m_localPlayer != null) Notify("Norse Sense", on ? "on" : "off", on);
+            Logger.LogInfo(on ? "Enabled." : "Disabled: all patches removed.");
         }
 
         void OnDestroy()
@@ -248,10 +276,10 @@ namespace NorseSense
         void Update()
         {
             // Every plugin has loaded and patched by the time a player exists.
-            if (!Compat.Checked && Player.m_localPlayer != null) Compat.Run(Guid, Logger);
+            if (!Compat.Checked && ModEnabled.Value && Player.m_localPlayer != null) Compat.Run(Guid, Logger);
 
             PlayerTweaks.Update();
-            if (Player.m_localPlayer == null || IsTyping()) return;
+            if (!ModEnabled.Value || Player.m_localPlayer == null || IsTyping()) return;
 
             if (ToggleKey.Value.IsDown())
             {
