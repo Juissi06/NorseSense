@@ -17,6 +17,9 @@ New look
 - Marker manager: column headings, and selected rows are highlighted.
 - Toggle messages share one style. Shorter hull warnings: "Hull health critical: 25%" and "Hull damaged: 50%".
 
+Changes
+- The config file is now `BepInEx/config/NorseSense.cfg` (plugin ID `NorseSense`). Your settings from `juissi.norsesense.cfg` are copied over automatically the first time.
+
 Fixes
 - If the marker manager couldn't start on a player's setup, it broke all interaction, keys and hover text. Now only the marker manager turns off, with a message.
 - The compatibility check also looks for mods that change plant growth or terrain editing.

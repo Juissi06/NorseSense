@@ -109,7 +109,7 @@ Only the players who want the features need it: it's **not required on the serve
 Install the new version over the old one (mod managers do this for you). Your settings are kept.
 
 ### Uninstalling
-Delete the `BepInEx/plugins/NorseSense` folder, and optionally `BepInEx/config/juissi.norsesense.cfg`. Nothing is saved into your world or character, so it's safe to remove at any time.
+Delete the `BepInEx/plugins/NorseSense` folder, and optionally `BepInEx/config/NorseSense.cfg`. Nothing is saved into your world or character, so it's safe to remove at any time.
 
 ### Troubleshooting
 - **Nothing happens when pressing F7:** check `BepInEx/LogOutput.log` for `Loading [Norse Sense`. If it's missing, BepInEx isn't installed correctly or the DLL is in the wrong folder.
@@ -117,7 +117,7 @@ Delete the `BepInEx/plugins/NorseSense` folder, and optionally `BepInEx/config/j
 - **Something broke:** report it with your `BepInEx/LogOutput.log` attached.
 
 ## Configuration
-Settings are in `BepInEx/config/juissi.norsesense.cfg`. With [Configuration Manager](https://thunderstore.io/c/valheim/p/shudnal/ConfigurationManager/) installed, press **F1** to change them in game. Changes take effect immediately.
+Settings are in `BepInEx/config/NorseSense.cfg`. With [Configuration Manager](https://thunderstore.io/c/valheim/p/shudnal/ConfigurationManager/) installed, press **F1** to change them in game. Changes take effect immediately.
 
 **General → Enabled** switches the whole mod on or off without restarting. Off removes every change Norse Sense makes to the game and hides all its overlays, as if it weren't installed.
 

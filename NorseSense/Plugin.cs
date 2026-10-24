@@ -1,3 +1,4 @@
+using System.IO;
 using BepInEx;
 using BepInEx.Configuration;
 using HarmonyLib;
@@ -9,7 +10,9 @@ namespace NorseSense
     [BepInProcess("valheim.exe")]
     public class Plugin : BaseUnityPlugin
     {
-        const string Guid = "juissi.norsesense";
+        // Also names the config file: BepInEx/config/NorseSense.cfg.
+        const string Guid = "NorseSense";
+        const string OldGuid = "juissi.norsesense"; // 0.8.0 and earlier
 
         // General
         internal static ConfigEntry<bool> ModEnabled;
@@ -88,6 +91,8 @@ namespace NorseSense
 
         void Awake()
         {
+            MigrateOldConfig();
+
             ModEnabled = Config.Bind("General", "Enabled", true,
                 "Turn all of Norse Sense on or off. Off removes every change it makes to the game, " +
                 "hides all its overlays and ignores its keys, as if it weren't installed. Takes effect immediately.");
@@ -245,6 +250,23 @@ namespace NorseSense
             ModEnabled.SettingChanged += (s, e) => ApplyEnabled();
             ApplyEnabled();
             Logger.LogInfo($"Loaded. Building stamina x{BuildStaminaMultiplier.Value}, sowing stamina x{SowStaminaMultiplier.Value}, spawn view key: {ToggleKey.Value}");
+        }
+
+        // Keep players' settings from the old juissi.norsesense.cfg the first time they start with the new name.
+        void MigrateOldConfig()
+        {
+            string oldPath = Path.Combine(Paths.ConfigPath, OldGuid + ".cfg");
+            if (!File.Exists(oldPath) || File.Exists(Config.ConfigFilePath)) return;
+            try
+            {
+                File.Copy(oldPath, Config.ConfigFilePath);
+                Config.Reload();
+                Logger.LogInfo($"Moved settings from {OldGuid}.cfg to {Path.GetFileName(Config.ConfigFilePath)}. The old file can be deleted.");
+            }
+            catch (IOException e)
+            {
+                Logger.LogWarning("Couldn't copy the old settings file: " + e.Message);
+            }
         }
 
         bool _patched;
