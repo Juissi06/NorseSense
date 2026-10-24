@@ -1,29 +1,116 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
         <TargetFramework>net462</TargetFramework>
         <LangVersion>latest</LangVersion>
+        <!-- Single source of truth for the mod version: plugin attribute, manifest and zip names. -->
+        <Version>0.7.0</Version>
+        <ReleaseDir>$(MSBuildProjectDirectory)\..\dist</ReleaseDir>
+        <ValheimDir Condition="'$(ValheimDir)' == ''">C:\Steam\steamapps\common\Valheim</ValheimDir>
+        <ManagedDir>$(ValheimDir)\valheim_Data\Managed</ManagedDir>
+        <PluginsDir>$(ValheimDir)\BepInEx\plugins</PluginsDir>
     </PropertyGroup>
     <ItemGroup>
         <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3" PrivateAssets="all" />
     </ItemGroup>
     <ItemGroup>
       <Reference Include="0Harmony">
-        <HintPath>..\..\..\..\..\Steam\steamapps\common\Valheim\BepInEx\core\0Harmony.dll</HintPath>
-      </Reference>
-      <Reference Include="assembly_valheim">
-        <HintPath>..\..\..\..\..\Steam\steamapps\common\Valheim\Valheim_Data\Managed\assembly_valheim.dll</HintPath>
+        <HintPath>$(ValheimDir)\BepInEx\core\0Harmony.dll</HintPath>
+        <Private>false</Private>
       </Reference>
       <Reference Include="BepInEx">
-        <HintPath>..\..\..\..\..\Steam\steamapps\common\Valheim\BepInEx\core\BepInEx.dll</HintPath>
+        <HintPath>$(ValheimDir)\BepInEx\core\BepInEx.dll</HintPath>
+        <Private>false</Private>
+      </Reference>
+      <Reference Include="assembly_valheim">
+        <HintPath>$(ManagedDir)\assembly_valheim.dll</HintPath>
+        <Private>false</Private>
       </Reference>
       <Reference Include="UnityEngine">
-        <HintPath>..\..\..\..\..\Steam\steamapps\common\Valheim\Valheim_Data\Managed\UnityEngine.dll</HintPath>
+        <HintPath>$(ManagedDir)\UnityEngine.dll</HintPath>
+        <Private>false</Private>
       </Reference>
       <Reference Include="UnityEngine.CoreModule">
-        <HintPath>..\..\..\..\..\Steam\steamapps\common\Valheim\Valheim_Data\Managed\UnityEngine.CoreModule.dll</HintPath>
+        <HintPath>$(ManagedDir)\UnityEngine.CoreModule.dll</HintPath>
+        <Private>false</Private>
+      </Reference>
+      <Reference Include="assembly_guiutils">
+        <HintPath>$(ManagedDir)\assembly_guiutils.dll</HintPath>
+        <Private>false</Private>
+      </Reference>
+      <Reference Include="Splatform">
+        <HintPath>$(ManagedDir)\Splatform.dll</HintPath>
+        <Private>false</Private>
+      </Reference>
+      <Reference Include="assembly_utils">
+        <HintPath>$(ManagedDir)\assembly_utils.dll</HintPath>
+        <Private>false</Private>
+      </Reference>
+      <Reference Include="UnityEngine.TextRenderingModule">
+        <HintPath>$(ManagedDir)\UnityEngine.TextRenderingModule.dll</HintPath>
+        <Private>false</Private>
+      </Reference>
+      <Reference Include="UnityEngine.IMGUIModule">
+        <HintPath>$(ManagedDir)\UnityEngine.IMGUIModule.dll</HintPath>
+        <Private>false</Private>
+      </Reference>
+      <Reference Include="UnityEngine.PhysicsModule">
+        <HintPath>$(ManagedDir)\UnityEngine.PhysicsModule.dll</HintPath>
+        <Private>false</Private>
+      </Reference>
+      <Reference Include="UnityEngine.UI">
+        <HintPath>$(ManagedDir)\UnityEngine.UI.dll</HintPath>
+        <Private>false</Private>
+      </Reference>
+      <Reference Include="UnityEngine.UIModule">
+        <HintPath>$(ManagedDir)\UnityEngine.UIModule.dll</HintPath>
+        <Private>false</Private>
       </Reference>
       <Reference Include="UnityEngine.InputLegacyModule">
-        <HintPath>..\..\..\..\..\Steam\steamapps\common\Valheim\Valheim_Data\Managed\UnityEngine.InputLegacyModule.dll</HintPath>
+        <HintPath>$(ManagedDir)\UnityEngine.InputLegacyModule.dll</HintPath>
+        <Private>false</Private>
       </Reference>
     </ItemGroup>
+
+    <!-- Generates ModInfo.Version from <Version> so BepInPlugin never drifts from the package version. -->
+    <Target Name="GenerateModInfo" BeforeTargets="CoreCompile">
+        <PropertyGroup>
+            <ModInfoFile>$(IntermediateOutputPath)ModInfo.g.cs</ModInfoFile>
+        </PropertyGroup>
+        <WriteLinesToFile File="$(ModInfoFile)" Overwrite="true" WriteOnlyWhenDifferent="true"
+                          Lines="namespace QolPack { internal static class ModInfo { public const string Version = &quot;$(Version)&quot;%3B } }" />
+        <ItemGroup>
+            <Compile Include="$(ModInfoFile)" />
+            <FileWrites Include="$(ModInfoFile)" />
+        </ItemGroup>
+    </Target>
+
+    <!-- Copy the built plugin into the game so it's always the latest build that loads. -->
+    <Target Name="DeployToValheim" AfterTargets="Build" Condition="Exists('$(PluginsDir)')">
+        <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(PluginsDir)" />
+        <Message Importance="high" Text="QOLPack deployed to $(PluginsDir)" />
+    </Target>
+
+    <!-- Release builds also produce upload-ready zips in dist/: one for Thunderstore/r2modman, one for Nexus/manual installs. -->
+    <Target Name="PackageRelease" AfterTargets="Build" Condition="'$(Configuration)' == 'Release'">
+        <PropertyGroup>
+            <PackDir>$(IntermediateOutputPath)package</PackDir>
+            <TsDir>$(PackDir)\thunderstore</TsDir>
+            <NexusDir>$(PackDir)\nexus</NexusDir>
+            <PackageAssets>$(MSBuildProjectDirectory)\..\package</PackageAssets>
+            <Manifest>$([System.IO.File]::ReadAllText('$(PackageAssets)\manifest.json').Replace('$version$', '$(Version)'))</Manifest>
+        </PropertyGroup>
+        <RemoveDir Directories="$(PackDir)" />
+        <MakeDir Directories="$(ReleaseDir)" />
+
+        <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(TsDir)\plugins" />
+        <Copy SourceFiles="$(PackageAssets)\icon.png;..\README.md;..\CHANGELOG.md" DestinationFolder="$(TsDir)" />
+        <WriteLinesToFile File="$(TsDir)\manifest.json" Lines="$(Manifest)" Overwrite="true" />
+        <ZipDirectory SourceDirectory="$(TsDir)" DestinationFile="$(ReleaseDir)\QoL_Pack-$(Version)-thunderstore.zip" Overwrite="true" />
+
+        <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(NexusDir)\BepInEx\plugins\QOLPack" />
+        <Copy SourceFiles="..\README.md;..\CHANGELOG.md" DestinationFolder="$(NexusDir)\BepInEx\plugins\QOLPack" />
+        <ZipDirectory SourceDirectory="$(NexusDir)" DestinationFile="$(ReleaseDir)\QoL_Pack-$(Version)-nexus.zip" Overwrite="true" />
+
+        <Message Importance="high" Text="Release zips written to $(ReleaseDir)" />
+    </Target>
 </Project>

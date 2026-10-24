@@ -1,0 +1,9 @@
+{
+  "name": "QoL_Pack",
+  "version_number": "$version$",
+  "website_url": "",
+  "description": "Spawn-proofing view (ground + map), raid check, fine rotation, comfort preview, hull warnings, cartography marker manager and filters, portal item check. Client-side, vanilla-balanced.",
+  "dependencies": [
+    "denikson-BepInExPack_Valheim-5.4.2333"
+  ]
+}
