@@ -39,7 +39,7 @@ namespace NorseSense
             string material = wnt.m_materialType.ToString().ToLowerInvariant();
 
             if (support >= max) return null; // grounded: nothing to worry about, keep the screen clear
-            string color = support < min ? "#ff7050" : support < min * 2f ? "#ffa030" : "#ffffff";
+            string color = support < min ? "#ff6f55" : support < min * 2f ? "#f0b04a" : "#ffffff";
             return $"{name}: support <color={color}><b>{support:0}</b></color> / {max:0}  <size=12>({material} falls below {min:0})</size>";
         }
     }

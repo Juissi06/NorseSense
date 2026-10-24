@@ -58,8 +58,8 @@ namespace NorseSense
         int _baseValue;
         int _unlockedRaids;
 
-        GUIStyle _labelStyle;
-        GUIStyle _titleStyle;
+        float _coverage;
+        string _coverageText = "";
         readonly List<KeyValuePair<Color, string>> _legendLines = new List<KeyValuePair<Color, string>>();
 
         void Awake()
@@ -495,24 +495,25 @@ namespace NorseSense
 
             int spawnable = _protected + _exposed + _steep;
             int pct = spawnable > 0 ? Mathf.RoundToInt(100f * (_protected + _preview) / spawnable) : 100;
+            _coverage = pct / 100f;
+            _coverageText = $"Protected <b>{pct}%</b>{(_preview > 0 ? " <size=12>(with preview)</size>" : "")}";
             float cell = Plugin.OverlayCellSize.Value;
-            Add(Color.clear, $"Coverage: <b>{pct}%</b>{(_preview > 0 ? " (with preview)" : "")}");
             Add(Color.clear, _exposedLeft > 0
-                ? $"Exposed ground: <color=#ff7050>~{_exposedLeft * cell * cell:0} m²</color>"
-                : "<color=#80c0ff>No exposed ground in view</color>");
+                ? $"Exposed ground: <color=#ff6f55>~{_exposedLeft * cell * cell:0} m²</color>"
+                : "<color=#8ec9ff>No exposed ground in view</color>");
 
             // Raids: RandEventSystem.CheckBase needs base value >= 3 (base pieces within 20 m of you).
             if (_unlockedRaids == 0)
-                Add(Color.clear, "Raids: <color=#80c0ff>none unlocked yet</color>");
+                Add(Color.clear, "Raids: <color=#8ec9ff>none unlocked yet</color>");
             else if (_baseValue >= SpawnRules.RaidBaseValue)
-                Add(Color.clear, $"Raids: <color=#ffa030>can target you here</color> (base {_baseValue}/{SpawnRules.RaidBaseValue})");
+                Add(Color.clear, $"Raids: <color=#f0b04a>can target you here</color> (base {_baseValue}/{SpawnRules.RaidBaseValue})");
             else
-                Add(Color.clear, $"Raids: <color=#80c0ff>not here</color> (base {_baseValue}/{SpawnRules.RaidBaseValue})");
+                Add(Color.clear, $"Raids: <color=#8ec9ff>not here</color> (base {_baseValue}/{SpawnRules.RaidBaseValue})");
 
             if (Compat.SpawnRulesChangedBy != null)
-                Add(Color.clear, $"<color=#ffa030>Spawn rules changed by {Compat.SpawnRulesChangedBy}: may be off</color>");
+                Add(Color.clear, $"<color=#f0b04a>Spawn rules changed by {Compat.SpawnRulesChangedBy}: may be off</color>");
             if (Compat.RaidRulesChangedBy != null)
-                Add(Color.clear, $"<color=#ffa030>Raid rules changed by {Compat.RaidRulesChangedBy}: may be off</color>");
+                Add(Color.clear, $"<color=#f0b04a>Raid rules changed by {Compat.RaidRulesChangedBy}: may be off</color>");
 
             var raid = _raidRingEvent;
             if (raid != null)
@@ -526,46 +527,50 @@ namespace NorseSense
         {
             if (!Plugin.ShowSpawnRadius.Value || !Plugin.ShowLegend.Value || Player.m_localPlayer == null) return;
             if (Hud.IsUserHidden() || Menu.IsVisible() || InventoryGui.IsVisible() || Minimap.IsOpen()) return;
-
-            if (_labelStyle == null)
-            {
-                _labelStyle = new GUIStyle(GUI.skin.label) { fontSize = 14, wordWrap = false, richText = true };
-                _labelStyle.normal.textColor = Color.white;
-                _titleStyle = new GUIStyle(_labelStyle) { fontSize = 16, fontStyle = FontStyle.Bold };
-            }
             if (Event.current.type == EventType.Layout) BuildLegend();
 
-            float scale = Screen.height / 1080f * Plugin.LegendScale.Value;
-            Matrix4x4 oldMatrix = GUI.matrix;
-            GUI.matrix = Matrix4x4.Scale(new Vector3(scale, scale, 1f));
+            Matrix4x4 oldMatrix = Ui.BeginScaled(out float sw, out float sh);
 
-            const float w = 330f, lineH = 22f, pad = 10f;
-            float h = pad * 2 + 26f + _legendLines.Count * lineH;
-            float x = Plugin.LegendX.Value * (Screen.width / scale - w - 20f) + 10f;
-            float y = Plugin.LegendY.Value * (Screen.height / scale - h - 20f) + 10f;
+            // Colour key first, then stats (lines without a colour) under a divider.
+            int keyLines = 0;
+            foreach (var line in _legendLines) if (line.Key.a > 0f) keyLines++;
+            int statLines = _legendLines.Count - keyLines;
 
-            // Drawn twice: the default skin's box is too transparent to read over bright terrain.
-            GUI.Box(new Rect(x, y, w, h), GUIContent.none);
-            GUI.Box(new Rect(x, y, w, h), GUIContent.none);
-            float cx = x + pad, cy = y + pad;
+            const float w = 350f, lineH = 22f, pad = 12f, titleH = 26f, barH = 34f;
+            float h = pad * 2 + titleH + barH + _legendLines.Count * lineH + (statLines > 0 ? 9f : 0f);
+            float x = Plugin.LegendX.Value * (sw - w - 20f) + 10f;
+            float y = Plugin.LegendY.Value * (sh - h - 20f) + 10f;
+            float cx = x + pad, cy = y + pad, inner = w - pad * 2;
 
-            GUI.Label(new Rect(cx, cy, w - pad * 2, 24f), $"Spawn view  <size=12>({Plugin.ToggleKey.Value})</size>", _titleStyle);
-            cy += 26f;
+            Ui.Panel(new Rect(x, y, w, h));
+            Ui.Label(new Rect(cx, cy, inner, titleH), "Spawn view", Ui.Title);
+            GUI.Label(new Rect(cx, cy, inner, titleH), $"{Plugin.ToggleKey.Value} to hide",
+                Ui.SmallRight);
+            cy += titleH;
 
+            // Coverage bar: share of spawnable ground around you that's protected.
+            Color barColor = _coverage >= 0.999f ? SpawnRules.ProtectedColor : Color.Lerp(SpawnRules.ExposedColor, SpawnRules.ProtectedColor, _coverage);
+            barColor.a = 0.95f;
+            Ui.Label(new Rect(cx, cy, inner, 18f), _coverageText, Ui.Small);
+            Ui.Bar(new Rect(cx, cy + 19f, inner, 9f), _coverage, barColor);
+            cy += barH;
+
+            bool dividerDrawn = false;
             foreach (var line in _legendLines)
             {
                 float textX = cx;
                 if (line.Key.a > 0f)
                 {
-                    Color old = GUI.color;
-                    Color c = line.Key;
-                    c.a = Mathf.Max(c.a, 0.8f);
-                    GUI.color = c;
-                    GUI.DrawTexture(new Rect(cx, cy + 4f, 14f, 14f), Texture2D.whiteTexture);
-                    GUI.color = old;
+                    Ui.Swatch(new Rect(cx + 1f, cy + 5f, 12f, 12f), line.Key);
                     textX += 22f;
                 }
-                GUI.Label(new Rect(textX, cy, w - pad - (textX - x), lineH), line.Value, _labelStyle);
+                else if (!dividerDrawn)
+                {
+                    dividerDrawn = true;
+                    Ui.Divider(cx, cy + 4f, inner);
+                    cy += 9f;
+                }
+                Ui.Label(new Rect(textX, cy, inner - (textX - cx), lineH), line.Value, Ui.Text);
                 cy += lineH;
             }
 

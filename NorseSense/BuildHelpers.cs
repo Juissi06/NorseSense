@@ -162,43 +162,37 @@ namespace NorseSense
             if (_showComfort)
             {
                 if (!_inShelter)
-                    lines.Add("Comfort: <color=#ffa030>not in shelter here, comfort pieces don't count</color>");
+                    lines.Add("Comfort: <color=#f0b04a>not in shelter here, comfort pieces don't count</color>");
                 else if (_comfortAfter > _comfortNow)
-                    lines.Add($"Comfort here: {_comfortNow} → <b><color=#80ff80>{_comfortAfter}</color></b>  <size=12>({Plugin.BuildInfoToggleKey.Value}: hide)</size>");
+                    lines.Add($"Comfort here: {_comfortNow} → <b><color=#9be07a>{_comfortAfter}</color></b>  <size=12>({Plugin.BuildInfoToggleKey.Value}: hide)</size>");
                 else
-                    lines.Add($"Comfort here: {_comfortNow} <color=#c0c0c0>(no gain, out of range or same type already counted)</color>");
+                    lines.Add($"Comfort here: {_comfortNow} <color=#b9ad98>(no gain, out of range or same type already counted)</color>");
             }
             if (shelterLine != null) lines.Add(shelterLine);
             if (_supportLine != null) lines.Add(_supportLine);
             DrawInfoBox(lines);
         }
 
-        static GUIStyle _style;
-
-        // The build info box: centred, at the configured height. Call from OnGUI.
+        // The build info box: centred, at the configured height, as wide as its longest line. Call from OnGUI.
         internal static void DrawInfoBox(List<string> lines)
         {
-            if (_style == null)
-            {
-                _style = new GUIStyle(GUI.skin.label)
-                {
-                    fontSize = 15, richText = true, alignment = TextAnchor.MiddleCenter
-                };
-                _style.normal.textColor = Color.white;
-            }
+            if (lines.Count == 0) return;
+            Matrix4x4 oldMatrix = Ui.BeginScaled(out float sw, out float sh);
 
-            float scale = Screen.height / 1080f * Plugin.LegendScale.Value;
-            Matrix4x4 oldMatrix = GUI.matrix;
-            GUI.matrix = Matrix4x4.Scale(new Vector3(scale, scale, 1f));
+            const float lineH = 26f, padX = 18f, padY = 8f;
+            float w = 260f;
+            foreach (var line in lines) w = Mathf.Max(w, Ui.LineWidth(line, Ui.TextCenter) + padX * 2f);
+            w = Mathf.Min(w, sw - 40f);
+            float h = lines.Count * lineH + padY * 2f;
+            float x = (sw - w) * 0.5f;
+            float y = Plugin.BuildInfoY.Value * (sh - h);
 
-            const float w = 640f, lineH = 24f;
-            float h = lines.Count * lineH + 10f;
-            float x = (Screen.width / scale - w) * 0.5f;
-            float y = Plugin.BuildInfoY.Value * (Screen.height / scale - h);
-
-            GUI.Box(new Rect(x, y, w, h), GUIContent.none);
+            Ui.Panel(new Rect(x, y, w, h));
             for (int i = 0; i < lines.Count; i++)
-                GUI.Label(new Rect(x, y + 5f + i * lineH, w, lineH), lines[i], _style);
+            {
+                if (i > 0) Ui.Divider(x + padX, y + padY + i * lineH, w - padX * 2f);
+                Ui.Label(new Rect(x, y + padY + i * lineH, w, lineH), lines[i], Ui.TextCenter);
+            }
 
             GUI.matrix = oldMatrix;
         }

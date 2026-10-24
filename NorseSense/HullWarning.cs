@@ -16,7 +16,7 @@ namespace NorseSense
         float _lastDamageMessage = -999f;
         float _flashUntil;
 
-        GUIStyle _style;
+        GUIStyle _rightStyle;
 
         void Update()
         {
@@ -57,8 +57,8 @@ namespace NorseSense
                 _lowestWarned = threshold;
                 bool critical = threshold <= Plugin.HullCriticalLevel.Value;
                 player.Message(MessageHud.MessageType.Center,
-                    critical ? $"<color=#ff4030>Hull critical: {percent:P0}! Head for shore.</color>"
-                             : $"<color=#ffa030>Hull damaged: {percent:P0}</color>");
+                    critical ? $"<color=#ff5a40>Hull critical: {percent:P0}! Head for shore.</color>"
+                             : $"<color=#f0b04a>Hull damaged: {percent:P0}</color>");
                 _lastDamageMessage = Time.time;
             }
             else if (Time.time - _lastDamageMessage > DamageMessageCooldown)
@@ -68,30 +68,33 @@ namespace NorseSense
             }
         }
 
+        static readonly Color HealthyColor = new Color(0.55f, 0.85f, 0.45f);
+        static readonly Color DamagedColor = new Color(0.94f, 0.69f, 0.29f);
+        static readonly Color CriticalColor = new Color(1f, 0.38f, 0.28f);
+
         void OnGUI()
         {
             if (!Plugin.ShowHullReadout.Value || _hull == null || _lastPercent < 0f || Player.m_localPlayer == null) return;
             if (Hud.IsUserHidden() || Menu.IsVisible() || InventoryGui.IsVisible() || Minimap.IsOpen()) return;
 
-            if (_style == null)
-            {
-                _style = new GUIStyle(GUI.skin.label) { fontSize = 16, richText = true, alignment = TextAnchor.MiddleCenter };
-                _style.normal.textColor = Color.white;
-            }
+            Matrix4x4 oldMatrix = Ui.BeginScaled(out float sw, out float sh);
 
-            float scale = Screen.height / 1080f * Plugin.LegendScale.Value;
-            Matrix4x4 oldMatrix = GUI.matrix;
-            GUI.matrix = Matrix4x4.Scale(new Vector3(scale, scale, 1f));
+            const float w = 210f, h = 48f, pad = 12f;
+            float x = (sw - w) * 0.5f;
+            float y = Plugin.HullReadoutY.Value * (sh - h);
 
-            const float w = 150f, h = 30f;
-            float x = (Screen.width / scale - w) * 0.5f;
-            float y = Plugin.HullReadoutY.Value * (Screen.height / scale - h);
+            bool critical = _lastPercent <= Plugin.HullCriticalLevel.Value;
+            Color color = critical ? CriticalColor : _lastPercent <= Plugin.HullWarnLevel.Value ? DamagedColor : HealthyColor;
+            // Flash brighter when hit, and pulse while critical.
+            if (Time.time < _flashUntil) color = Color.Lerp(color, Color.white, 0.5f * (_flashUntil - Time.time) / 1.5f);
+            if (critical) color.a = 0.65f + 0.35f * Mathf.Abs(Mathf.Sin(Time.time * 4f));
 
-            string color = _lastPercent <= Plugin.HullCriticalLevel.Value ? "#ff4030"
-                : _lastPercent <= Plugin.HullWarnLevel.Value ? "#ffa030"
-                : Time.time < _flashUntil ? "#ffd080" : "#ffffff";
-            GUI.Box(new Rect(x, y, w, h), GUIContent.none);
-            GUI.Label(new Rect(x, y, w, h), $"Hull <b><color={color}>{_lastPercent:P0}</color></b>", _style);
+            Ui.Panel(new Rect(x, y, w, h));
+            Ui.Label(new Rect(x + pad, y + 5f, w - pad * 2, 20f), "Hull", Ui.Text);
+            Ui.Label(new Rect(x + pad, y + 5f, w - pad * 2, 20f),
+                $"<b><color=#{ColorUtility.ToHtmlStringRGB(color)}>{_lastPercent * 100f:0}%</color></b>",
+                _rightStyle ?? (_rightStyle = new GUIStyle(Ui.Text) { alignment = TextAnchor.MiddleRight }));
+            Ui.Bar(new Rect(x + pad, y + 29f, w - pad * 2, 10f), _lastPercent, color);
 
             GUI.matrix = oldMatrix;
         }

@@ -42,12 +42,12 @@ namespace NorseSense
             }
             float cover = (float)hits / Rays.Length;
             if (cover >= NeedCover && roof)
-                return $"Shelter: <color=#80ff80>yes</color> <size=12>(cover {cover * 100f:0}%)</size>";
+                return $"Shelter: <color=#9be07a>yes</color> <size=12>(cover {cover * 100f:0}%)</size>";
 
             var reasons = new List<string>(2);
             if (!roof) reasons.Add("no roof above");
             if (cover < NeedCover) reasons.Add($"cover {cover * 100f:0}% of {NeedCover * 100f:0}%, open {OpenList()}");
-            return $"Shelter: <color=#ffa030>no</color>, {string.Join("; ", reasons)}";
+            return $"Shelter: <color=#f0b04a>no</color>, {string.Join("; ", reasons)}";
         }
 
         static string OpenList() =>

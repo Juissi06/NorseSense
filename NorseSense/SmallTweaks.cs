@@ -25,8 +25,8 @@ namespace NorseSense
                 .ToList();
 
             __result += blockers.Count == 0
-                ? "\n<color=#80ff80>Your items can teleport</color>"
-                : "\n<color=#ff7050>Can't teleport: " + string.Join(", ", blockers) + "</color>";
+                ? "\n<color=#9be07a>Your items can teleport</color>"
+                : "\n<color=#ff6f55>Can't teleport: " + string.Join(", ", blockers) + "</color>";
         }
     }
 
@@ -77,8 +77,8 @@ namespace NorseSense
                 Vector3 pos = __instance.transform.position;
                 bool buried = Heightmap.GetHeight(pos, out float h) && h > pos.y + __instance.m_checkTerrainOffset;
                 status = buried
-                    ? "<color=#ff7050>Not burning: buried in the ground</color>"
-                    : "<color=#ff7050>Not burning: something is too close above the flames, the smoke can't get out</color>";
+                    ? "<color=#ff6f55>Not burning: buried in the ground</color>"
+                    : "<color=#ff6f55>Not burning: something is too close above the flames, the smoke can't get out</color>";
             }
             else if (Wet(__instance))
             {
@@ -86,8 +86,8 @@ namespace NorseSense
                             !Cover.IsUnderRoof(__instance.transform.position + Vector3.up * __instance.m_coverCheckOffset);
                 string cause = rain ? "rain and no roof above" : "strong wind and not enough cover (needs 70%)";
                 status = __instance.m_canTurnOff
-                    ? $"<color=#ffa030>Goes out: {cause}</color>"
-                    : $"<color=#ffa030>Burning low: {cause}</color>";
+                    ? $"<color=#f0b04a>Goes out: {cause}</color>"
+                    : $"<color=#f0b04a>Burning low: {cause}</color>";
             }
             if (status != null) __result += "\n" + status;
         }

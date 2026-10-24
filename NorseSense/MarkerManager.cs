@@ -311,6 +311,20 @@ namespace NorseSense
         {
             if (_table == null) return;
             if (_filterDirty) RefreshShown();
+            GUISkin oldSkin = GUI.skin;
+            GUI.skin = Ui.Skin;
+            try
+            {
+                DrawWindow();
+            }
+            finally
+            {
+                GUI.skin = oldSkin;
+            }
+        }
+
+        void DrawWindow()
+        {
             InitStyles();
 
             if (Event.current.type == EventType.KeyDown && Event.current.keyCode == KeyCode.Escape)
@@ -320,25 +334,19 @@ namespace NorseSense
                 if (_table == null) return;
             }
 
-            float scale = Screen.height / 1080f * Plugin.LegendScale.Value;
-            Matrix4x4 oldMatrix = GUI.matrix;
-            GUI.matrix = Matrix4x4.Scale(new Vector3(scale, scale, 1f));
-
-            float sw = Screen.width / scale, sh = Screen.height / scale;
-            GUI.color = new Color(0f, 0f, 0f, 0.5f);
+            Matrix4x4 oldMatrix = Ui.BeginScaled(out float sw, out float sh);
+            GUI.color = new Color(0f, 0f, 0f, 0.55f);
             GUI.DrawTexture(new Rect(0, 0, sw, sh), Texture2D.whiteTexture);
             GUI.color = Color.white;
 
             float w = Mathf.Min(980f, sw - 40f), h = Mathf.Min(720f, sh - 40f);
             _window = new Rect((sw - w) / 2f, (sh - h) / 2f, w, h);
-            GUI.Box(_window, GUIContent.none);
-            GUI.Box(_window, GUIContent.none);
-            GUI.Box(_window, GUIContent.none);
+            Ui.Panel(_window);
 
-            GUILayout.BeginArea(new Rect(_window.x + 14, _window.y + 10, w - 28, h - 20));
+            GUILayout.BeginArea(new Rect(_window.x + 16, _window.y + 12, w - 32, h - 24));
             DrawHeader();
             DrawFilters();
-            DrawList(w - 28, h - 20 - 210f);
+            DrawList(w - 32, h - 24 - 210f);
             DrawFooter();
             GUILayout.EndArea();
 
@@ -348,24 +356,26 @@ namespace NorseSense
         void InitStyles()
         {
             if (_label != null) return;
-            _label = new GUIStyle(GUI.skin.label) { fontSize = 14, richText = true, alignment = TextAnchor.MiddleLeft };
-            _label.normal.textColor = Color.white;
-            _small = new GUIStyle(_label) { fontSize = 12 };
-            _small.normal.textColor = new Color(0.8f, 0.8f, 0.8f);
-            _header = new GUIStyle(_label) { fontSize = 20, fontStyle = FontStyle.Bold };
-            _rowStyle = new GUIStyle(GUI.skin.textField) { fontSize = 14, alignment = TextAnchor.MiddleLeft };
+            _label = new GUIStyle(Ui.Text) { fontSize = 14 };
+            _small = new GUIStyle(Ui.Small) { fontSize = 13 };
+            _header = new GUIStyle(Ui.Title) { fontSize = 22, fixedHeight = 30f };
+            _rowStyle = new GUIStyle(Ui.Skin.textField) { fontSize = 14, alignment = TextAnchor.MiddleLeft };
         }
 
         void DrawHeader()
         {
             GUILayout.BeginHorizontal();
             int dirty = _rows.Count(r => r.Dirty);
-            GUILayout.Label($"Map table markers  <size=14>({_rows.Count(r => !r.Deleted)}{(dirty > 0 ? $", <color=#ffd060>{dirty} unsaved</color>" : "")})</size>", _header);
+            GUILayout.Label("Map table markers", _header);
+            GUILayout.Label($"{_rows.Count(r => !r.Deleted)} markers{(dirty > 0 ? $", <color={Ui.Warn}>{dirty} unsaved</color>" : "")}",
+                _small, GUILayout.Height(30));
             GUILayout.FlexibleSpace();
-            if (GUILayout.Button("✕", GUILayout.Width(32), GUILayout.Height(28))) RequestClose();
+            if (GUILayout.Button("X", GUILayout.Width(32), GUILayout.Height(28))) RequestClose();
             GUILayout.EndHorizontal();
 
-            if (!_canEdit) GUILayout.Label($"<color=#ffa030>{_whyReadOnly}</color>", _small);
+            if (!_canEdit) GUILayout.Label($"<color={Ui.Warn}>{_whyReadOnly}</color>", _small);
+            Rect line = GUILayoutUtility.GetRect(1f, 7f, GUILayout.ExpandWidth(true));
+            Ui.Divider(line.x, line.y + 3f, line.width);
         }
 
         void DrawFilters()
@@ -472,7 +482,7 @@ namespace NorseSense
 
             float nameW = width - x - 380;
             if (row.Deleted)
-                GUI.Label(new Rect(x, y, nameW, RowH), $"<color=#888888><s>{Escape(row.Edit.Name)}</s> (deleted)</color>", _label);
+                GUI.Label(new Rect(x, y, nameW, RowH), $"<color=#7d7366>{Escape(row.Edit.Name)}  (deleted)</color>", _label);
             else
             {
                 GUI.enabled = _canEdit;
@@ -532,7 +542,7 @@ namespace NorseSense
             GUILayout.BeginHorizontal();
             if (_confirmDiscard)
             {
-                GUILayout.Label("<color=#ffd060>You have unsaved changes.</color>", _label);
+                GUILayout.Label("<color=#f0b04a>You have unsaved changes.</color>", _label);
                 GUI.enabled = true;
                 if (GUILayout.Button("Discard and close", GUILayout.Width(160), GUILayout.Height(32))) Close();
                 if (GUILayout.Button("Keep editing", GUILayout.Width(130), GUILayout.Height(32))) _confirmDiscard = false;

@@ -106,10 +106,10 @@ namespace NorseSense
             string where = Mathf.Abs(offset) < 0.05f ? "untouched"
                 : offset > 0f ? $"{offset:0.0} m above original" : $"{-offset:0.0} m below original";
 
-            if (down < 0.05f) return $"Ground: {where}, <color=#ff7050>at the dig limit</color>  <size=12>(±{MaxOffset:0} m)</size>";
-            if (up < 0.05f) return $"Ground: {where}, <color=#ff7050>at the raise limit</color>  <size=12>(±{MaxOffset:0} m)</size>";
-            string downText = down < 1f ? $"<color=#ffa030>{down:0.0} m</color>" : $"{down:0.0} m";
-            string upText = up < 1f ? $"<color=#ffa030>{up:0.0} m</color>" : $"{up:0.0} m";
+            if (down < 0.05f) return $"Ground: {where}, <color=#ff6f55>at the dig limit</color>  <size=12>(±{MaxOffset:0} m)</size>";
+            if (up < 0.05f) return $"Ground: {where}, <color=#ff6f55>at the raise limit</color>  <size=12>(±{MaxOffset:0} m)</size>";
+            string downText = down < 1f ? $"<color=#f0b04a>{down:0.0} m</color>" : $"{down:0.0} m";
+            string upText = up < 1f ? $"<color=#f0b04a>{up:0.0} m</color>" : $"{up:0.0} m";
             return $"Ground: {where}. Can dig {downText} deeper, raise {upText} higher";
         }
 
