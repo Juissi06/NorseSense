@@ -130,7 +130,7 @@ namespace NorseSense
             if (Event.current.type != EventType.Repaint) return;
             Color old = GUI.color;
             float inset = 1f;
-            if (_barTrack != null)
+            if (_barTrack != null && r.height >= 10f) // the game's track has 5 px borders; thin bars get a plain one
             {
                 _barTrack.Draw(r, false, false, false, false);
                 inset = 2f;

@@ -59,13 +59,13 @@ namespace NorseSense
                 _lowestWarned = threshold;
                 bool critical = threshold <= Plugin.HullCriticalLevel.Value;
                 player.Message(MessageHud.MessageType.Center,
-                    critical ? $"<color=#ff5a40>Hull critical: {percent:P0}! Head for shore.</color>"
-                             : $"<color=#f0b04a>Hull damaged: {percent:P0}</color>");
+                    critical ? $"<color=#ff5a40>Hull health critical: {percent * 100f:0}%</color>"
+                             : $"<color=#f0b04a>Hull damaged: {percent * 100f:0}%</color>");
                 _lastDamageMessage = Time.time;
             }
             else if (Time.time - _lastDamageMessage > DamageMessageCooldown)
             {
-                player.Message(MessageHud.MessageType.TopLeft, $"Ship taking damage: hull {percent:P0}");
+                player.Message(MessageHud.MessageType.TopLeft, $"Hull damaged: {percent * 100f:0}%");
                 _lastDamageMessage = Time.time;
             }
         }
@@ -81,7 +81,8 @@ namespace NorseSense
 
             Matrix4x4 oldMatrix = Ui.BeginScaled(out float sw, out float sh);
 
-            const float w = 220f, h = 52f, pad = 12f;
+            // Compact: one row of text with a thin bar underneath.
+            const float w = 132f, h = 32f, pad = 9f;
             float x = (sw - w) * 0.5f;
             float y = Plugin.HullReadoutY.Value * (sh - h);
 
@@ -95,14 +96,14 @@ namespace NorseSense
             float labelX = x + pad;
             if (_shipIcon != null)
             {
-                Ui.Icon(new Rect(labelX, y + 5f, 20f, 20f), _shipIcon);
-                labelX += 26f;
+                Ui.Icon(new Rect(labelX, y + 4f, 15f, 15f), _shipIcon);
+                labelX += 19f;
             }
-            Ui.Label(new Rect(labelX, y + 5f, w - pad - (labelX - x), 20f), "Hull", Ui.Text);
-            Ui.Label(new Rect(x + pad, y + 5f, w - pad * 2, 20f),
+            Ui.Label(new Rect(labelX, y + 3f, w - pad - (labelX - x), 17f), "Hull", Ui.Small);
+            Ui.Label(new Rect(x + pad, y + 3f, w - pad * 2, 17f),
                 $"<b><color=#{ColorUtility.ToHtmlStringRGB(color)}>{_lastPercent * 100f:0}%</color></b>",
-                _rightStyle ?? (_rightStyle = new GUIStyle(Ui.Text) { alignment = TextAnchor.MiddleRight }));
-            Ui.Bar(new Rect(x + pad, y + 30f, w - pad * 2, 12f), _lastPercent, color);
+                _rightStyle ?? (_rightStyle = new GUIStyle(Ui.Small) { alignment = TextAnchor.MiddleRight }));
+            Ui.Bar(new Rect(x + pad, y + 22f, w - pad * 2, 6f), _lastPercent, color);
 
             GUI.matrix = oldMatrix;
         }

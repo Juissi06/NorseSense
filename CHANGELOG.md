@@ -1,10 +1,11 @@
 # Changelog
 
 ## Unreleased
+- Shorter hull warnings: "Hull health critical: 25%" and "Hull damaged: 50%".
 - New: General → Enabled switches the whole mod on or off in game. Off removes all its patches and overlays and restores build distance and pickup range, so the game is fully vanilla.
 - New look: every panel uses Valheim's own UI art and fonts: tooltip-style HUD panels with the game's orange edge, the wooden crafting-window panel, game buttons, text fields, checkboxes, dividers and bars. Text has a soft shadow so it reads over snow and sky. Falls back to a matching built-in style if the game's art can't be found.
 - Build info lines show the matching icon: the seed you're planting, the Rested and Sheltered status icons, the piece you're looking at, your pickaxe. The hull readout shows your ship.
-- Spawn legend shows a coverage bar. The hull readout is now a health bar that flashes when hit and pulses when critical.
+- Spawn legend shows a coverage bar. The hull readout is now a small health bar that flashes when hit and pulses when critical.
 - The build info box shows "Removal locked" while the lock is on, and sizes itself to its text.
 - Toggle messages (spawn view, build info, removal lock) share one style.
 - Marker manager: column headings, and selected rows are highlighted.
