@@ -28,6 +28,8 @@ namespace NorseSense
         int _comfortNow, _comfortAfter;
         bool _showComfort, _inShelter;
         float _comfortTimer;
+        string _shelterLine;
+        float _shelterTimer;
         GUIStyle _style;
 
         internal static bool FineModifierHeld() =>
@@ -41,6 +43,7 @@ namespace NorseSense
             if (player == null || !player.InPlaceMode())
             {
                 _showComfort = false;
+                _shelterLine = null;
                 return;
             }
 
@@ -53,6 +56,13 @@ namespace NorseSense
             {
                 _comfortTimer = 0.25f;
                 UpdateComfort(player);
+            }
+
+            _shelterTimer -= Time.deltaTime;
+            if (_shelterTimer <= 0f)
+            {
+                _shelterTimer = 1f; // the game re-checks cover once a second too
+                _shelterLine = Plugin.ShowShelterInfo.Value && PlantPreview.Line == null ? ShelterInfo.Describe(player, _showComfort) : null;
             }
         }
 
@@ -137,7 +147,8 @@ namespace NorseSense
 
             bool showRotation = FineModifierHeld() || Time.time < RotationShownUntil;
             string plantLine = PlantPreview.Line;
-            if (!showRotation && !_showComfort && plantLine == null) return;
+            string shelterLine = PlantPreview.Line == null ? _shelterLine : null;
+            if (!showRotation && !_showComfort && plantLine == null && shelterLine == null) return;
 
             if (_style == null)
             {
@@ -148,7 +159,7 @@ namespace NorseSense
                 _style.normal.textColor = Color.white;
             }
 
-            var lines = new List<string>(3);
+            var lines = new List<string>(4);
             if (plantLine != null) lines.Add(plantLine);
             if (showRotation)
                 lines.Add($"Rotation <b>{CurrentYaw(player):0.#}°</b>  <size=12>({Plugin.FineRotationModifier.Value} + scroll: {Plugin.FineRotationStep.Value:0.#}° steps, {Plugin.MatchRotationKey.Value}: match / reset, {Plugin.BuildInfoToggleKey.Value}: hide)</size>");
@@ -161,6 +172,7 @@ namespace NorseSense
                 else
                     lines.Add($"Comfort here: {_comfortNow} <color=#c0c0c0>(no gain, out of range or same type already counted)</color>");
             }
+            if (shelterLine != null) lines.Add(shelterLine);
 
             float scale = Screen.height / 1080f * Plugin.LegendScale.Value;
             Matrix4x4 oldMatrix = GUI.matrix;

@@ -36,6 +36,7 @@ namespace NorseSense
         internal static ConfigEntry<KeyboardShortcut> BuildInfoToggleKey;
         internal static ConfigEntry<float> BuildInfoY;
         internal static ConfigEntry<KeyboardShortcut> RemovalLockKey;
+        internal static ConfigEntry<bool> ShowShelterInfo;
 
         // Farming
         internal static ConfigEntry<bool> ShowPlantingPreview;
@@ -125,6 +126,9 @@ namespace NorseSense
                 "While building: copy the exact rotation of the piece you're looking at, or reset fine rotation when looking at nothing.");
             ShowComfortPreview = Config.Bind(build, "Comfort preview", true,
                 "When placing a comfort piece (chair, banner, fire...), show the comfort level you'd have here after placing it.");
+            ShowShelterInfo = Config.Bind(build, "Shelter readout", true,
+                "While building under a roof or placing a comfort piece, show whether the spot you stand on counts as shelter, " +
+                "and if not, why: no roof, or which directions are still open (the game needs 80% cover).");
             ShowBuildInfo = Config.Bind(build, "Show build info", true,
                 "Show the rotation angle and comfort preview while building.");
             BuildInfoToggleKey = Config.Bind(build, "Build info toggle key", new KeyboardShortcut(KeyCode.F8),
