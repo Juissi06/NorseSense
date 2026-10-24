@@ -25,7 +25,8 @@ namespace NorseSense
         static int _terrainMask, _terrainLayer;
         float _timer;
         bool _pickaxe;
-        readonly List<string> _lines = new List<string>(1);
+        readonly InfoLines _lines = new InfoLines();
+        Sprite _toolIcon;
 
         void Update()
         {
@@ -68,6 +69,7 @@ namespace NorseSense
             {
                 Line = Describe(hit.point);
                 _pickaxe = Line != null;
+                _toolIcon = weapon.GetIcon();
             }
         }
 
@@ -119,7 +121,7 @@ namespace NorseSense
             if (!_pickaxe || Line == null || !Plugin.ShowBuildInfo.Value) return;
             if (Hud.IsUserHidden() || Menu.IsVisible() || InventoryGui.IsVisible() || Minimap.IsOpen()) return;
             _lines.Clear();
-            _lines.Add(Line);
+            _lines.Add(_toolIcon, Line);
             BuildHelpers.DrawInfoBox(_lines);
         }
     }

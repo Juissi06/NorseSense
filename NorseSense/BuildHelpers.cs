@@ -30,6 +30,7 @@ namespace NorseSense
         float _comfortTimer;
         string _shelterLine;
         string _supportLine;
+        Sprite _supportIcon;
         float _shelterTimer;
 
         internal static bool FineModifierHeld() =>
@@ -57,7 +58,9 @@ namespace NorseSense
             {
                 _comfortTimer = 0.25f;
                 UpdateComfort(player);
-                _supportLine = Plugin.ShowSupportInfo.Value ? SupportInfo.Describe(player.GetHoveringPiece()) : null;
+                var hovered = player.GetHoveringPiece();
+                _supportLine = Plugin.ShowSupportInfo.Value ? SupportInfo.Describe(hovered) : null;
+                _supportIcon = _supportLine != null ? hovered.m_icon : null;
             }
 
             _shelterTimer -= Time.deltaTime;
@@ -155,37 +158,49 @@ namespace NorseSense
             if (!showRotation && !_showComfort && plantLine == null && shelterLine == null && terrainLine == null &&
                 _supportLine == null && !locked) return;
 
-            var lines = new List<string>(7);
+            var lines = Lines;
+            lines.Clear();
+            Sprite piece = player.GetSelectedPiece()?.m_icon;
             // The lock is invisible otherwise, so say so while it's on.
-            if (locked) lines.Add($"<color={Ui.Warn}>Removal locked</color>  <size=12><color=#b9ad98>({Plugin.RemovalLockKey.Value} to unlock)</color></size>");
-            if (plantLine != null) lines.Add(plantLine);
-            if (terrainLine != null) lines.Add(terrainLine);
+            if (locked) lines.Add(null, $"<color={Ui.Warn}>Removal locked</color>  <size=12><color=#b9ad98>({Plugin.RemovalLockKey.Value} to unlock)</color></size>");
+            if (plantLine != null) lines.Add(piece, plantLine);
+            if (terrainLine != null) lines.Add(piece, terrainLine);
             if (showRotation)
-                lines.Add($"Rotation <b>{CurrentYaw(player):0.#}°</b>  <size=12><color=#b9ad98>({Plugin.FineRotationModifier.Value} + scroll: {Plugin.FineRotationStep.Value:0.#}° steps, {Plugin.MatchRotationKey.Value}: match / reset, {Plugin.BuildInfoToggleKey.Value}: hide)</color></size>");
+                lines.Add(piece, $"Rotation <b>{CurrentYaw(player):0.#}°</b>  <size=12><color=#b9ad98>({Plugin.FineRotationModifier.Value} + scroll: {Plugin.FineRotationStep.Value:0.#}° steps, {Plugin.MatchRotationKey.Value}: match / reset, {Plugin.BuildInfoToggleKey.Value}: hide)</color></size>");
             if (_showComfort)
             {
+                Sprite rested = Ui.StatusIcon(SEMan.s_statusEffectRested);
                 if (!_inShelter)
-                    lines.Add("Comfort: <color=#f0b04a>not in shelter here, comfort pieces don't count</color>");
+                    lines.Add(rested, "Comfort: <color=#f0b04a>not in shelter here, comfort pieces don't count</color>");
                 else if (_comfortAfter > _comfortNow)
-                    lines.Add($"Comfort here: {_comfortNow} » <b><color=#9be07a>{_comfortAfter}</color></b>");
+                    lines.Add(rested, $"Comfort here: {_comfortNow} » <b><color=#9be07a>{_comfortAfter}</color></b>");
                 else
-                    lines.Add($"Comfort here: {_comfortNow} <color=#b9ad98>(no gain, out of range or same type already counted)</color>");
+                    lines.Add(rested, $"Comfort here: {_comfortNow} <color=#b9ad98>(no gain, out of range or same type already counted)</color>");
             }
-            if (shelterLine != null) lines.Add(shelterLine);
-            if (_supportLine != null) lines.Add(_supportLine);
+            if (shelterLine != null) lines.Add(Ui.StatusIcon(SEMan.s_statusEffectShelter), shelterLine);
+            if (_supportLine != null) lines.Add(_supportIcon, _supportLine);
             DrawInfoBox(lines);
         }
 
-        // The build info box: centred, at the configured height, as wide as its longest line. Call from OnGUI.
-        internal static void DrawInfoBox(List<string> lines)
+        static readonly InfoLines Lines = new InfoLines();
+
+        // The build info box: centred at the configured height, as wide as its longest line,
+        // rows left-aligned with an icon column. Call from OnGUI.
+        internal static void DrawInfoBox(InfoLines lines)
         {
             if (lines.Count == 0) return;
             Matrix4x4 oldMatrix = Ui.BeginScaled(out float sw, out float sh);
 
-            const float lineH = 26f, padX = 18f, padY = 8f;
-            float w = 260f;
-            foreach (var line in lines) w = Mathf.Max(w, Ui.LineWidth(line, Ui.TextCenter) + padX * 2f);
-            w = Mathf.Min(w, sw - 40f);
+            const float lineH = 28f, padX = 16f, padY = 8f, iconSize = 22f, iconGap = 8f;
+            bool anyIcon = false;
+            float textW = 0f;
+            for (int i = 0; i < lines.Count; i++)
+            {
+                anyIcon |= lines.Icons[i] != null;
+                textW = Mathf.Max(textW, Ui.LineWidth(lines.Texts[i], Ui.Text));
+            }
+            float textX = anyIcon ? iconSize + iconGap : 0f;
+            float w = Mathf.Min(Mathf.Max(240f, textX + textW + padX * 2f), sw - 40f);
             float h = lines.Count * lineH + padY * 2f;
             float x = (sw - w) * 0.5f;
             float y = Plugin.BuildInfoY.Value * (sh - h);
@@ -193,11 +208,33 @@ namespace NorseSense
             Ui.Panel(new Rect(x, y, w, h));
             for (int i = 0; i < lines.Count; i++)
             {
-                if (i > 0) Ui.Divider(x + padX, y + padY + i * lineH, w - padX * 2f);
-                Ui.Label(new Rect(x, y + padY + i * lineH, w, lineH), lines[i], Ui.TextCenter);
+                float ly = y + padY + i * lineH;
+                if (i > 0) Ui.Divider(x + padX, ly, w - padX * 2f);
+                Ui.Icon(new Rect(x + padX, ly + (lineH - iconSize) * 0.5f, iconSize, iconSize), lines.Icons[i]);
+                Ui.Label(new Rect(x + padX + textX, ly, w - padX * 2f - textX, lineH), lines.Texts[i], Ui.Text);
             }
 
             GUI.matrix = oldMatrix;
+        }
+    }
+
+    // Rows for the build info box: optional icon plus rich text.
+    internal class InfoLines
+    {
+        internal readonly List<Sprite> Icons = new List<Sprite>(8);
+        internal readonly List<string> Texts = new List<string>(8);
+        internal int Count => Texts.Count;
+
+        internal void Clear()
+        {
+            Icons.Clear();
+            Texts.Clear();
+        }
+
+        internal void Add(Sprite icon, string text)
+        {
+            Icons.Add(icon);
+            Texts.Add(text);
         }
     }
 

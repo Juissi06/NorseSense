@@ -279,7 +279,9 @@ namespace NorseSense
             if (!Compat.Checked && ModEnabled.Value && Player.m_localPlayer != null) Compat.Run(Guid, Logger);
 
             PlayerTweaks.Update();
-            if (!ModEnabled.Value || Player.m_localPlayer == null || IsTyping()) return;
+            if (!ModEnabled.Value || Player.m_localPlayer == null) return;
+            Ui.PrepareArt(); // once: the game's UI sprites are loaded by the time a player exists
+            if (IsTyping()) return;
 
             if (ToggleKey.Value.IsDown())
             {

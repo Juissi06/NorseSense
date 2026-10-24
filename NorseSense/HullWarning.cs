@@ -10,6 +10,7 @@ namespace NorseSense
 
         Ship _ship;
         WearNTear _hull;
+        Sprite _shipIcon;
         float _lastPercent = -1f;
         float _lowestWarned = 2f;
         float _timer;
@@ -26,6 +27,7 @@ namespace NorseSense
             {
                 _ship = ship;
                 _hull = ship != null ? ship.GetComponent<WearNTear>() : null;
+                _shipIcon = ship != null ? ship.GetComponent<Piece>()?.m_icon : null;
                 _lastPercent = -1f;
                 _lowestWarned = 2f;
             }
@@ -79,7 +81,7 @@ namespace NorseSense
 
             Matrix4x4 oldMatrix = Ui.BeginScaled(out float sw, out float sh);
 
-            const float w = 210f, h = 48f, pad = 12f;
+            const float w = 220f, h = 52f, pad = 12f;
             float x = (sw - w) * 0.5f;
             float y = Plugin.HullReadoutY.Value * (sh - h);
 
@@ -90,11 +92,17 @@ namespace NorseSense
             if (critical) color.a = 0.65f + 0.35f * Mathf.Abs(Mathf.Sin(Time.time * 4f));
 
             Ui.Panel(new Rect(x, y, w, h));
-            Ui.Label(new Rect(x + pad, y + 5f, w - pad * 2, 20f), "Hull", Ui.Text);
+            float labelX = x + pad;
+            if (_shipIcon != null)
+            {
+                Ui.Icon(new Rect(labelX, y + 5f, 20f, 20f), _shipIcon);
+                labelX += 26f;
+            }
+            Ui.Label(new Rect(labelX, y + 5f, w - pad - (labelX - x), 20f), "Hull", Ui.Text);
             Ui.Label(new Rect(x + pad, y + 5f, w - pad * 2, 20f),
                 $"<b><color=#{ColorUtility.ToHtmlStringRGB(color)}>{_lastPercent * 100f:0}%</color></b>",
                 _rightStyle ?? (_rightStyle = new GUIStyle(Ui.Text) { alignment = TextAnchor.MiddleRight }));
-            Ui.Bar(new Rect(x + pad, y + 29f, w - pad * 2, 10f), _lastPercent, color);
+            Ui.Bar(new Rect(x + pad, y + 30f, w - pad * 2, 12f), _lastPercent, color);
 
             GUI.matrix = oldMatrix;
         }

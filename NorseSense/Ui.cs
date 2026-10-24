@@ -4,8 +4,8 @@ using UnityEngine;
 
 namespace NorseSense
 {
-    // Shared look for every Norse Sense panel: dark wood panels with a thin gold edge, Valheim's own fonts,
-    // shadowed text and one colour palette, so the overlays read like part of the game's HUD.
+    // Shared look for every Norse Sense panel: Valheim's own UI art and fonts where available (GameArt), with a
+    // generated dark-and-gold fallback, shadowed text and one colour palette, so overlays read like the game's HUD.
     internal static class Ui
     {
         // Palette for rich text. Matches the warm tones of Valheim's HUD.
@@ -24,6 +24,13 @@ namespace NorseSense
         static Texture2D _panel, _panelShadow, _button, _buttonHover, _buttonActive, _field, _fieldFocus,
             _toggleOff, _toggleOn, _scrollTrack, _scrollThumb, _bar;
         static GUIStyle _text, _textCenter, _small, _smallCenter, _smallRight, _titleStyle, _panelStyle;
+
+        // Valheim's own UI art when available (see GameArt); null means use the generated look above.
+        static GUIStyle _hudFill, _hudBorder, _wood, _barTrack;
+        static Texture2D _separator, _barFill;
+        static RectOffset _buttonBorder = new RectOffset(6, 6, 6, 6), _fieldBorder = new RectOffset(6, 6, 6, 6);
+        static int _toggleSize = 16;
+        static bool _gameButtons;
         static GUISkin _skin;
 
         internal static GUIStyle Text { get { Init(); return _text; } }
@@ -47,21 +54,59 @@ namespace NorseSense
             return old;
         }
 
+        // HUD panel: dark and see-through with the game's thin orange edge, like Valheim's own tooltips.
         internal static void Panel(Rect r)
         {
             Init();
             if (Event.current.type != EventType.Repaint) return;
             GUI.DrawTexture(new Rect(r.x - 2f, r.y + 1f, r.width + 6f, r.height + 5f), _panelShadow, ScaleMode.StretchToFill);
-            _panelStyle.Draw(r, false, false, false, false);
+            Inset(r);
         }
 
-        // Thin gold divider, e.g. under a panel title.
+        // Same look without the drop shadow, for areas inside a window.
+        internal static void Inset(Rect r)
+        {
+            Init();
+            if (Event.current.type != EventType.Repaint) return;
+            if (_hudBorder == null)
+            {
+                _panelStyle.Draw(r, false, false, false, false);
+                return;
+            }
+            _hudFill.Draw(new Rect(r.x + 1f, r.y + 1f, r.width - 2f, r.height - 2f), false, false, false, false);
+            _hudBorder.Draw(r, false, false, false, false);
+        }
+
+        // Big window: the game's wood panel, as used by the crafting and inventory screens.
+        internal static void Window(Rect r)
+        {
+            Init();
+            if (_wood == null)
+            {
+                Panel(r);
+                return;
+            }
+            if (Event.current.type != EventType.Repaint) return;
+            GUI.DrawTexture(new Rect(r.x - 4f, r.y + 2f, r.width + 10f, r.height + 9f), _panelShadow, ScaleMode.StretchToFill);
+            _wood.Draw(r, false, false, false, false);
+        }
+
+        // Divider: the game's gold separator, or a faint gold line.
         internal static void Divider(float x, float y, float width)
         {
+            Init();
             if (Event.current.type != EventType.Repaint) return;
             Color old = GUI.color;
-            GUI.color = new Color(GoldColor.r, GoldColor.g, GoldColor.b, 0.25f);
-            GUI.DrawTexture(new Rect(x, y, width, 1f), Texture2D.whiteTexture);
+            if (_separator != null)
+            {
+                GUI.color = new Color(1f, 1f, 1f, 0.7f * old.a);
+                GUI.DrawTexture(new Rect(x, y - 1f, width, 3f), _separator, ScaleMode.StretchToFill);
+            }
+            else
+            {
+                GUI.color = new Color(GoldColor.r, GoldColor.g, GoldColor.b, 0.25f);
+                GUI.DrawTexture(new Rect(x, y, width, 1f), Texture2D.whiteTexture);
+            }
             GUI.color = old;
         }
 
@@ -84,10 +129,21 @@ namespace NorseSense
             Init();
             if (Event.current.type != EventType.Repaint) return;
             Color old = GUI.color;
-            GUI.color = new Color(0f, 0f, 0f, 0.55f);
-            GUI.DrawTexture(r, _bar);
+            float inset = 1f;
+            if (_barTrack != null)
+            {
+                _barTrack.Draw(r, false, false, false, false);
+                inset = 2f;
+            }
+            else
+            {
+                GUI.color = new Color(0f, 0f, 0f, 0.55f);
+                GUI.DrawTexture(r, _bar);
+            }
             GUI.color = fill;
-            GUI.DrawTexture(new Rect(r.x + 1f, r.y + 1f, Mathf.Max(0f, (r.width - 2f) * Mathf.Clamp01(fraction)), r.height - 2f), _bar);
+            var fillRect = new Rect(r.x + inset, r.y + inset,
+                Mathf.Max(0f, (r.width - inset * 2f) * Mathf.Clamp01(fraction)), r.height - inset * 2f);
+            GUI.DrawTexture(fillRect, _barFill != null ? _barFill : _bar, ScaleMode.StretchToFill);
             GUI.color = old;
         }
 
@@ -102,6 +158,35 @@ namespace NorseSense
             GUI.color = c;
             GUI.DrawTexture(r, Texture2D.whiteTexture);
             GUI.color = old;
+        }
+
+        // Draws a game sprite (also from an atlas), keeping its aspect, with a soft shadow.
+        internal static void Icon(Rect r, Sprite sprite)
+        {
+            if (sprite == null || Event.current.type != EventType.Repaint || !GameArt.UvRect(sprite, out Rect uv)) return;
+            Texture tex = sprite.texture;
+
+            float aspect = uv.width * tex.width / Mathf.Max(1f, uv.height * tex.height);
+            Rect fit = aspect >= 1f
+                ? new Rect(r.x, r.y + (r.height - r.width / aspect) * 0.5f, r.width, r.width / aspect)
+                : new Rect(r.x + (r.width - r.height * aspect) * 0.5f, r.y, r.height * aspect, r.height);
+
+            Color old = GUI.color;
+            GUI.color = new Color(0f, 0f, 0f, 0.6f * old.a);
+            GUI.DrawTextureWithTexCoords(new Rect(fit.x + 1.5f, fit.y + 1.5f, fit.width, fit.height), tex, uv, true);
+            GUI.color = old;
+            GUI.DrawTextureWithTexCoords(fit, tex, uv, true);
+        }
+
+        static readonly Dictionary<int, Sprite> StatusIcons = new Dictionary<int, Sprite>();
+
+        // Icon of a status effect (e.g. SEMan.s_statusEffectShelter), as shown in the game's status bar.
+        internal static Sprite StatusIcon(int hash)
+        {
+            if (StatusIcons.TryGetValue(hash, out var sprite) && sprite != null) return sprite;
+            sprite = ObjectDB.instance != null ? ObjectDB.instance.GetStatusEffect(hash)?.m_icon : null;
+            if (sprite != null) StatusIcons[hash] = sprite;
+            return sprite;
         }
 
         internal static float LineWidth(string text, GUIStyle style) => style.CalcSize(new GUIContent(text)).x;
@@ -120,10 +205,14 @@ namespace NorseSense
 
         // ---------- Setup ----------
 
-        static void Init()
+        static bool _artReady;
+
+        // Textures, fonts and the game's UI art. Copying sprites renders to a texture, so Plugin.Update calls this
+        // once in game, outside OnGUI; Init falls back to it if a panel is drawn first.
+        internal static void PrepareArt()
         {
-            if (_ready) return;
-            _ready = true;
+            if (_artReady) return;
+            _artReady = true;
 
             // Valheim's own fonts. They live in the game's Resources, so load them if nothing has yet.
             FindFonts(Resources.FindObjectsOfTypeAll<Font>());
@@ -145,6 +234,15 @@ namespace NorseSense
             _bar = Rounded(Color.white, Color.white, Color.white);
 
             _panelStyle = new GUIStyle { normal = { background = _panel }, border = new RectOffset(6, 6, 6, 6) };
+            LoadGameArt();
+        }
+
+        // Styles need GUI.skin, which only exists inside OnGUI.
+        static void Init()
+        {
+            if (_ready) return;
+            _ready = true;
+            PrepareArt();
 
             _text = new GUIStyle(GUI.skin.label)
             {
@@ -161,6 +259,76 @@ namespace NorseSense
             _titleStyle.normal.textColor = GoldColor;
 
             BuildSkin();
+        }
+
+        // Swaps in Valheim's own UI sprites where they can be found.
+        static void LoadGameArt()
+        {
+            var border = GameArt.Copy("panel_border_128", out var edge);
+            if (border != null)
+            {
+                _hudBorder = new GUIStyle { normal = { background = border }, border = edge };
+                var dark = new Color(0.06f, 0.045f, 0.03f, 0.82f);
+                _hudFill = new GUIStyle { normal = { background = Rounded(dark, dark, new Color(0f, 0f, 0f, 0f)) }, border = new RectOffset(6, 6, 6, 6) };
+            }
+
+            var wood = GameArt.Copy("panel_bkg_256", out var woodBorder);
+            if (wood != null) _wood = new GUIStyle { normal = { background = wood }, border = woodBorder };
+
+            _separator = GameArt.Copy("panel_separator", out _);
+
+            var track = GameArt.Copy("skill_bkg", out var trackBorder);
+            if (track != null) _barTrack = new GUIStyle { normal = { background = track }, border = trackBorder };
+            _barFill = GameArt.Copy("bar_gradient", out _);
+
+            var button = GameArt.Copy("button", out var buttonBorder);
+            var buttonHover = GameArt.Copy("button_highlight", out _);
+            var buttonActive = GameArt.Copy("button_pressed", out _);
+            if (button != null && buttonHover != null && buttonActive != null)
+            {
+                _button = button;
+                _buttonHover = buttonHover;
+                _buttonActive = buttonActive;
+                _buttonBorder = buttonBorder;
+                _gameButtons = true;
+            }
+
+            var field = GameArt.Copy("text_field", out var fieldBorder);
+            var fieldFocus = GameArt.Copy("text_field_highlight", out _);
+            if (field != null && fieldFocus != null)
+            {
+                _field = field;
+                _fieldFocus = fieldFocus;
+                _fieldBorder = fieldBorder;
+            }
+
+            // IMGUI draws toggle boxes at texture size, so shrink the 28 px checkbox to fit 24 px rows.
+            var box = GameArt.Copy("checkbox", out _);
+            var boxOn = GameArt.Composite(box, GameArt.Copy("checkbox_marker", out _));
+            if (box != null && boxOn != null)
+            {
+                _toggleSize = 18;
+                _toggleOff = Shrink(box, _toggleSize);
+                _toggleOn = Shrink(boxOn, _toggleSize);
+            }
+
+            Debug.Log($"[Norse Sense] UI art: {(_hudBorder != null ? "game" : "built-in")} panels, " +
+                      $"{(_wood != null ? "game" : "built-in")} window, {(_gameButtons ? "game" : "built-in")} buttons.");
+        }
+
+        static Texture2D Shrink(Texture2D source, int size)
+        {
+            var tex = new Texture2D(size, size, TextureFormat.RGBA32, false)
+            {
+                wrapMode = TextureWrapMode.Clamp, filterMode = FilterMode.Bilinear, hideFlags = HideFlags.HideAndDontSave
+            };
+            var pixels = new Color[size * size];
+            for (int y = 0; y < size; y++)
+                for (int x = 0; x < size; x++)
+                    pixels[y * size + x] = source.GetPixelBilinear((x + 0.5f) / size, (y + 0.5f) / size);
+            tex.SetPixels(pixels);
+            tex.Apply();
+            return tex;
         }
 
         static void FindFonts(Font[] fonts)
@@ -192,7 +360,7 @@ namespace NorseSense
             _skin.button = new GUIStyle(_skin.button)
             {
                 font = _body, fontSize = 14, richText = true, alignment = TextAnchor.MiddleCenter,
-                border = new RectOffset(6, 6, 6, 6), padding = new RectOffset(8, 8, 4, 4)
+                border = _buttonBorder, padding = new RectOffset(8, 8, 4, 4)
             };
             _skin.button.normal.background = _skin.button.onNormal.background = _button;
             _skin.button.hover.background = _skin.button.onHover.background = _buttonHover;
@@ -203,17 +371,17 @@ namespace NorseSense
 
             _skin.textField = new GUIStyle(_skin.textField)
             {
-                font = _body, fontSize = 14, border = new RectOffset(6, 6, 6, 6), padding = new RectOffset(7, 7, 4, 4)
+                font = _body, fontSize = 14, border = _fieldBorder, padding = new RectOffset(7, 7, 4, 4)
             };
             _skin.textField.normal.background = _skin.textField.hover.background = _field;
             _skin.textField.focused.background = _skin.textField.active.background = _fieldFocus;
             Colors(_skin.textField, cream);
 
-            // Left/top border covers the whole 16 px box, so only the box is drawn and the label sits beside it.
+            // Left/top border covers the whole box texture, so only the box is drawn and the label sits beside it.
             _skin.toggle = new GUIStyle(_skin.toggle)
             {
-                font = _body, fontSize = 14, border = new RectOffset(16, 0, 16, 0),
-                padding = new RectOffset(22, 2, 0, 0), overflow = new RectOffset(0, 0, -4, 0),
+                font = _body, fontSize = 14, border = new RectOffset(_toggleSize, 0, _toggleSize, 0),
+                padding = new RectOffset(_toggleSize + 6, 2, 0, 0), overflow = new RectOffset(0, 0, -(24 - _toggleSize) / 2, 0),
                 alignment = TextAnchor.MiddleLeft
             };
             _skin.toggle.normal.background = _skin.toggle.hover.background = _skin.toggle.active.background = _toggleOff;

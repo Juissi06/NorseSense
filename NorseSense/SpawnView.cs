@@ -536,7 +536,7 @@ namespace NorseSense
             foreach (var line in _legendLines) if (line.Key.a > 0f) keyLines++;
             int statLines = _legendLines.Count - keyLines;
 
-            const float w = 350f, lineH = 22f, pad = 12f, titleH = 26f, barH = 34f;
+            const float w = 350f, lineH = 22f, pad = 12f, titleH = 26f, barH = 37f;
             float h = pad * 2 + titleH + barH + _legendLines.Count * lineH + (statLines > 0 ? 9f : 0f);
             float x = Plugin.LegendX.Value * (sw - w - 20f) + 10f;
             float y = Plugin.LegendY.Value * (sh - h - 20f) + 10f;
@@ -552,7 +552,7 @@ namespace NorseSense
             Color barColor = _coverage >= 0.999f ? SpawnRules.ProtectedColor : Color.Lerp(SpawnRules.ExposedColor, SpawnRules.ProtectedColor, _coverage);
             barColor.a = 0.95f;
             Ui.Label(new Rect(cx, cy, inner, 18f), _coverageText, Ui.Small);
-            Ui.Bar(new Rect(cx, cy + 19f, inner, 9f), _coverage, barColor);
+            Ui.Bar(new Rect(cx, cy + 19f, inner, 12f), _coverage, barColor);
             cy += barH;
 
             bool dividerDrawn = false;

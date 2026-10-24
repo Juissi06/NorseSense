@@ -347,12 +347,16 @@ namespace NorseSense
 
             float w = Mathf.Min(980f, sw - 40f), h = Mathf.Min(720f, sh - 40f);
             _window = new Rect((sw - w) / 2f, (sh - h) / 2f, w, h);
-            Ui.Panel(_window);
+            // Wood frame with the title on it; controls and list sit on a dark inset so text stays readable.
+            Ui.Window(_window);
+            float headerH = HeaderHeight;
+            Ui.Inset(new Rect(_window.x + 10, _window.y + 10 + headerH, w - 20, h - 20 - headerH));
 
             GUILayout.BeginArea(new Rect(_window.x + 16, _window.y + 12, w - 32, h - 24));
             DrawHeader();
+            GUILayout.Space(8);
             DrawFilters();
-            DrawList(w - 32, h - 24 - 210f);
+            DrawList(w - 32, h - 24 - 214f);
             DrawFooter();
             GUILayout.EndArea();
 
@@ -364,6 +368,7 @@ namespace NorseSense
             if (_label != null) return;
             _label = new GUIStyle(Ui.Text) { fontSize = 14 };
             _small = new GUIStyle(Ui.Small) { fontSize = 13 };
+            _small.normal.textColor = new Color(0.86f, 0.80f, 0.70f);
             _header = new GUIStyle(Ui.Title) { fontSize = 22, fixedHeight = 30f };
             _rowStyle = new GUIStyle(Ui.Skin.textField) { fontSize = 14, alignment = TextAnchor.MiddleLeft };
         }
@@ -372,17 +377,24 @@ namespace NorseSense
         {
             GUILayout.BeginHorizontal();
             int dirty = _rows.Count(r => r.Dirty);
-            GUILayout.Label("Map table markers", _header);
-            GUILayout.Label($"{_rows.Count(r => !r.Deleted)} markers{(dirty > 0 ? $", <color={Ui.Warn}>{dirty} unsaved</color>" : "")}",
-                _small, GUILayout.Height(30));
+            const string title = "Map table markers";
+            Ui.Label(GUILayoutUtility.GetRect(new GUIContent(title), _header), title, _header);
+            GUILayout.Space(12);
+            string count = $"{_rows.Count(r => !r.Deleted)} markers{(dirty > 0 ? $", <color={Ui.Warn}>{dirty} unsaved</color>" : "")}";
+            Ui.Label(GUILayoutUtility.GetRect(new GUIContent(count), _small, GUILayout.Height(30)), count, _small);
             GUILayout.FlexibleSpace();
             if (GUILayout.Button("X", GUILayout.Width(32), GUILayout.Height(28))) RequestClose();
             GUILayout.EndHorizontal();
 
-            if (!_canEdit) GUILayout.Label($"<color={Ui.Warn}>{_whyReadOnly}</color>", _small);
-            Rect line = GUILayoutUtility.GetRect(1f, 7f, GUILayout.ExpandWidth(true));
-            Ui.Divider(line.x, line.y + 3f, line.width);
+            if (!_canEdit)
+            {
+                string why = $"<color={Ui.Warn}>{_whyReadOnly}</color>";
+                Ui.Label(GUILayoutUtility.GetRect(new GUIContent(why), _small, GUILayout.Height(20)), why, _small);
+            }
         }
+
+        // Height of DrawHeader, so the dark inset can start right below it.
+        float HeaderHeight => 32f + (_canEdit ? 0f : 20f);
 
         void DrawFilters()
         {
