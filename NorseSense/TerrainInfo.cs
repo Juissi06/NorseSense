@@ -14,8 +14,8 @@ namespace NorseSense
 
         delegate bool BaseHeightFn(Heightmap heightmap, Vector3 worldPos, out float height);
 
-        static readonly BaseHeightFn GetWorldBaseHeight =
-            AccessTools.MethodDelegate<BaseHeightFn>(AccessTools.Method(typeof(Heightmap), "GetWorldBaseHeight"));
+        // Null if a game update renamed it; the feature then stays quiet.
+        static readonly BaseHeightFn GetWorldBaseHeight = CreateBaseHeight();
         static readonly AccessTools.FieldRef<Player, GameObject> PlacementGhost =
             AccessTools.FieldRefAccess<Player, GameObject>("m_placementGhost");
 
@@ -36,7 +36,7 @@ namespace NorseSense
             Line = null;
             _pickaxe = false;
             var player = Player.m_localPlayer;
-            if (player == null || !Plugin.ShowTerrainLimits.Value) return;
+            if (player == null || !Plugin.ShowTerrainLimits.Value || GetWorldBaseHeight == null) return;
 
             if (player.InPlaceMode())
             {
@@ -68,6 +68,19 @@ namespace NorseSense
             {
                 Line = Describe(hit.point);
                 _pickaxe = Line != null;
+            }
+        }
+
+        static BaseHeightFn CreateBaseHeight()
+        {
+            try
+            {
+                return AccessTools.MethodDelegate<BaseHeightFn>(AccessTools.Method(typeof(Heightmap), "GetWorldBaseHeight"));
+            }
+            catch (System.Exception e)
+            {
+                Debug.LogWarning("[Norse Sense] Terrain limits unavailable: " + e.Message);
+                return null;
             }
         }
 

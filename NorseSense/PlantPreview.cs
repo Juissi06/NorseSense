@@ -54,9 +54,10 @@ namespace NorseSense
 
             Vector3 pos = ghost.transform.position;
             string problem = WhyWontGrow(plant, pos);
-            Line = problem == null
+            string caveat = Compat.PlantRulesChangedBy != null ? $" <size=12>(may not be exact: {Compat.PlantRulesChangedBy})</size>" : "";
+            Line = (problem == null
                 ? $"{Localization.instance.Localize(plant.m_name)}: <color=#80ff80>will grow here</color>"
-                : $"{Localization.instance.Localize(plant.m_name)}: <color=#ff7050>won't grow, {problem}</color>";
+                : $"{Localization.instance.Localize(plant.m_name)}: <color=#ff7050>won't grow, {problem}</color>") + caveat;
 
             _ghostRing.gameObject.SetActive(true);
             _ghostRing.startColor = _ghostRing.endColor = problem == null ? GrowColor : BlockedColor;

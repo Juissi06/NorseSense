@@ -19,6 +19,8 @@ namespace NorseSense
         internal static bool CartographyManagerDisabled;
         internal static string SpawnRulesChangedBy;
         internal static string RaidRulesChangedBy;
+        internal static string PlantRulesChangedBy;
+        internal static string TerrainRulesChangedBy;
 
         static readonly string[] RotationMods = { "gizmo" };
         static readonly string[] PlayerTweakMods = { "valheim_plus", "valheimplus", "valheim plus" };
@@ -71,6 +73,20 @@ namespace NorseSense
                 Method(typeof(EffectArea), nameof(EffectArea.GetBaseValue)));
             if (RaidRulesChangedBy != null)
                 notes.Add($"{RaidRulesChangedBy} changes raid rules, so the raid info may not be exact.");
+
+            PlantRulesChangedBy = PatchOwners(ownHarmonyId,
+                Method(typeof(Plant), nameof(Plant.UpdateHealth)),
+                Method(typeof(Plant), "HaveGrowSpace"),
+                Method(typeof(Plant), "HaveRoof"));
+            if (PlantRulesChangedBy != null)
+                notes.Add($"{PlantRulesChangedBy} changes how plants grow, so the planting preview may not be exact.");
+
+            TerrainRulesChangedBy = PatchOwners(ownHarmonyId,
+                Method(typeof(TerrainComp), nameof(TerrainComp.ApplyToHeightmap)),
+                Method(typeof(TerrainComp), "RaiseTerrain"),
+                Method(typeof(TerrainComp), "LevelTerrain"));
+            if (TerrainRulesChangedBy != null)
+                notes.Add($"{TerrainRulesChangedBy} changes terrain editing, so the terrain limits may not be exact.");
 
             // Informational only: other mods often patch these for unrelated reasons.
             string ghostPatchers = PatchOwners(ownHarmonyId, Method(typeof(Player), "UpdatePlacementGhost"));

@@ -1,6 +1,7 @@
 # Changelog
 
 ## Unreleased
+- Compatibility check also looks for mods that change plant growth or terrain editing.
 - New: fire status. Looking at a fire that has fuel but isn't burning, or burns low, tells you why: buried, something too close above the flames, rain without a roof, or wind without enough cover.
 - New: terrain limits. With the hoe or pickaxe, shows how much further the ground can be dug or raised where you aim. The game keeps terrain within 8 m of its original height and never tells you.
 - New: shelter readout. While building under a roof, or placing a comfort piece, shows whether your spot counts as shelter, and if not, why: no roof, or which directions are still open (the game needs 80% cover).

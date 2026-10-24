@@ -125,6 +125,7 @@ Norse Sense only adds to the game's code and never replaces it, so other mods' c
 - **Valheim Plus**: build distance and pickup range are left to Valheim Plus.
 - **CartographyAdmin**: Norse Sense's marker manager and marker updates turn off.
 - **Spawn That, Custom Raids, Expand World** or any mod that changes spawn or raid rules: the legend warns that the overlay may not be exact.
+- Any mod that changes how plants grow or how terrain editing works: the planting preview or terrain limits warn that they may not be exact.
 
 Each adjustment is shown once in game and written to the BepInEx log. Turn **Compatibility → Auto-adjust for other mods** off if you want both mods' features running.
 
