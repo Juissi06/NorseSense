@@ -46,6 +46,9 @@ namespace NorseSense
         // Portals
         internal static ConfigEntry<bool> ShowTeleportBlockers;
 
+        // Fires
+        internal static ConfigEntry<bool> ShowFireStatus;
+
         // Ships
         internal static ConfigEntry<bool> ShowHullReadout;
         internal static ConfigEntry<bool> HullWarnings;
@@ -153,6 +156,10 @@ namespace NorseSense
 
             ShowTeleportBlockers = Config.Bind("Portals", "Show teleport blockers", true,
                 "When looking at a portal, list the carried items (ores, metals...) that stop you from teleporting.");
+
+            ShowFireStatus = Config.Bind("Fires", "Show fire status", true,
+                "When looking at a fire that has fuel but isn't burning, or burns low, say why: buried, " +
+                "something too close above the flames, rain without a roof, or wind without enough cover.");
 
             const string ships = "Ships";
             ShowHullReadout = Config.Bind(ships, "Show hull readout", true,

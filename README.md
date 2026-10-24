@@ -41,6 +41,9 @@ Shows where mobs can and can't spawn, using the same checks the game itself uses
 ### Portals
 - Looking at a portal lists exactly which items in your inventory stop you from teleporting, e.g. *Can't teleport: Copper ore x30, Tin x12*.
 
+### Fires
+- Looking at a fire that has fuel but won't burn, or burns low, tells you why: *something is too close above the flames, the smoke can't get out*, *rain and no roof above*, *strong wind and not enough cover*.
+
 ### Ships
 - **Hull readout** while you're aboard, coloured by condition.
 - **Hull warnings:** a warning when the ship takes damage (rate-limited, so Ashlands water doesn't spam you), and a loud one at 50% and 25% hull.
