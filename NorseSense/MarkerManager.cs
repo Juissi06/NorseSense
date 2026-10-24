@@ -428,6 +428,14 @@ namespace NorseSense
         void DrawList(float width, float height)
         {
             GUILayout.Space(4);
+            // Column headings, lined up with DrawRow.
+            Rect head = GUILayoutUtility.GetRect(width, 20f);
+            float nameX = head.x + 62f, nameW = width - 20f - 62f - 380f;
+            GUI.Label(new Rect(nameX, head.y, nameW, 20f), "Name", _small);
+            GUI.Label(new Rect(nameX + nameW + 8f, head.y, 120f, 20f), "Placed by", _small);
+            GUI.Label(new Rect(nameX + nameW + 132f, head.y, 70f, 20f), "Distance", _small);
+            Ui.Divider(head.x, head.yMax, width - 20f);
+            height -= 24f;
             Rect area = GUILayoutUtility.GetRect(width, height);
             float contentH = _shown.Count * RowH;
             _scroll = GUI.BeginScrollView(area, _scroll, new Rect(0, 0, width - 20, contentH));
@@ -440,15 +448,18 @@ namespace NorseSense
             {
                 var row = _shown[i];
                 float y = i * RowH;
-                if (i % 2 == 0)
+                // Selected rows get a gold tint, the rest alternate faintly.
+                Color tint = row.Selected ? new Color(Ui.GoldColor.r, Ui.GoldColor.g, Ui.GoldColor.b, 0.14f)
+                    : i % 2 == 0 ? new Color(1f, 0.95f, 0.85f, 0.04f) : Color.clear;
+                if (tint.a > 0f)
                 {
-                    GUI.color = new Color(1f, 1f, 1f, 0.05f);
+                    GUI.color = tint;
                     GUI.DrawTexture(new Rect(0, y, width - 20, RowH), Texture2D.whiteTexture);
                     GUI.color = Color.white;
                 }
                 if (_onlyDuplicates && row.Group != lastGroup && i > first)
                 {
-                    GUI.color = new Color(1f, 0.8f, 0.3f, 0.5f);
+                    GUI.color = new Color(Ui.GoldColor.r, Ui.GoldColor.g, Ui.GoldColor.b, 0.5f);
                     GUI.DrawTexture(new Rect(0, y, width - 20, 1), Texture2D.whiteTexture);
                     GUI.color = Color.white;
                 }
@@ -512,8 +523,8 @@ namespace NorseSense
 
             if (row.Dirty && !row.Deleted)
             {
-                GUI.color = new Color(1f, 0.82f, 0.3f);
-                GUI.DrawTexture(new Rect(0, y + 4, 2, RowH - 8), Texture2D.whiteTexture);
+                GUI.color = Ui.GoldColor;
+                GUI.DrawTexture(new Rect(0, y + 4, 3, RowH - 8), Texture2D.whiteTexture);
                 GUI.color = Color.white;
             }
         }

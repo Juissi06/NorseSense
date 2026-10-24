@@ -167,7 +167,7 @@ namespace NorseSense
                 if (!_inShelter)
                     lines.Add("Comfort: <color=#f0b04a>not in shelter here, comfort pieces don't count</color>");
                 else if (_comfortAfter > _comfortNow)
-                    lines.Add($"Comfort here: {_comfortNow} » <b><color=#9be07a>{_comfortAfter}</color></b>  <size=12><color=#b9ad98>({Plugin.BuildInfoToggleKey.Value}: hide)</color></size>");
+                    lines.Add($"Comfort here: {_comfortNow} » <b><color=#9be07a>{_comfortAfter}</color></b>");
                 else
                     lines.Add($"Comfort here: {_comfortNow} <color=#b9ad98>(no gain, out of range or same type already counted)</color>");
             }
