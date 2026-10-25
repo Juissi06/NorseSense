@@ -88,131 +88,122 @@ namespace NorseSense
             MigrateOldConfig();
 
             ModEnabled = Config.Bind("General", "Enabled", true,
-                "Turn all of Norse Sense on or off. Off removes every change it makes to the game, " +
-                "hides all its overlays and ignores its keys, as if it weren't installed. Takes effect immediately.");
+                "Turns the whole mod on or off, no restart needed.");
 
             const string spawn = "Spawn Display";
             ShowSpawnRadius = Config.Bind(spawn, "Enabled", false,
-                "Show the spawn view: a ground overlay of where mobs can spawn, base coverage rings, and nests/spawners.");
+                "Shows where mobs can spawn around you, plus base rings and nests.");
             ToggleKey = Config.Bind(spawn, "Toggle key", new KeyboardShortcut(KeyCode.F7),
-                "Key that toggles the spawn view.");
+                "Turns the spawn view on and off.");
             MaxDisplayDistance = Config.Bind(spawn, "Max display distance", 100f,
-                new ConfigDescription("Show base rings, nests and spawners this close to you.",
+                new ConfigDescription("How far away base rings, nests and spawners show up (m).",
                     new AcceptableValueRange<float>(20f, 500f)));
             OverlayRadius = Config.Bind(spawn, "Overlay radius", 32f,
-                new ConfigDescription("Radius in meters of the coloured ground overlay around you. Larger costs more performance.",
+                new ConfigDescription("Size of the ground overlay around you (m). Bigger costs more FPS.",
                     new AcceptableValueRange<float>(10f, 64f)));
             OverlayCellSize = Config.Bind(spawn, "Overlay cell size", 2f,
-                new ConfigDescription("Size in meters of each overlay square. Smaller is more precise but costs more performance.",
+                new ConfigDescription("Size of each overlay square (m). Smaller is more precise but costs more FPS.",
                     new AcceptableValueRange<float>(1f, 4f)));
             ShowBaseRings = Config.Bind(spawn, "Show base coverage rings", true,
-                "Draw a ring around every workbench, fire and other piece that stops mobs from spawning.");
+                "Rings around workbenches, fires and other pieces that stop spawns.");
             ShowSpawners = Config.Bind(spawn, "Show nests and spawners", true,
-                "Mark greydwarf nests, bone piles and fixed creature spawners.");
+                "Marks greydwarf nests, bone piles and other spawners.");
             PreviewWhileBuilding = Config.Bind(spawn, "Preview while building", true,
-                "While placing a workbench, fire or other base piece, show the area it will protect, even when the spawn view is off.");
+                "Shows the area a workbench or fire will protect while you place it.");
             ShowLegend = Config.Bind(spawn, "Show legend", true,
-                "Show the colour legend and coverage stats while the spawn view is on.");
+                "Colour legend and coverage stats while the spawn view is on.");
             LegendX = Config.Bind(spawn, "Legend position X", 1f,
-                new ConfigDescription("Horizontal legend position. 0 = left edge, 1 = right edge.",
+                new ConfigDescription("0 = left, 1 = right.",
                     new AcceptableValueRange<float>(0f, 1f)));
             LegendY = Config.Bind(spawn, "Legend position Y", 0.6f,
-                new ConfigDescription("Vertical legend position. 0 = top edge, 1 = bottom edge.",
+                new ConfigDescription("0 = top, 1 = bottom.",
                     new AcceptableValueRange<float>(0f, 1f)));
             LegendScale = Config.Bind(spawn, "Legend scale", 1f,
-                new ConfigDescription("Size of the legend and build info text.", new AcceptableValueRange<float>(0.5f, 2f)));
+                new ConfigDescription("Size of the legend and build info.", new AcceptableValueRange<float>(0.5f, 2f)));
             ShowOnMap = Config.Bind(spawn, "Show on map", true,
-                "Also paint protected/exposed ground on the minimap and the large map while the spawn view is on.");
+                "Also shows safe and unsafe ground on the minimap and map.");
             MapOverlayRadius = Config.Bind(spawn, "Map overlay radius", 96f,
-                new ConfigDescription("Radius in meters scanned for the map overlay. Only loaded terrain (roughly 100 m around you) can be checked.",
+                new ConfigDescription("How far around you the map overlay checks (m). Only loaded ground works, about 100 m.",
                     new AcceptableValueRange<float>(32f, 160f)));
 
             const string build = "Building";
             FineRotationModifier = Config.Bind(build, "Fine rotation modifier", KeyCode.LeftAlt,
-                "Hold this while scrolling (or rotating on a gamepad) to rotate pieces in fine steps. None = disabled.");
+                "Hold while scrolling to rotate in small steps. None = off.");
             FineRotationStep = Config.Bind(build, "Fine rotation step", 5f,
-                new ConfigDescription("Degrees per fine rotation step. Vanilla steps are 22.5.",
+                new ConfigDescription("Degrees per small step. Vanilla is 22.5.",
                     new AcceptableValueRange<float>(0.5f, 22.5f)));
             MatchRotationKey = Config.Bind(build, "Match rotation key", new KeyboardShortcut(KeyCode.T, KeyCode.LeftAlt),
-                "While building: copy the exact rotation of the piece you're looking at, or reset fine rotation when looking at nothing.");
+                "Copies the rotation of the piece you look at. Look at nothing to reset.");
             ShowComfortPreview = Config.Bind(build, "Comfort preview", true,
-                "When placing a comfort piece (chair, banner, fire...), show the comfort level you'd have here after placing it.");
+                "Shows the comfort you'd get after placing a comfort piece.");
             ShowShelterInfo = Config.Bind(build, "Shelter readout", true,
-                "While building under a roof or placing a comfort piece, show whether the spot you stand on counts as shelter, " +
-                "and if not, why: no roof, or which directions are still open (the game needs 80% cover).");
+                "Shows if your spot counts as shelter, and if not, which sides are open.");
             ShowTerrainLimits = Config.Bind(build, "Terrain limits", true,
-                "With the hoe or pickaxe, show how much further the ground can be dug or raised where you aim. " +
-                "The game keeps terrain within 8 m of its original height.");
+                "Shows how much more you can dig or raise the ground (limit is 8 m).");
             ShowSupportInfo = Config.Bind(build, "Support readout", true,
-                "While building, show the exact structural support of the piece you're looking at, and the level where it falls. " +
-                "The game only tints pieces blue to red.");
+                "Shows the exact support of the piece you look at and when it breaks.");
             ShowBuildInfo = Config.Bind(build, "Show build info", true,
-                "Show the rotation angle and comfort preview while building.");
+                "Shows the rotation angle and comfort while building.");
             BuildInfoToggleKey = Config.Bind(build, "Build info toggle key", new KeyboardShortcut(KeyCode.F8),
-                "Key that shows/hides the build info box.");
+                "Shows or hides the build info.");
             BuildInfoY = Config.Bind(build, "Build info position Y", 0.78f,
-                new ConfigDescription("Vertical position of the build info. 0 = top edge, 1 = bottom edge.",
+                new ConfigDescription("0 = top, 1 = bottom.",
                     new AcceptableValueRange<float>(0f, 1f)));
 
             RemovalLockKey = Config.Bind(build, "Removal lock toggle key", new KeyboardShortcut(KeyCode.F9),
-                "Toggles a lock that stops the hammer from removing pieces, so you can't delete your build by accident. Always starts unlocked.");
+                "Locks the hammer so it can't remove pieces. Starts unlocked.");
 
             const string farming = "Farming";
             ShowPlantingPreview = Config.Bind(farming, "Planting preview", true,
-                "While planting with the cultivator, show whether the seed will grow where you're aiming, and if not, why " +
-                "(too close to another plant or a rock, no open sky, wrong biome, too cold...).");
+                "Shows if a seed will grow where you aim, and why not.");
             ShowPlantSpacing = Config.Bind(farming, "Show plant spacing", true,
-                "While planting, draw the grow space of nearby plants. Plants that aren't growing are drawn red.");
+                "Shows the grow space of nearby plants. Red = not growing.");
 
             ShowTeleportBlockers = Config.Bind("Portals", "Show teleport blockers", true,
-                "When looking at a portal, list the carried items (ores, metals...) that stop you from teleporting.");
+                "Lists the items that stop you from using a portal.");
 
             ShowFireStatus = Config.Bind("Fires", "Show fire status", true,
-                "When looking at a fire that has fuel but isn't burning, or burns low, say why: buried, " +
-                "something too close above the flames, rain without a roof, or wind without enough cover.");
+                "Tells you why a fire won't burn or burns low.");
 
             const string carto = "Cartography Table";
             MarkerImportMode = Config.Bind(carto, "Import markers", MarkerImport.Filtered,
-                "Which shared markers to take when reading a cartography table. All = vanilla. Filtered = apply the filters below. " +
-                "None = only the explored map, no markers. Your own markers are never touched.");
+                "Which shared markers you take from a table. All = vanilla, Filtered = use the filters below, None = map only.");
             SkipCrossedOutMarkers = Config.Bind(carto, "Skip crossed-out markers", true,
-                "Filtered mode: don't import markers others have crossed out (cleared dungeons, emptied spots...).");
+                "Filtered: skips crossed-out markers.");
             DuplicateMergeDistance = Config.Bind(carto, "Merge duplicates within", 20f,
-                new ConfigDescription("Filtered mode: skip a marker if one with the same icon is already this close, in meters. 0 = off.",
+                new ConfigDescription("Filtered: skips a marker if one with the same icon is this close (m). 0 = off.",
                     new AcceptableValueRange<float>(0f, 200f)));
             SkipMarkerTypes = Config.Bind(carto, "Skip marker types", "",
-                "Filtered mode: comma-separated marker icons to never import: fire, house, hammer, dot, rune, or game names like Boss, Hildir1.");
+                "Filtered: icons to never take, comma-separated (fire, house, hammer, dot, rune, Boss...).");
             ShowImportSummary = Config.Bind(carto, "Show import summary", true,
-                "After reading a table, show how many markers were skipped or updated.");
+                "Shows how many markers were skipped or updated.");
             UpdateSharedMarkers = Config.Bind(carto, "Update existing markers", true,
-                "When reading a table, update shared markers you already have if their name, icon or crossed-out state changed. " +
-                "Vanilla never updates a shared marker once you have it. Your own markers are never changed.");
+                "Updates shared markers you already have when they change. Your own markers are never touched.");
             EnableMarkerManager = Config.Bind(carto, "Marker manager", true,
-                "Hold the modifier and press Use at a cartography table to view, edit, cross out, merge and delete the markers stored on it.");
+                "Hold the modifier and use a cartography table to edit its markers.");
             ManagerModifier = Config.Bind(carto, "Marker manager modifier", KeyCode.LeftShift,
-                "Hold this while pressing Use at a table to open the marker manager instead of reading or writing.");
+                "Hold this when using a table to open the marker manager.");
             ManagerPermission = Config.Bind(carto, "Edit permission", EditPermission.BuilderOrWard,
-                "Who can edit a table's markers in the manager. BuilderOrWard: whoever built the table, players permitted on a ward covering it, " +
-                "and admins/host. AdminsOnly: admins/host only. Everyone else can still open it to look.");
+                "Who can edit a table's markers. BuilderOrWard = the builder, ward members and admins. Others can still look.");
 
             BuildStaminaMultiplier = Config.Bind("Stamina", "Building multiplier", 1f,
-                new ConfigDescription("Stamina cost multiplier for placing, removing and repairing with the hammer. 0 = free, 1 = vanilla.",
+                new ConfigDescription("Stamina cost of building, removing and repairing. 0 = free, 1 = vanilla.",
                     new AcceptableValueRange<float>(0f, 1f)));
             SowStaminaMultiplier = Config.Bind("Stamina", "Sowing multiplier", 1f,
-                new ConfigDescription("Stamina cost multiplier for planting with the cultivator. 0 = free, 1 = vanilla.",
+                new ConfigDescription("Stamina cost of planting. 0 = free, 1 = vanilla.",
                     new AcceptableValueRange<float>(0f, 1f)));
 
             BuildDistance = Config.Bind("Player", "Build distance", 0f,
-                new ConfigDescription("How far away you can place and remove pieces, in meters. 0 = vanilla.",
+                new ConfigDescription("How far you can build (m). 0 = vanilla.",
                     new AcceptableValueRange<float>(0f, 20f)));
             PickupRange = Config.Bind("Player", "Auto pickup range", 0f,
-                new ConfigDescription("Radius in meters for automatically picking up items. 0 = vanilla.",
+                new ConfigDescription("Item pickup radius (m). 0 = vanilla.",
                     new AcceptableValueRange<float>(0f, 10f)));
 
             AutoCompat = Config.Bind("Compatibility", "Auto-adjust for other mods", true,
-                "Turn off Norse Sense features that another installed mod already handles (e.g. fine rotation when Gizmo is installed).");
+                "Turns off features another mod already does (like fine rotation with Gizmo).");
             ShowCompatWarnings = Config.Bind("Compatibility", "Show warnings in game", true,
-                "Show a message when joining a world if another mod overlaps with Norse Sense. Details are always written to the BepInEx log.");
+                "Message in game when another mod overlaps. Always written to the log.");
 
             BuildDistance.SettingChanged += (s, e) => PlayerTweaks.Apply();
             PickupRange.SettingChanged += (s, e) => PlayerTweaks.Apply();
