@@ -1,6 +1,7 @@
 # Changelog
 
-## Unreleased
+## 0.10.0
+- Shorter, clearer setting descriptions in the config.
 - Hull readout and hull warnings moved to Seaworthy, the sailing mod, with the rest of the ship features. The old Ships settings can be deleted from NorseSense.cfg.
 
 ## 0.9.0
