@@ -10,7 +10,10 @@ Vanilla balance: most features only show you information the game already uses. 
 
 ## Features
 
-### Spawn view (F7)
+### Base view (F7)
+One key for three overlays. **F7** steps through **Spawns → Repairs → Comfort → off**, and the legend shows which mode you're in. You can leave modes out of the cycle in the config.
+
+#### Spawns
 Shows where mobs can and can't spawn, using the same checks the game itself uses, so you can spawn-proof without guessing distances.
 
 - **Ground overlay** around you:
@@ -19,28 +22,52 @@ Shows where mobs can and can't spawn, using the same checks the game itself uses
   - 🟨 **Steep:** too steep for most mobs.
   - No colour: covered by a building or rock, so nothing spawns there.
 - **Map overlay:** the same colours on the minimap and the large map.
-- **Placement preview:** while holding a workbench, fire or other base piece, the area it will protect pulses cyan, even with the spawn view off.
+- **Placement preview:** while holding a workbench, fire or other base piece, the area it will protect pulses cyan, even with the base view off.
 - **Base rings** around every piece that blocks spawns.
 - **Nests, bone piles and creature spawners** are marked. Nests ignore workbenches, so you'll need to destroy them.
 - **Raid check:** tells you whether raids can target you where you stand. Raids need at least 3 base pieces within 20 m of you. During a raid, its area is shown as an orange ring.
 - **Legend** with coverage % and how much exposed ground is left.
 
+#### Repairs
+- **Damaged pieces** are tinted from yellow to red by health, with a count and the lowest health in the legend, so a repair round misses nothing.
+- **Weathering:** pieces with no roof above are marked blue, because rain wears them down to 50% health. Pieces standing in water are marked teal. The game never tells you which pieces are exposed.
+- **Base summary:** how many pieces are around you and what they're built from, e.g. *Built from 830 Wood, 96 Stone, 40 Core wood*.
+
+#### Comfort
+- The floor around you is coloured by the comfort you'd get standing there: green is the most comfort in view, yellow is less, orange is not sheltered. A ring marks the best spot, so you know where the bed or chair should go.
+- The legend compares your spot with the best one and how long Rested would last at each.
+
 ### Building
 - **Fine rotation:** hold **Left Alt** and scroll to rotate in 5° steps instead of 22.5°. Snapping still works.
 - **Match rotation:** **Left Alt + T** copies the exact rotation of the piece you're looking at. Looking at nothing resets fine rotation.
-- **Comfort preview:** when placing a chair, banner, rug and so on, shows the comfort level you'd have after placing it, or why it wouldn't add any.
+- **Comfort preview:** when placing a chair, banner, rug and so on, shows the comfort level you'd have after placing it, or why it wouldn't add any, e.g. *Raven throne (+3) already counts as your chair*.
 - **Shelter readout:** while building under a roof or placing a comfort piece, shows whether your spot counts as shelter, and if not, why: *no roof above* or *cover 71% of 80%, open behind, left (up)*. Directions are relative to where you look.
 - **Terrain limits:** with the hoe or pickaxe, shows how much further the ground can be dug or raised where you aim, e.g. *Ground: 6.2 m below original. Can dig 1.8 m deeper*. The game silently stops at 8 m above or below the original height.
 - **Support readout:** looking at a piece that isn't on the ground shows its exact support, e.g. *Wood beam: support 34 / 100 (wood falls below 10)*. The game only tints pieces blue to red.
-- **Removal lock (F9):** stops the hammer from removing pieces, so you can't delete your build by accident.
-- **F8** hides or shows the build info box.
+- **Placement reasons:** when a piece turns red, says why instead of just *Invalid placement*: *overlaps Wood beam*, *surface too steep (42°, max 37°)*, *Bed can't hold other pieces*, *too close to Chopping block*, *only in Plains*.
+- **Crafting stations:** looking at a workbench, forge and so on shows its level and which extensions count, e.g. *Level 3 of 5*, *Adze: 5.6 m away, must be within 5 m*, *Doesn't count: second Tanning rack*, *Can't craft: too exposed, cover 55% of 70%*. While placing an extension: *Workbench level 3 » 4*, or why it adds nothing.
+- **Removal lock (F6):** stops the hammer from removing pieces, so you can't delete your build by accident.
+- **F8** hides or shows the build info box. The box moves itself above the game's own build bar and key hints, so it never covers them.
+
+### Freecam building (F10)
+In build mode, press **F10** to detach the camera and fly around your build. Your hammer works from wherever the camera looks, so roofs, overhangs and the far side of a wall are easy to reach.
+
+- Move with your movement keys, **Jump** to go up, **Crouch** to go down, hold **Run** to fly faster.
+- Your character stays where it is. The piece must be inside a workbench's range (not just you), wards still apply, and resources still come from your inventory.
+- The camera stays within 25 m of you, and you can place and remove pieces up to 8 m from the camera.
+- Freecam ends when you leave build mode or take damage.
+
+### Resting
+- **Comfort breakdown:** while resting or sitting, lists every piece that adds to your comfort and how much, which nearby pieces don't count because a better one of the same kind already does, and how long Rested will last. If you're not sheltered, it says which sides are open.
 
 ### Farming
 - **Planting preview:** while planting with the cultivator, shows whether the seed will grow where you're aiming, and if not, why: *won't grow, too close to Carrot seedling*, *no open sky*, *wrong biome*, *too cold*...
 - **Plant spacing rings:** the grow space of the seed and of nearby plants is drawn on the ground. Plants that aren't growing are red.
 
 ### Portals
-- Looking at a portal lists exactly which items in your inventory stop you from teleporting, e.g. *Can't teleport: Copper ore x30, Tin x12*.
+- **Where it leads:** looking at a connected portal shows how far its partner is, in which direction and in which biome, e.g. *Leads to: 1.4 km north-east, Swamp*.
+- **Why it isn't connected:** no other portal with the tag, every match already paired, or 3 or more portals sharing one tag (only two can pair).
+- **Teleport blockers:** lists exactly which items in your inventory stop you from teleporting, e.g. *Can't teleport: Copper ore x30, Tin x12*.
 
 ### Fires
 - Looking at a fire that has fuel but won't burn, or burns low, tells you why: *something is too close above the flames, the smoke can't get out*, *rain and no roof above*, *strong wind and not enough cover*.
@@ -71,9 +98,10 @@ Reading also **updates shared markers you already have** when someone renamed, r
 
 | Key | Action |
 |---|---|
-| F7 | Toggle spawn view |
+| F7 | Base view: Spawns, Repairs, Comfort, off |
 | F8 | Toggle build info |
-| F9 | Toggle removal lock |
+| F6 | Toggle removal lock |
+| F10 | Freecam building (in build mode) |
 | Left Shift + E at a cartography table | Open the marker manager |
 | Left Alt + scroll | Fine rotation while building |
 | Left Alt + T | Match or reset rotation |
@@ -121,6 +149,7 @@ Settings are in `BepInEx/config/NorseSense.cfg`. With [Configuration Manager](ht
 Norse Sense only adds to the game's code and never replaces it, so other mods' changes to the same code still run. When you load into a world, it checks for mods that overlap with its features:
 
 - **Gizmo** (or any mod that handles build rotation): fine rotation turns itself off.
+- **Build Camera** and other freecam mods: Norse Sense's freecam turns itself off.
 - **Valheim Plus**: build distance and pickup range are left to Valheim Plus.
 - **CartographyAdmin**: Norse Sense's marker manager and marker updates turn off.
 - **Spawn That, Custom Raids, Expand World** or any mod that changes spawn or raid rules: the legend warns that the overlay may not be exact.

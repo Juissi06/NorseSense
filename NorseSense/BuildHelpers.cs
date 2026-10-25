@@ -8,8 +8,6 @@ namespace NorseSense
     // Fine rotation, rotation matching and a comfort preview while building.
     internal class BuildHelpers : MonoBehaviour
     {
-        const float ComfortRadius = 10f; // SE_Rested.c_ComfortRadius
-
         internal static readonly AccessTools.FieldRef<Player, int> PlaceRotation =
             AccessTools.FieldRefAccess<Player, int>("m_placeRotation");
         internal static readonly AccessTools.FieldRef<Player, float> PlaceRotationDegrees =
@@ -23,14 +21,18 @@ namespace NorseSense
         internal static float RotationShownUntil;
         const float RotationShowTime = 2.5f;
 
-        static readonly List<Piece> TempPieces = new List<Piece>();
+        static readonly List<ComfortInfo.Entry> Entries = new List<ComfortInfo.Entry>();
+
+        // The first time you build each session, the box lists the mod's keys for a few seconds.
+        const float TipTime = 7f;
+        static bool _tipShown;
+        static float _tipUntil;
 
         int _comfortNow, _comfortAfter;
         bool _showComfort, _inShelter;
         float _comfortTimer;
-        string _shelterLine;
-        string _supportLine;
-        Sprite _supportIcon;
+        string _noGainReason;
+        InfoRow _shelterLine, _stationLine, _supportLine;
         float _shelterTimer;
 
         internal static bool FineModifierHeld() =>
@@ -41,11 +43,17 @@ namespace NorseSense
         void Update()
         {
             var player = Player.m_localPlayer;
+            if (player != null && player.InPlaceMode() && !_tipShown && Plugin.ShowKeyTips.Value)
+            {
+                _tipShown = true;
+                _tipUntil = Time.time + TipTime;
+            }
             if (player == null || !player.InPlaceMode())
             {
                 _showComfort = false;
                 _shelterLine = null;
                 _supportLine = null;
+                _stationLine = null;
                 return;
             }
 
@@ -60,7 +68,9 @@ namespace NorseSense
                 UpdateComfort(player);
                 var hovered = player.GetHoveringPiece();
                 _supportLine = Plugin.ShowSupportInfo.Value ? SupportInfo.Describe(hovered) : null;
-                _supportIcon = _supportLine != null ? hovered.m_icon : null;
+                var ghost = PlacementGhost(player);
+                var extension = Plugin.ShowStationInfo.Value && ghost != null && ghost.activeInHierarchy ? ghost.GetComponent<StationExtension>() : null;
+                _stationLine = extension != null ? StationInfo.DescribeGhost(extension, ghost.transform.position) : null;
             }
 
             _shelterTimer -= Time.deltaTime;
@@ -94,7 +104,7 @@ namespace NorseSense
         internal static float CurrentYaw(Player player) =>
             Mathf.Repeat(PlaceRotationDegrees(player) * PlaceRotation(player) + FineOffset, 360f);
 
-        // Same algorithm as SE_Rested.CalculateComfortLevel, with the ghost piece optionally added.
+        // Comfort now and with the ghost placed, and if it adds nothing, why.
         void UpdateComfort(Player player)
         {
             _showComfort = false;
@@ -106,42 +116,36 @@ namespace NorseSense
 
             Vector3 pos = player.transform.position;
             _inShelter = player.InShelter();
-            _comfortNow = SE_Rested.CalculateComfortLevel(_inShelter, pos);
+            _comfortNow = ComfortInfo.Calculate(_inShelter, pos, null, Entries);
             _comfortAfter = _comfortNow;
+            _noGainReason = null;
 
-            if (_inShelter && Vector3.Distance(pos, ghost.transform.position) < ComfortRadius)
+            if (_inShelter && Vector3.Distance(pos, ghost.transform.position) >= ComfortInfo.Radius)
+                _noGainReason = $"too far from you, comfort counts within {ComfortInfo.Radius:0} m";
+            else if (_inShelter)
             {
-                TempPieces.Clear();
-                Piece.GetAllComfortPiecesInRadius(pos, ComfortRadius, TempPieces);
-                TempPieces.Add(ghostPiece);
-                TempPieces.Sort(ComfortSort);
-
-                int level = 2;
-                for (int i = 0; i < TempPieces.Count; i++)
+                _comfortAfter = ComfortInfo.Calculate(true, pos, ghostPiece, Entries);
+                if (_comfortAfter <= _comfortNow)
                 {
-                    Piece piece = TempPieces[i];
-                    if (i > 0)
+                    // The ghost lost its slot to a piece of the same kind that's worth at least as much.
+                    foreach (var e in Entries)
                     {
-                        Piece prev = TempPieces[i - 1];
-                        if ((piece.m_comfortGroup != 0 && piece.m_comfortGroup == prev.m_comfortGroup) || piece.m_name == prev.m_name)
-                            continue;
+                        if (e.Piece == ghostPiece)
+                        {
+                            if (e.Skipped.Count == 0) continue;
+                            _noGainReason = $"{e.Skipped[0]} nearby already gives the same";
+                            break;
+                        }
+                        bool sameSlot = (ghostPiece.m_comfortGroup != 0 && e.Piece.m_comfortGroup == ghostPiece.m_comfortGroup) ||
+                                        e.Piece.m_name == ghostPiece.m_name;
+                        if (!sameSlot) continue;
+                        string group = ghostPiece.m_comfortGroup != 0 ? ghostPiece.m_comfortGroup.ToString().ToLowerInvariant() : "piece";
+                        _noGainReason = $"{Localization.instance.Localize(e.Piece.m_name)} (+{e.Value}) already counts as your {group}";
+                        break;
                     }
-                    level += Comfort(piece, ghostPiece);
                 }
-                _comfortAfter = level;
             }
             _showComfort = true;
-        }
-
-        // The ghost's comfort object (e.g. a fire's flames) is usually inactive, so count its base value.
-        static int Comfort(Piece piece, Piece ghost) => piece == ghost ? piece.m_comfort : piece.GetComfort();
-
-        static int ComfortSort(Piece x, Piece y)
-        {
-            if (x.m_comfortGroup != y.m_comfortGroup) return x.m_comfortGroup.CompareTo(y.m_comfortGroup);
-            float a = x.m_comfort, b = y.m_comfort;
-            if (a != b) return b.CompareTo(a);
-            return y.m_name.CompareTo(x.m_name);
         }
 
         void OnGUI()
@@ -151,91 +155,59 @@ namespace NorseSense
             if (Hud.IsUserHidden() || Hud.IsPieceSelectionVisible() || Menu.IsVisible()) return;
 
             bool showRotation = FineModifierHeld() || Time.time < RotationShownUntil;
-            string plantLine = PlantPreview.Line;
-            string shelterLine = PlantPreview.Line == null ? _shelterLine : null;
-            string terrainLine = TerrainInfo.Line;
-            bool locked = RemovalLockPatch.Locked;
-            if (!showRotation && !_showComfort && plantLine == null && shelterLine == null && terrainLine == null &&
-                _supportLine == null && !locked) return;
+            InfoRow plantLine = PlantPreview.Line;
+            InfoRow placementLine = plantLine == null ? PlacementInfo.Line : null;
+            InfoRow shelterLine = plantLine == null ? _shelterLine : null;
 
             var lines = Lines;
             lines.Clear();
             Sprite piece = player.GetSelectedPiece()?.m_icon;
             // The lock is invisible otherwise, so say so while it's on.
-            if (locked) lines.Add(null, $"<color={Ui.Warn}>Removal locked</color>  <size=12><color=#b9ad98>({Plugin.RemovalLockKey.Value} to unlock)</color></size>");
-            if (plantLine != null) lines.Add(piece, plantLine);
-            if (terrainLine != null) lines.Add(piece, terrainLine);
-            if (showRotation)
-                lines.Add(piece, $"Rotation <b>{CurrentYaw(player):0.#}°</b>  <size=12><color=#b9ad98>({Plugin.FineRotationModifier.Value} + scroll: {Plugin.FineRotationStep.Value:0.#}° steps, {Plugin.MatchRotationKey.Value}: match / reset, {Plugin.BuildInfoToggleKey.Value}: hide)</color></size>");
-            if (_showComfort)
+            if (RemovalLockPatch.Locked)
+                lines.Add(null, "Removal", "Locked", $"{Ui.KeyName(Plugin.RemovalLockKey.Value)} to unlock", Tone.Warn);
+            if (Freecam.Active) Freecam.AddRows(lines, player);
+            lines.Add(plantLine, piece);
+            lines.Add(placementLine, piece);
+            lines.Add(_stationLine, piece);
+            lines.Add(TerrainInfo.Line, piece);
+            if (showRotation) lines.Add(piece, "Rotation", $"<b>{CurrentYaw(player):0.#}°</b>", $"{Plugin.FineRotationStep.Value:0.#}° fine steps");
+            if (_showComfort) AddComfort(lines);
+            lines.Add(shelterLine);
+            lines.Add(_supportLine);
+
+            if (Freecam.Active) Freecam.AddHints(lines);
+            else if (showRotation && !Compat.FineRotationDisabled)
             {
-                Sprite rested = Ui.StatusIcon(SEMan.s_statusEffectRested);
-                if (!_inShelter)
-                    lines.Add(rested, "Comfort: <color=#f0b04a>not in shelter here, comfort pieces don't count</color>");
-                else if (_comfortAfter > _comfortNow)
-                    lines.Add(rested, $"Comfort here: {_comfortNow} » <b><color=#9be07a>{_comfortAfter}</color></b>");
-                else
-                    lines.Add(rested, $"Comfort here: {_comfortNow} <color=#b9ad98>(no gain, out of range or same type already counted)</color>");
+                if (Plugin.FineRotationModifier.Value != KeyCode.None)
+                    lines.Hint($"{Ui.KeyName(Plugin.FineRotationModifier.Value)} + Scroll", "Fine rotate");
+                lines.Hint(Ui.KeyName(Plugin.MatchRotationKey.Value), "Match / reset");
+                lines.Hint(Ui.KeyName(Plugin.BuildInfoToggleKey.Value), "Hide");
             }
-            if (shelterLine != null) lines.Add(Ui.StatusIcon(SEMan.s_statusEffectShelter), shelterLine);
-            if (_supportLine != null) lines.Add(_supportIcon, _supportLine);
-            DrawInfoBox(lines);
+            else if (Time.time < _tipUntil)
+            {
+                if (!Compat.FreecamDisabled) lines.Hint(Ui.KeyName(Plugin.FreecamKey.Value), "Freecam");
+                if (!Compat.FineRotationDisabled && Plugin.FineRotationModifier.Value != KeyCode.None)
+                    lines.Hint($"{Ui.KeyName(Plugin.FineRotationModifier.Value)} + Scroll", "Fine rotate");
+                lines.Hint(Ui.KeyName(Plugin.RemovalLockKey.Value), "Lock removal");
+                lines.Hint(Ui.KeyName(Plugin.ToggleKey.Value), "Base view");
+                lines.Hint(Ui.KeyName(Plugin.BuildInfoToggleKey.Value), "Hide this");
+            }
+            if (lines.Count == 0 && lines.HintKeys.Count == 0) return;
+            InfoBox.Draw(lines);
+        }
+
+        void AddComfort(InfoLines lines)
+        {
+            Sprite rested = Ui.StatusIcon(SEMan.s_statusEffectRested);
+            if (!_inShelter)
+                lines.Add(rested, "Comfort", "Not sheltered here", "comfort pieces only count under a roof", Tone.Warn);
+            else if (_comfortAfter > _comfortNow)
+                lines.Add(rested, "Comfort", $"{_comfortNow} » <b>{_comfortAfter}</b>", null, Tone.Good);
+            else
+                lines.Add(rested, "Comfort", $"{_comfortNow}, no gain", _noGainReason);
         }
 
         static readonly InfoLines Lines = new InfoLines();
-
-        // The build info box: centred at the configured height, as wide as its longest line,
-        // rows left-aligned with an icon column. Call from OnGUI.
-        internal static void DrawInfoBox(InfoLines lines)
-        {
-            if (lines.Count == 0) return;
-            Matrix4x4 oldMatrix = Ui.BeginScaled(out float sw, out float sh);
-
-            const float lineH = 28f, padX = 16f, padY = 8f, iconSize = 22f, iconGap = 8f;
-            bool anyIcon = false;
-            float textW = 0f;
-            for (int i = 0; i < lines.Count; i++)
-            {
-                anyIcon |= lines.Icons[i] != null;
-                textW = Mathf.Max(textW, Ui.LineWidth(lines.Texts[i], Ui.Text));
-            }
-            float textX = anyIcon ? iconSize + iconGap : 0f;
-            float w = Mathf.Min(Mathf.Max(240f, textX + textW + padX * 2f), sw - 40f);
-            float h = lines.Count * lineH + padY * 2f;
-            float x = (sw - w) * 0.5f;
-            float y = Plugin.BuildInfoY.Value * (sh - h);
-
-            Ui.Panel(new Rect(x, y, w, h));
-            for (int i = 0; i < lines.Count; i++)
-            {
-                float ly = y + padY + i * lineH;
-                if (i > 0) Ui.Divider(x + padX, ly, w - padX * 2f);
-                Ui.Icon(new Rect(x + padX, ly + (lineH - iconSize) * 0.5f, iconSize, iconSize), lines.Icons[i]);
-                Ui.Label(new Rect(x + padX + textX, ly, w - padX * 2f - textX, lineH), lines.Texts[i], Ui.Text);
-            }
-
-            GUI.matrix = oldMatrix;
-        }
-    }
-
-    // Rows for the build info box: optional icon plus rich text.
-    internal class InfoLines
-    {
-        internal readonly List<Sprite> Icons = new List<Sprite>(8);
-        internal readonly List<string> Texts = new List<string>(8);
-        internal int Count => Texts.Count;
-
-        internal void Clear()
-        {
-            Icons.Clear();
-            Texts.Clear();
-        }
-
-        internal void Add(Sprite icon, string text)
-        {
-            Icons.Add(icon);
-            Texts.Add(text);
-        }
     }
 
     // Holding the fine-rotation modifier turns vanilla's rotation steps into fine steps.

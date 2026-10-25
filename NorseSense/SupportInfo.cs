@@ -25,7 +25,7 @@ namespace NorseSense
             }
         }
 
-        internal static string Describe(Piece piece)
+        internal static InfoRow Describe(Piece piece)
         {
             if (piece == null || GetSupport == null || GetMaxSupport == null || GetMinSupport == null) return null;
             var wnt = piece.GetComponent<WearNTear>();
@@ -39,8 +39,8 @@ namespace NorseSense
             string material = wnt.m_materialType.ToString().ToLowerInvariant();
 
             if (support >= max) return null; // grounded: nothing to worry about, keep the screen clear
-            string color = support < min ? "#ff6f55" : support < min * 2f ? "#f0b04a" : "#ffffff";
-            return $"{name}: support <color={color}><b>{support:0}</b></color> / {max:0}  <size=12><color=#b9ad98>({material} falls below {min:0})</color></size>";
+            Tone tone = support < min ? Tone.Bad : support < min * 2f ? Tone.Warn : Tone.None;
+            return new InfoRow("Support", $"<b>{support:0}</b> / {max:0}", $"{name}, {material} falls below {min:0}", tone, piece.m_icon);
         }
     }
 }

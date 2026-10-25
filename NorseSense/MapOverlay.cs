@@ -31,7 +31,7 @@ namespace NorseSense
         {
             var player = Player.m_localPlayer;
             _map = Minimap.instance;
-            bool show = Plugin.ShowSpawnRadius.Value && Plugin.ShowOnMap.Value &&
+            bool show = BaseView.Mode == ViewMode.Spawns && Plugin.ShowOnMap.Value &&
                         player != null && _map != null && ZoneSystem.instance != null;
 
             if (show != _visible)

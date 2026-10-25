@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace NorseSense
 {
-    // Portal hover lists exactly which carried items stop you from teleporting.
+    // Portal hover says where the portal leads (or why it's unconnected) and which carried items stop you from teleporting.
     [HarmonyPatch(typeof(TeleportWorld), nameof(TeleportWorld.GetHoverText))]
     static class PortalBlockersPatch
     {
@@ -14,7 +14,13 @@ namespace NorseSense
         static void Postfix(TeleportWorld __instance, ref string __result)
         {
             var player = Player.m_localPlayer;
-            if (!Plugin.ShowTeleportBlockers.Value || player == null || ZoneSystem.instance == null) return;
+            if (player == null) return;
+            if (Plugin.ShowPortalPairing.Value)
+            {
+                string pairing = PortalInfo.Describe(__instance);
+                if (pairing != null) __result += "\n" + pairing;
+            }
+            if (!Plugin.ShowTeleportBlockers.Value || ZoneSystem.instance == null) return;
 
             // Same rules as Inventory.IsTeleportable.
             bool allowAll = AllowAllItems(__instance) || ZoneSystem.instance.GetGlobalKey(GlobalKeys.TeleportAll);

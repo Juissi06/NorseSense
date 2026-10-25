@@ -1,5 +1,29 @@
 # Changelog
 
+## 0.11.0
+New features
+- Comfort breakdown: while resting or sitting, lists what adds to your comfort, which pieces don't count because a better one of the same kind is near, and how long Rested will last.
+- Crafting station readout: looking at a station shows its level, which extensions count, which are too far or doubled up, and why you can't craft there (no roof, too exposed, no fire).
+- Extension preview: while placing a station extension, shows the level it brings the station to, or why it adds nothing.
+- Placement reasons: when a piece can't be placed, says why: what it overlaps, too steep, wrong biome, too close to another piece, needs water or ground, and so on.
+- Portal pairing: looking at a portal shows where it leads (distance, direction, biome), or why it isn't connected, and warns when 3 or more portals share a tag.
+- Base view (F7): F7 now steps through three overlays, Spawns → Repairs → Comfort → off, with one shared legend that shows the current mode.
+  - Repairs: damaged pieces tinted yellow to red by health; pieces with no roof (they wear in rain down to 50%) and pieces in water marked; how many pieces are around you and what they're built from.
+  - Comfort: the floor coloured by the comfort you'd get standing there, with the best spot ringed.
+- Freecam building (F10): in build mode, fly the camera around your build and place from there. Your character stays put, the camera stays within 25 m, the piece itself must be inside a workbench's range, wards still apply, and taking damage ends it.
+
+New look
+- The info box is laid out in columns: icon, label, value and muted detail, with a colour mark for good, warning and bad rows instead of coloured sentences.
+- Key hints are drawn as key caps in a footer instead of long text in brackets.
+- The box moves itself above the game's build bar and key hints instead of covering them.
+- The box eases smoothly between sizes and fades in, instead of jumping each time a row appears or goes.
+- Key tips: the first time you build each session, the box lists the mod's keys for a few seconds (Building → Key tips).
+
+Changes
+- Spawn view settings moved: the mode, key, legend and display distance are under **Base View**, and Legend scale is now **General → UI scale**. Your old values are carried over.
+- The removal lock key is now F6. F9 also switched the game's controller layout. If yours was still F9, it's moved to F6 automatically.
+- The comfort preview names the piece that already fills the slot when the one you're placing adds nothing.
+
 ## 0.10.0
 - Shorter, clearer setting descriptions in the config.
 - Hull readout and hull warnings moved to Seaworthy, the sailing mod, with the rest of the ship features. The old Ships settings can be deleted from NorseSense.cfg.

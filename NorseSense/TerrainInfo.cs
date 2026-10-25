@@ -20,7 +20,7 @@ namespace NorseSense
             AccessTools.FieldRefAccess<Player, GameObject>("m_placementGhost");
 
         // Shown in the build info box; null when not aiming a terrain tool.
-        internal static string Line;
+        internal static InfoRow Line;
 
         static int _terrainMask, _terrainLayer;
         float _timer;
@@ -88,7 +88,7 @@ namespace NorseSense
 
         static bool ChangesHeight(TerrainOp.Settings s) => s.m_level || s.m_raise || s.m_smooth;
 
-        static string Describe(Vector3 pos)
+        static InfoRow Describe(Vector3 pos)
         {
             var heightmap = Heightmap.FindHeightmap(pos);
             if (heightmap == null || !heightmap.GetWorldHeight(pos, out float now)) return null;
@@ -105,14 +105,12 @@ namespace NorseSense
             float offset = now - original;
             float down = Mathf.Max(0f, offset + MaxOffset);
             float up = Mathf.Max(0f, MaxOffset - offset);
-            string where = Mathf.Abs(offset) < 0.05f ? "untouched"
+            string where = Mathf.Abs(offset) < 0.05f ? "Untouched"
                 : offset > 0f ? $"{offset:0.0} m above original" : $"{-offset:0.0} m below original";
 
-            if (down < 0.05f) return $"Ground: {where}, <color=#ff6f55>at the dig limit</color>  <size=12><color=#b9ad98>(±{MaxOffset:0} m)</color></size>";
-            if (up < 0.05f) return $"Ground: {where}, <color=#ff6f55>at the raise limit</color>  <size=12><color=#b9ad98>(±{MaxOffset:0} m)</color></size>";
-            string downText = down < 1f ? $"<color=#f0b04a>{down:0.0} m</color>" : $"{down:0.0} m";
-            string upText = up < 1f ? $"<color=#f0b04a>{up:0.0} m</color>" : $"{up:0.0} m";
-            return $"Ground: {where}. Can dig {downText} deeper, raise {upText} higher";
+            if (down < 0.05f) return new InfoRow("Ground", "At the dig limit", $"{where}, limit is ±{MaxOffset:0} m", Tone.Bad);
+            if (up < 0.05f) return new InfoRow("Ground", "At the raise limit", $"{where}, limit is ±{MaxOffset:0} m", Tone.Bad);
+            return new InfoRow("Ground", where, $"can dig {down:0.0} m, raise {up:0.0} m", down < 1f || up < 1f ? Tone.Warn : Tone.None);
         }
 
         // Outside build mode (pickaxe), draw the line on its own; in build mode BuildHelpers includes it.
@@ -121,8 +119,8 @@ namespace NorseSense
             if (!_pickaxe || Line == null || !Plugin.ShowBuildInfo.Value) return;
             if (Hud.IsUserHidden() || Menu.IsVisible() || InventoryGui.IsVisible() || Minimap.IsOpen()) return;
             _lines.Clear();
-            _lines.Add(_toolIcon, Line);
-            BuildHelpers.DrawInfoBox(_lines);
+            _lines.Add(Line, _toolIcon);
+            InfoBox.Draw(_lines);
         }
     }
 }

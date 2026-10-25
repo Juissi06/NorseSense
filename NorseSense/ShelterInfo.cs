@@ -24,7 +24,7 @@ namespace NorseSense
         static readonly List<string> Open = new List<string>();
 
         // Null when out in the open with nothing to explain, unless always is set.
-        internal static string Describe(Player player, bool always)
+        internal static InfoRow Describe(Player player, bool always)
         {
             if (_mask == 0) _mask = LayerMask.GetMask("Default", "static_solid", "Default_small", "piece", "terrain", "vehicle");
 
@@ -41,14 +41,16 @@ namespace NorseSense
                 else Open.Add(DirectionName(view * ray));
             }
             float cover = (float)hits / Rays.Length;
+            string coverText = $"cover {cover * 100f:0}% of {NeedCover * 100f:0}%";
             if (cover >= NeedCover && roof)
-                return $"Shelter: <color=#9be07a>yes</color> <size=12><color=#b9ad98>(cover {cover * 100f:0}%)</color></size>";
+                return new InfoRow("Shelter", "Yes", coverText, Tone.Good, Icon);
 
-            var reasons = new List<string>(2);
-            if (!roof) reasons.Add("no roof above");
-            if (cover < NeedCover) reasons.Add($"cover {cover * 100f:0}% of {NeedCover * 100f:0}%, open {OpenList()}");
-            return $"Shelter: <color=#f0b04a>no</color>, {string.Join("; ", reasons)}";
+            string value = !roof ? "No roof above" : "Open " + OpenList();
+            if (!roof && cover < NeedCover) value += ", open " + OpenList();
+            return new InfoRow("Shelter", value, coverText, Tone.Warn, Icon);
         }
+
+        static Sprite Icon => Ui.StatusIcon(SEMan.s_statusEffectShelter);
 
         static string OpenList() =>
             Open.Count <= 6 ? string.Join(", ", Open) : string.Join(", ", Open.GetRange(0, 6)) + $" +{Open.Count - 6} more";

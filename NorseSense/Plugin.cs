@@ -1,4 +1,7 @@
+using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using BepInEx;
 using BepInEx.Configuration;
 using HarmonyLib;
@@ -17,9 +20,12 @@ namespace NorseSense
         // General
         internal static ConfigEntry<bool> ModEnabled;
 
-        // Spawn view
-        internal static ConfigEntry<bool> ShowSpawnRadius;
+        // Base view
+        internal static ConfigEntry<ViewMode> BaseViewMode;
+        internal static ConfigEntry<ViewModes> BaseViewModes;
         internal static ConfigEntry<KeyboardShortcut> ToggleKey;
+
+        // Spawn view
         internal static ConfigEntry<float> MaxDisplayDistance;
         internal static ConfigEntry<float> OverlayRadius;
         internal static ConfigEntry<float> OverlayCellSize;
@@ -45,6 +51,18 @@ namespace NorseSense
         internal static ConfigEntry<bool> ShowShelterInfo;
         internal static ConfigEntry<bool> ShowTerrainLimits;
         internal static ConfigEntry<bool> ShowSupportInfo;
+        internal static ConfigEntry<bool> ShowStationInfo;
+        internal static ConfigEntry<bool> ShowPlacementReasons;
+        internal static ConfigEntry<bool> ShowKeyTips;
+
+        // Resting
+        internal static ConfigEntry<bool> ShowComfortBreakdown;
+
+        // Freecam
+        internal static ConfigEntry<KeyboardShortcut> FreecamKey;
+        internal static ConfigEntry<float> FreecamSpeed;
+        internal static ConfigEntry<float> FreecamRange;
+        internal static ConfigEntry<float> FreecamReach;
 
         // Farming
         internal static ConfigEntry<bool> ShowPlantingPreview;
@@ -52,6 +70,7 @@ namespace NorseSense
 
         // Portals
         internal static ConfigEntry<bool> ShowTeleportBlockers;
+        internal static ConfigEntry<bool> ShowPortalPairing;
 
         // Fires
         internal static ConfigEntry<bool> ShowFireStatus;
@@ -90,14 +109,29 @@ namespace NorseSense
             ModEnabled = Config.Bind("General", "Enabled", true,
                 "Turns the whole mod on or off, no restart needed.");
 
-            const string spawn = "Spawn Display";
-            ShowSpawnRadius = Config.Bind(spawn, "Enabled", false,
-                "Shows where mobs can spawn around you, plus base rings and nests.");
-            ToggleKey = Config.Bind(spawn, "Toggle key", new KeyboardShortcut(KeyCode.F7),
-                "Turns the spawn view on and off.");
-            MaxDisplayDistance = Config.Bind(spawn, "Max display distance", 100f,
-                new ConfigDescription("How far away base rings, nests and spawners show up (m).",
+            LegendScale = Config.Bind("General", "UI scale", 1f,
+                new ConfigDescription("Size of the legend, info box and other panels.", new AcceptableValueRange<float>(0.5f, 2f)));
+
+            const string view = "Base View";
+            BaseViewMode = Config.Bind(view, "Mode", ViewMode.Off,
+                "What the base view shows. Spawns = where mobs can spawn, Repairs = damaged and weathering pieces, Comfort = comfort on the floor around you.");
+            BaseViewModes = Config.Bind(view, "Modes in cycle", ViewModes.All,
+                "Which modes the toggle key steps through before switching off.");
+            ToggleKey = Config.Bind(view, "Toggle key", new KeyboardShortcut(KeyCode.F7),
+                "Steps through the base view modes, then off.");
+            MaxDisplayDistance = Config.Bind(view, "Max display distance", 100f,
+                new ConfigDescription("How far away rings, nests and damaged pieces show up (m).",
                     new AcceptableValueRange<float>(20f, 500f)));
+            ShowLegend = Config.Bind(view, "Show legend", true,
+                "Colour key and stats while the base view is on.");
+            LegendX = Config.Bind(view, "Legend position X", 1f,
+                new ConfigDescription("0 = left, 1 = right.",
+                    new AcceptableValueRange<float>(0f, 1f)));
+            LegendY = Config.Bind(view, "Legend position Y", 0.6f,
+                new ConfigDescription("0 = top, 1 = bottom.",
+                    new AcceptableValueRange<float>(0f, 1f)));
+
+            const string spawn = "Spawn Display";
             OverlayRadius = Config.Bind(spawn, "Overlay radius", 32f,
                 new ConfigDescription("Size of the ground overlay around you (m). Bigger costs more FPS.",
                     new AcceptableValueRange<float>(10f, 64f)));
@@ -110,16 +144,6 @@ namespace NorseSense
                 "Marks greydwarf nests, bone piles and other spawners.");
             PreviewWhileBuilding = Config.Bind(spawn, "Preview while building", true,
                 "Shows the area a workbench or fire will protect while you place it.");
-            ShowLegend = Config.Bind(spawn, "Show legend", true,
-                "Colour legend and coverage stats while the spawn view is on.");
-            LegendX = Config.Bind(spawn, "Legend position X", 1f,
-                new ConfigDescription("0 = left, 1 = right.",
-                    new AcceptableValueRange<float>(0f, 1f)));
-            LegendY = Config.Bind(spawn, "Legend position Y", 0.6f,
-                new ConfigDescription("0 = top, 1 = bottom.",
-                    new AcceptableValueRange<float>(0f, 1f)));
-            LegendScale = Config.Bind(spawn, "Legend scale", 1f,
-                new ConfigDescription("Size of the legend and build info.", new AcceptableValueRange<float>(0.5f, 2f)));
             ShowOnMap = Config.Bind(spawn, "Show on map", true,
                 "Also shows safe and unsafe ground on the minimap and map.");
             MapOverlayRadius = Config.Bind(spawn, "Map overlay radius", 96f,
@@ -142,6 +166,12 @@ namespace NorseSense
                 "Shows how much more you can dig or raise the ground (limit is 8 m).");
             ShowSupportInfo = Config.Bind(build, "Support readout", true,
                 "Shows the exact support of the piece you look at and when it breaks.");
+            ShowStationInfo = Config.Bind(build, "Station readout", true,
+                "Shows a crafting station's level, which extensions count and why others don't.");
+            ShowPlacementReasons = Config.Bind(build, "Placement reasons", true,
+                "Says why a piece can't be placed, e.g. what it overlaps.");
+            ShowKeyTips = Config.Bind(build, "Key tips", true,
+                "Lists the mod's keys for a few seconds the first time you build each session.");
             ShowBuildInfo = Config.Bind(build, "Show build info", true,
                 "Shows the rotation angle and comfort while building.");
             BuildInfoToggleKey = Config.Bind(build, "Build info toggle key", new KeyboardShortcut(KeyCode.F8),
@@ -150,8 +180,27 @@ namespace NorseSense
                 new ConfigDescription("0 = top, 1 = bottom.",
                     new AcceptableValueRange<float>(0f, 1f)));
 
-            RemovalLockKey = Config.Bind(build, "Removal lock toggle key", new KeyboardShortcut(KeyCode.F9),
+            RemovalLockKey = Config.Bind(build, "Removal lock toggle key", new KeyboardShortcut(KeyCode.F6),
                 "Locks the hammer so it can't remove pieces. Starts unlocked.");
+            // Until 0.11.0 this defaulted to F9, which the game also uses to switch controller layout.
+            if (RemovalLockKey.Value.MainKey == KeyCode.F9 && !RemovalLockKey.Value.Modifiers.Any())
+            {
+                RemovalLockKey.Value = new KeyboardShortcut(KeyCode.F6);
+                Logger.LogInfo("Removal lock key moved from F9 to F6: the game uses F9 to switch controller layout.");
+            }
+
+            const string freecam = "Freecam";
+            FreecamKey = Config.Bind(freecam, "Toggle key", new KeyboardShortcut(KeyCode.F10),
+                "In build mode, detaches the camera so you can fly around your build and place from there.");
+            FreecamSpeed = Config.Bind(freecam, "Speed", 8f,
+                new ConfigDescription("Flying speed (m/s). Hold run for 3x.", new AcceptableValueRange<float>(2f, 30f)));
+            FreecamRange = Config.Bind(freecam, "Max distance", 25f,
+                new ConfigDescription("How far the camera can fly from you (m).", new AcceptableValueRange<float>(5f, 40f)));
+            FreecamReach = Config.Bind(freecam, "Reach", 8f,
+                new ConfigDescription("How far from the camera you can place and remove pieces (m).", new AcceptableValueRange<float>(3f, 15f)));
+
+            ShowComfortBreakdown = Config.Bind("Resting", "Comfort breakdown", true,
+                "While resting or sitting, lists what adds to your comfort and what doesn't count.");
 
             const string farming = "Farming";
             ShowPlantingPreview = Config.Bind(farming, "Planting preview", true,
@@ -161,6 +210,8 @@ namespace NorseSense
 
             ShowTeleportBlockers = Config.Bind("Portals", "Show teleport blockers", true,
                 "Lists the items that stop you from using a portal.");
+            ShowPortalPairing = Config.Bind("Portals", "Show pairing", true,
+                "Shows where a portal leads, or why it isn't connected.");
 
             ShowFireStatus = Config.Bind("Fires", "Show fire status", true,
                 "Tells you why a fire won't burn or burns low.");
@@ -200,6 +251,8 @@ namespace NorseSense
                 new ConfigDescription("Item pickup radius (m). 0 = vanilla.",
                     new AcceptableValueRange<float>(0f, 10f)));
 
+            CarryOverMovedSettings();
+
             AutoCompat = Config.Bind("Compatibility", "Auto-adjust for other mods", true,
                 "Turns off features another mod already does (like fine rotation with Gizmo).");
             ShowCompatWarnings = Config.Bind("Compatibility", "Show warnings in game", true,
@@ -212,15 +265,65 @@ namespace NorseSense
             DontDestroyOnLoad(_spawnViewObject);
             _spawnViewObject.AddComponent<SpawnView>();
             _spawnViewObject.AddComponent<MapOverlay>();
+            _spawnViewObject.AddComponent<RepairView>();
+            _spawnViewObject.AddComponent<ComfortView>();
             _spawnViewObject.AddComponent<BuildHelpers>();
             _spawnViewObject.AddComponent<PlantPreview>();
             _spawnViewObject.AddComponent<TerrainInfo>();
+            _spawnViewObject.AddComponent<PlacementInfo>();
+            _spawnViewObject.AddComponent<ComfortInfo>();
+            _spawnViewObject.AddComponent<Freecam>();
             _spawnViewObject.AddComponent<MarkerManager>();
 
             _harmony = new Harmony(Guid);
             ModEnabled.SettingChanged += (s, e) => ApplyEnabled();
             ApplyEnabled();
             Logger.LogInfo($"Loaded. Building stamina x{BuildStaminaMultiplier.Value}, sowing stamina x{SowStaminaMultiplier.Value}, spawn view key: {ToggleKey.Value}");
+        }
+
+        // 0.11.0 moved some settings. Values still in the file under their old place are carried over once.
+        void CarryOverMovedSettings()
+        {
+            Dictionary<ConfigDefinition, string> orphans;
+            try
+            {
+                orphans = AccessTools.Property(typeof(ConfigFile), "OrphanedEntries")?.GetValue(Config) as Dictionary<ConfigDefinition, string>;
+            }
+            catch (Exception)
+            {
+                return;
+            }
+            if (orphans == null || orphans.Count == 0) return;
+
+            bool moved = false;
+            void Carry(string section, string key, ConfigEntryBase entry)
+            {
+                var old = new ConfigDefinition(section, key);
+                if (!orphans.TryGetValue(old, out string value)) return;
+                try { entry.SetSerializedValue(value); }
+                catch (Exception) { /* unreadable old value: keep the default */ }
+                orphans.Remove(old);
+                moved = true;
+            }
+
+            const string spawn = "Spawn Display";
+            var oldEnabled = new ConfigDefinition(spawn, "Enabled");
+            if (orphans.TryGetValue(oldEnabled, out string enabled))
+            {
+                if (enabled.Trim().ToLowerInvariant() == "true") BaseViewMode.Value = ViewMode.Spawns;
+                orphans.Remove(oldEnabled);
+                moved = true;
+            }
+            Carry(spawn, "Toggle key", ToggleKey);
+            Carry(spawn, "Max display distance", MaxDisplayDistance);
+            Carry(spawn, "Show legend", ShowLegend);
+            Carry(spawn, "Legend position X", LegendX);
+            Carry(spawn, "Legend position Y", LegendY);
+            Carry(spawn, "Legend scale", LegendScale);
+
+            if (!moved) return;
+            Config.Save();
+            Logger.LogInfo("Moved spawn view settings to the new Base View section.");
         }
 
         // Keep players' settings from the old juissi.norsesense.cfg the first time they start with the new name.
@@ -278,8 +381,7 @@ namespace NorseSense
 
             if (ToggleKey.Value.IsDown())
             {
-                ShowSpawnRadius.Value = !ShowSpawnRadius.Value;
-                Notify("Spawn view", ShowSpawnRadius.Value ? "on" : "off", ShowSpawnRadius.Value);
+                BaseView.Cycle();
             }
             if (BuildInfoToggleKey.Value.IsDown())
             {

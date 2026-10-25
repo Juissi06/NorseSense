@@ -21,7 +21,7 @@ namespace NorseSense
             AccessTools.FieldRefAccess<Player, GameObject>("m_placementGhost");
 
         // Shown in the build info box; null when not planting.
-        internal static string Line;
+        internal static InfoRow Line;
 
         static int _spaceMask, _roofMask;
         static readonly Collider[] Hits = new Collider[64];
@@ -54,10 +54,11 @@ namespace NorseSense
 
             Vector3 pos = ghost.transform.position;
             string problem = WhyWontGrow(plant, pos);
-            string caveat = Compat.PlantRulesChangedBy != null ? $" <size=12><color=#b9ad98>(may not be exact: {Compat.PlantRulesChangedBy})</color></size>" : "";
-            Line = (problem == null
-                ? $"{Localization.instance.Localize(plant.m_name)}: <color=#9be07a>will grow here</color>"
-                : $"{Localization.instance.Localize(plant.m_name)}: <color=#ff6f55>won't grow, {problem}</color>") + caveat;
+            string caveat = Compat.PlantRulesChangedBy != null ? $"may not be exact: {Compat.PlantRulesChangedBy}" : null;
+            string name = Localization.instance.Localize(plant.m_name);
+            Line = problem == null
+                ? new InfoRow("Planting", $"{name} will grow here", caveat, Tone.Good)
+                : new InfoRow("Planting", $"Won't grow, {problem}", caveat, Tone.Bad);
 
             _ghostRing.gameObject.SetActive(true);
             _ghostRing.startColor = _ghostRing.endColor = problem == null ? GrowColor : BlockedColor;

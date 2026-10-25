@@ -58,9 +58,7 @@ namespace NorseSense
         int _baseValue;
         int _unlockedRaids;
 
-        float _coverage;
-        string _coverageText = "";
-        readonly List<KeyValuePair<Color, string>> _legendLines = new List<KeyValuePair<Color, string>>();
+        readonly BaseView.Legend _legend = new BaseView.Legend();
 
         void Awake()
         {
@@ -102,7 +100,7 @@ namespace NorseSense
             }
 
             UpdateGhost(player);
-            bool view = Plugin.ShowSpawnRadius.Value;
+            bool view = BaseView.Mode == ViewMode.Spawns;
 
             bool showGhostRing = _ghostActive && (view || Plugin.PreviewWhileBuilding.Value);
             _ghostRing.gameObject.SetActive(showGhostRing);
@@ -434,7 +432,7 @@ namespace NorseSense
 
         // ---------- Drawing helpers ----------
 
-        static Material GetMaterial()
+        internal static Material GetMaterial()
         {
             if (_material != null) return _material;
             Shader shader = null;
@@ -483,8 +481,8 @@ namespace NorseSense
 
         void BuildLegend()
         {
-            _legendLines.Clear();
-            void Add(Color c, string text) => _legendLines.Add(new KeyValuePair<Color, string>(c, text));
+            _legend.Clear();
+            void Add(Color c, string text) => _legend.Add(c, text);
 
             Add(SpawnRules.ProtectedColor, "Protected: mobs can't spawn");
             Add(SpawnRules.ExposedColor, "Exposed: mobs can spawn");
@@ -493,27 +491,33 @@ namespace NorseSense
             Add(PlayerRingColor, "No spawns within 40 m of a player");
             if (Plugin.ShowSpawners.Value) Add(NestSpawnColor, "Nest: ignores workbenches, destroy it");
 
+            // Coverage bar: share of spawnable ground around you that's protected.
             int spawnable = _protected + _exposed + _steep;
             int pct = spawnable > 0 ? Mathf.RoundToInt(100f * (_protected + _preview) / spawnable) : 100;
-            _coverage = pct / 100f;
-            _coverageText = $"Protected <b>{pct}%</b>{(_preview > 0 ? " <size=12><color=#b9ad98>(with preview)</color></size>" : "")}";
+            float coverage = pct / 100f;
+            _legend.BarFraction = coverage;
+            _legend.BarText = $"Protected <b>{pct}%</b>{(_preview > 0 ? $" <size=12><color={Ui.Muted}>(with preview)</color></size>" : "")}";
+            Color barColor = coverage >= 0.999f ? SpawnRules.ProtectedColor : Color.Lerp(SpawnRules.ExposedColor, SpawnRules.ProtectedColor, coverage);
+            barColor.a = 0.95f;
+            _legend.BarColor = barColor;
+
             float cell = Plugin.OverlayCellSize.Value;
-            Add(Color.clear, _exposedLeft > 0
-                ? $"Exposed ground: <color=#ff6f55>~{_exposedLeft * cell * cell:0} m²</color>"
-                : "<color=#8ec9ff>No exposed ground in view</color>");
+            _legend.Add(_exposedLeft > 0
+                ? $"Exposed ground: <color={Ui.Bad}>~{_exposedLeft * cell * cell:0} m²</color>"
+                : $"<color={Ui.Info}>No exposed ground in view</color>");
 
             // Raids: RandEventSystem.CheckBase needs base value >= 3 (base pieces within 20 m of you).
             if (_unlockedRaids == 0)
-                Add(Color.clear, "Raids: <color=#8ec9ff>none unlocked yet</color>");
+                _legend.Add($"Raids: <color={Ui.Info}>none unlocked yet</color>");
             else if (_baseValue >= SpawnRules.RaidBaseValue)
-                Add(Color.clear, $"Raids: <color=#f0b04a>can target you here</color> (base {_baseValue}/{SpawnRules.RaidBaseValue})");
+                _legend.Add($"Raids: <color={Ui.Warn}>can target you here</color> (base {_baseValue}/{SpawnRules.RaidBaseValue})");
             else
-                Add(Color.clear, $"Raids: <color=#8ec9ff>not here</color> (base {_baseValue}/{SpawnRules.RaidBaseValue})");
+                _legend.Add($"Raids: <color={Ui.Info}>not here</color> (base {_baseValue}/{SpawnRules.RaidBaseValue})");
 
             if (Compat.SpawnRulesChangedBy != null)
-                Add(Color.clear, $"<color=#f0b04a>Spawn rules changed by {Compat.SpawnRulesChangedBy}: may be off</color>");
+                _legend.Add($"<color={Ui.Warn}>Spawn rules changed by {Compat.SpawnRulesChangedBy}: may be off</color>");
             if (Compat.RaidRulesChangedBy != null)
-                Add(Color.clear, $"<color=#f0b04a>Raid rules changed by {Compat.RaidRulesChangedBy}: may be off</color>");
+                _legend.Add($"<color={Ui.Warn}>Raid rules changed by {Compat.RaidRulesChangedBy}: may be off</color>");
 
             var raid = _raidRingEvent;
             if (raid != null)
@@ -525,56 +529,9 @@ namespace NorseSense
 
         void OnGUI()
         {
-            if (!Plugin.ShowSpawnRadius.Value || !Plugin.ShowLegend.Value || Player.m_localPlayer == null) return;
-            if (Hud.IsUserHidden() || Menu.IsVisible() || InventoryGui.IsVisible() || Minimap.IsOpen()) return;
+            if (BaseView.Mode != ViewMode.Spawns || !BaseView.LegendVisible) return;
             if (Event.current.type == EventType.Layout) BuildLegend();
-
-            Matrix4x4 oldMatrix = Ui.BeginScaled(out float sw, out float sh);
-
-            // Colour key first, then stats (lines without a colour) under a divider.
-            int keyLines = 0;
-            foreach (var line in _legendLines) if (line.Key.a > 0f) keyLines++;
-            int statLines = _legendLines.Count - keyLines;
-
-            const float w = 350f, lineH = 22f, pad = 12f, titleH = 26f, barH = 37f;
-            float h = pad * 2 + titleH + barH + _legendLines.Count * lineH + (statLines > 0 ? 9f : 0f);
-            float x = Plugin.LegendX.Value * (sw - w - 20f) + 10f;
-            float y = Plugin.LegendY.Value * (sh - h - 20f) + 10f;
-            float cx = x + pad, cy = y + pad, inner = w - pad * 2;
-
-            Ui.Panel(new Rect(x, y, w, h));
-            Ui.Label(new Rect(cx, cy, inner, titleH), "Spawn view", Ui.Title);
-            GUI.Label(new Rect(cx, cy, inner, titleH), $"{Plugin.ToggleKey.Value} to hide",
-                Ui.SmallRight);
-            cy += titleH;
-
-            // Coverage bar: share of spawnable ground around you that's protected.
-            Color barColor = _coverage >= 0.999f ? SpawnRules.ProtectedColor : Color.Lerp(SpawnRules.ExposedColor, SpawnRules.ProtectedColor, _coverage);
-            barColor.a = 0.95f;
-            Ui.Label(new Rect(cx, cy, inner, 18f), _coverageText, Ui.Small);
-            Ui.Bar(new Rect(cx, cy + 19f, inner, 12f), _coverage, barColor);
-            cy += barH;
-
-            bool dividerDrawn = false;
-            foreach (var line in _legendLines)
-            {
-                float textX = cx;
-                if (line.Key.a > 0f)
-                {
-                    Ui.Swatch(new Rect(cx + 1f, cy + 5f, 12f, 12f), line.Key);
-                    textX += 22f;
-                }
-                else if (!dividerDrawn)
-                {
-                    dividerDrawn = true;
-                    Ui.Divider(cx, cy + 4f, inner);
-                    cy += 9f;
-                }
-                Ui.Label(new Rect(textX, cy, inner - (textX - cx), lineH), line.Value, Ui.Text);
-                cy += lineH;
-            }
-
-            GUI.matrix = oldMatrix;
+            BaseView.DrawLegend(_legend);
         }
     }
 }

@@ -12,6 +12,43 @@ Ideas for Norse Sense, in rough order. Rules for anything on this list:
 3. [x] **Terrain limits.** With the hoe or pickaxe, show how much further the ground can be raised or lowered here (vanilla caps it at ±8 m from the original height).
 4. [x] **Fire status.** Hovering a fire that has fuel but won't burn, or burns low, says why (smoke blocked, buried, rain, wind). MyLittleUI covers fuel.
 5. [x] **Support readout.** Exact structural support of the piece you look at while building.
+6. [x] **Station extensions.** Station level, which extensions count and why others don't; extension placement preview.
+7. [x] **Comfort breakdown.** What adds to comfort while resting, and what's skipped because a better piece of the same kind is near.
+8. [x] **Placement reasons.** Name what makes the ghost red instead of "Invalid placement".
+9. [x] **Portal pairing.** Where a portal leads, why it isn't connected, warn about shared tags.
+10. [x] **Freecam building.** Fly the camera around the build within a set range; building rules still apply where you stand.
+
+## Ideas
+Grouped by the feature they extend, so the mod gains depth without new screens or hotkeys.
+
+### Base view (grows out of the spawn view, F7)
+F7 cycles overlay modes instead of only switching spawns on and off: **Spawns → Repairs → Comfort → off**. One key, one legend that changes with the mode, the same ground and map overlay underneath.
+1. [x] **Repairs mode** (merges *weathering* and *damaged pieces*): pieces tinted by health, with the ones that rain or sea water is wearing down marked. Legend: "14 pieces need repair, 6 exposed to rain". The game only shows health dropping, never why.
+2. [x] **Comfort mode** (*comfort map*): the ground grid coloured by the comfort you'd get standing there, to find the best spot for a bed or chair. Reuses the comfort breakdown and the spawn grid.
+3. [x] **Base summary** in the legend (*build summary*): pieces and materials in the area, e.g. "412 pieces: 830 wood, 96 stone".
+
+### Precision building (grows out of fine rotation, hold L Alt)
+Holding the fine-rotation key already means "I'm placing carefully", so it shows the precision helpers together instead of each needing a setting.
+4. **Snap points** of the ghost and of the piece you aim at, with the pair that will snap highlighted.
+5. **Height** of the ghost above the ground or the piece below, e.g. "2.0 m above Wood floor".
+
+### Support readout
+6. **Removal preview**: while aiming at a piece with the hammer, pieces that would fall if you removed it are tinted red. Pairs naturally with the removal lock. Needs a support simulation, so the biggest item here.
+
+### Planting preview
+7. **Farm check**: with the cultivator out, every crop nearby gets its grow ring, red with the reason if it isn't growing, not only the ones next to the seed you're placing.
+
+### Map layers (grows out of the spawn map overlay)
+Small toggles on the large map instead of separate features:
+8. **Workbenches and wards**: build ranges and ward areas, and whether you're permitted on each ward.
+9. **Portals**: lines between paired portals with their tags. Complete when hosting; on a dedicated server it fills in as you travel.
+
+### Smoothness
+- [x] Info box eases between sizes and fades in instead of jumping when rows change.
+- [x] Key tips the first time you build each session.
+- [x] Remember the base view mode between sessions.
+- Remember the freecam position between uses.
+- One "Norse Sense" section at the top of ConfigurationManager with the most-used toggles; the rest grouped under it.
 
 ## Maybe later
 - Translations: about 130 in-game strings would move into one table. Worth it once people ask for a language.

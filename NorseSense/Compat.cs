@@ -17,6 +17,8 @@ namespace NorseSense
         internal static bool FineRotationDisabled;
         internal static bool PlayerTweaksDisabled;
         internal static bool CartographyManagerDisabled;
+        internal static bool FreecamDisabled;
+        internal static string FreecamDisabledBy;
         internal static string SpawnRulesChangedBy;
         internal static string RaidRulesChangedBy;
         internal static string PlantRulesChangedBy;
@@ -26,6 +28,7 @@ namespace NorseSense
         static readonly string[] PlayerTweakMods = { "valheim_plus", "valheimplus", "valheim plus" };
         static readonly string[] SpawnMods = { "spawn_that", "spawnthat", "spawn that", "expand_world_spawns", "expand world spawns" };
         static readonly string[] TableManagerMods = { "cartographyadmin", "cartography admin" };
+        static readonly string[] CameraBuildMods = { "buildcamera", "build camera", "build_camera", "freecam", "free cam", "freebuildcam" };
         static readonly string[] RaidMods = { "custom_raids", "customraids", "custom raids", "expand_world_events", "expand world events" };
 
         internal static void Run(string ownHarmonyId, ManualLogSource log)
@@ -46,6 +49,14 @@ namespace NorseSense
             {
                 CartographyManagerDisabled = true;
                 notes.Add($"The table marker manager is off because {tableMod} provides one.");
+            }
+
+            string cameraMod = FindPlugin(CameraBuildMods);
+            if (cameraMod != null && auto)
+            {
+                FreecamDisabled = true;
+                FreecamDisabledBy = cameraMod;
+                notes.Add($"Freecam building is off because {cameraMod} provides a build camera.");
             }
 
             string tweakMod = FindPlugin(PlayerTweakMods);
