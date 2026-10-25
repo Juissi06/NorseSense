@@ -56,12 +56,6 @@ namespace NorseSense
         // Fires
         internal static ConfigEntry<bool> ShowFireStatus;
 
-        // Ships
-        internal static ConfigEntry<bool> ShowHullReadout;
-        internal static ConfigEntry<bool> HullWarnings;
-        internal static ConfigEntry<float> HullWarnLevel;
-        internal static ConfigEntry<float> HullCriticalLevel;
-        internal static ConfigEntry<float> HullReadoutY;
 
         // Cartography
         internal static ConfigEntry<MarkerImport> MarkerImportMode;
@@ -177,19 +171,6 @@ namespace NorseSense
                 "When looking at a fire that has fuel but isn't burning, or burns low, say why: buried, " +
                 "something too close above the flames, rain without a roof, or wind without enough cover.");
 
-            const string ships = "Ships";
-            ShowHullReadout = Config.Bind(ships, "Show hull readout", true,
-                "While aboard a ship, show its hull health.");
-            HullWarnings = Config.Bind(ships, "Hull warnings", true,
-                "Warn when the ship you're on takes damage, and loudly when it drops below the warning and critical levels.");
-            HullWarnLevel = Config.Bind(ships, "Warning level", 0.5f,
-                new ConfigDescription("Hull health (0-1) for the 'hull damaged' warning.", new AcceptableValueRange<float>(0.1f, 0.95f)));
-            HullCriticalLevel = Config.Bind(ships, "Critical level", 0.25f,
-                new ConfigDescription("Hull health (0-1) for the 'hull critical' warning.", new AcceptableValueRange<float>(0.05f, 0.9f)));
-            HullReadoutY = Config.Bind(ships, "Hull readout position Y", 0.12f,
-                new ConfigDescription("Vertical position of the hull readout. 0 = top edge, 1 = bottom edge.",
-                    new AcceptableValueRange<float>(0f, 1f)));
-
             const string carto = "Cartography Table";
             MarkerImportMode = Config.Bind(carto, "Import markers", MarkerImport.Filtered,
                 "Which shared markers to take when reading a cartography table. All = vanilla. Filtered = apply the filters below. " +
@@ -243,7 +224,6 @@ namespace NorseSense
             _spawnViewObject.AddComponent<BuildHelpers>();
             _spawnViewObject.AddComponent<PlantPreview>();
             _spawnViewObject.AddComponent<TerrainInfo>();
-            _spawnViewObject.AddComponent<HullWarning>();
             _spawnViewObject.AddComponent<MarkerManager>();
 
             _harmony = new Harmony(Guid);

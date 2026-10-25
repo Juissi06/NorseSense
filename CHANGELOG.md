@@ -1,5 +1,8 @@
 # Changelog
 
+## Unreleased
+- Hull readout and hull warnings moved to Seaworthy, the sailing mod, with the rest of the ship features. The old Ships settings can be deleted from NorseSense.cfg.
+
 ## 0.9.0
 New features
 - Planting preview: while planting with the cultivator, shows whether the seed will grow where you aim, and if not, why: too close to another plant or a rock, no open sky, wrong biome, too cold, ground not cultivated. Nearby plants get grow-space rings, red if they aren't growing.
