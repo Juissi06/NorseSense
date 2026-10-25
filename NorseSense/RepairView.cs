@@ -14,8 +14,10 @@ namespace NorseSense
         const int PiecesPerFrame = 200;
         const float Healthy = 0.995f;
 
-        static readonly Color DamagedLow = new Color(1f, 0.22f, 0.12f);
-        static readonly Color DamagedHigh = new Color(1f, 0.82f, 0.25f);
+        const float Badly = 0.5f;
+        // Two bands, not a gradient: on brown wood a red-to-yellow blend all reads as orange.
+        static readonly Color BadColor = new Color(0.62f, 0.03f, 0.03f);
+        static readonly Color WornColor = new Color(1f, 0.92f, 0.12f);
         static readonly Color RainColor = new Color(0.35f, 0.62f, 1f);
         static readonly Color WaterColor = new Color(0.2f, 0.9f, 0.85f);
 
@@ -100,7 +102,7 @@ namespace NorseSense
                 {
                     damaged++;
                     lowest = Mathf.Min(lowest, hp);
-                    tint = Color.Lerp(DamagedLow, DamagedHigh, hp);
+                    tint = hp < Badly ? BadColor : WornColor;
                 }
                 else if (inWater) tint = WaterColor;
                 else if (openToRain) tint = RainColor;
@@ -124,7 +126,7 @@ namespace NorseSense
             _rain = rain;
             _water = water;
             _lowest = lowest;
-            _materialsText = string.Join(", ", _materials.OrderByDescending(m => m.Value).Take(4).Select(m => $"{m.Value} {m.Key}"));
+            _materialsText = string.Join(", ", _materials.OrderByDescending(m => m.Value).Take(3).Select(m => $"{m.Value} {m.Key}"));
             _scanning = false;
         }
 
@@ -142,7 +144,7 @@ namespace NorseSense
         static void Tint(WearNTear wnt, Color color)
         {
             MaterialMan.instance.SetValue(wnt.gameObject, ColorId, color);
-            MaterialMan.instance.SetValue(wnt.gameObject, EmissionId, color * 0.3f);
+            MaterialMan.instance.SetValue(wnt.gameObject, EmissionId, color * 0.55f);
         }
 
         static void Untint(WearNTear wnt)
@@ -164,19 +166,18 @@ namespace NorseSense
             int fine = _pieces - _damaged;
             _legend.BarFraction = _pieces > 0 ? (float)fine / _pieces : 1f;
             _legend.BarText = _damaged == 0
-                ? "All pieces at full health"
-                : $"<b>{_damaged}</b> of {_pieces} pieces need repair <size=12><color={Ui.Muted}>(lowest {_lowest * 100f:0}%)</color></size>";
-            _legend.BarColor = Color.Lerp(DamagedLow, new Color(0.45f, 0.85f, 0.4f), _legend.BarFraction);
+                ? $"All {_pieces} pieces at full health"
+                : $"<b>{_damaged}</b> of {_pieces} need repair <size=12><color={Ui.Muted}>(lowest {_lowest * 100f:0}%)</color></size>";
+            _legend.BarColor = Color.Lerp(BadColor, new Color(0.45f, 0.85f, 0.4f), _legend.BarFraction);
 
-            _legend.Add(DamagedLow, "Damaged, red is worst");
-            _legend.Add(RainColor, $"No roof: wears in rain, down to 50% <size=12><color={Ui.Muted}>({_rain})</color></size>");
-            _legend.Add(WaterColor, $"In water: wears down to 50% <size=12><color={Ui.Muted}>({_water})</color></size>");
-
+            _legend.Add(BadColor, "Under 50% health");
+            _legend.Add(WornColor, "Damaged");
+            _legend.Add(RainColor, $"No roof, rain wears to 50% <size=12><color={Ui.Muted}>({_rain})</color></size>");
+            _legend.Add(WaterColor, $"In water, wears to 50% <size=12><color={Ui.Muted}>({_water})</color></size>");
             if (EnvMan.IsWet() && _rain > 0)
-                _legend.Add($"<color={Ui.Warn}>Raining: {_rain} pieces are wearing now</color>");
-            _legend.Add($"Within {Plugin.MaxDisplayDistance.Value:0} m: <b>{_pieces}</b> pieces");
+                _legend.Add($"<color={Ui.Warn}>Raining: {_rain} pieces wearing now</color>");
             if (!string.IsNullOrEmpty(_materialsText))
-                _legend.Add($"<size=13><color={Ui.Muted}>Built from {_materialsText}</color></size>");
+                _legend.Add($"<size=13><color={Ui.Muted}>{_materialsText}</color></size>");
         }
     }
 }

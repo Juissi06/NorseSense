@@ -109,7 +109,7 @@ namespace NorseSense
         }
 
         // Plant.UpdateHealth for a spot that has no plant yet; null when it would grow.
-        static string WhyWontGrow(Plant plant, Vector3 pos)
+        internal static string WhyWontGrow(Plant plant, Vector3 pos)
         {
             Heightmap heightmap = Heightmap.FindHeightmap(pos);
             if (heightmap != null)

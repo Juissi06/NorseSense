@@ -1,0 +1,353 @@
+using System;
+using System.Collections.Generic;
+using HarmonyLib;
+using UnityEngine;
+
+namespace NorseSense
+{
+    // Area tools: plant a row or grid of seeds, or hoe and cultivate a bigger area, in one click.
+    // Every extra seed or tile is an ordinary vanilla placement of the same piece, paid for like a click of
+    // its own (seed, stamina, durability, skill), so other players and vanilla servers see exactly what
+    // they'd see if you clicked each one. The hoe isn't given a bigger radius because the game sends only
+    // the tool's id and whoever owns the terrain applies their own radius; tiles work for everyone.
+    internal class AreaTools : MonoBehaviour
+    {
+        const float RefreshInterval = 0.15f;
+        const float TileOverlap = 1.4f; // circles of radius r cover a square grid without gaps up to r * sqrt(2)
+
+        internal enum Kind { None, Plant, Terrain }
+
+        // Shapes the size key steps through: columns across, rows forward.
+        static readonly int[,] PlantShapes = { { 1, 1 }, { 1, 3 }, { 1, 5 }, { 3, 3 }, { 5, 5 } };
+        static readonly int[,] TerrainShapes = { { 1, 1 }, { 3, 3 } };
+
+        static readonly AccessTools.FieldRef<Player, GameObject> PlacementGhost =
+            AccessTools.FieldRefAccess<Player, GameObject>("m_placementGhost");
+        static readonly AccessTools.FieldRef<Player, PieceTable> BuildPieces =
+            AccessTools.FieldRefAccess<Player, PieceTable>("m_buildPieces");
+        static readonly Func<Player, float> GetBuildStamina =
+            AccessTools.MethodDelegate<Func<Player, float>>(AccessTools.Method(typeof(Player), "GetBuildStamina"));
+        static readonly Func<Player, ItemDrop.ItemData, float> GetPlaceDurability =
+            AccessTools.MethodDelegate<Func<Player, ItemDrop.ItemData, float>>(AccessTools.Method(typeof(Player), "GetPlaceDurability"));
+
+        static readonly Color GoodColor = new Color(0.45f, 1f, 0.45f, 0.9f);
+        static readonly Color BadColor = new Color(1f, 0.3f, 0.2f, 0.9f);
+        static readonly Color AreaColor = new Color(1f, 0.85f, 0.4f, 0.9f);
+
+        static int _plantShape, _terrainShape;
+
+        // What the ghost would cover right now; also used for the info box row.
+        internal static Kind Current;
+        internal static int Columns = 1, Rows = 1, Valid;
+        static readonly List<Vector3> Cells = new List<Vector3>(25);
+        static readonly List<bool> CellOk = new List<bool>(25);
+        static Quaternion _gridRotation;
+        static float _spacing, _tileRadius;
+
+        // A click that placed the centre piece; the extras follow once vanilla has paid for it.
+        static Piece _pending;
+        static readonly List<Vector3> PendingCells = new List<Vector3>(25);
+        static Quaternion _pendingRotation;
+
+        readonly List<LineRenderer> _rings = new List<LineRenderer>();
+        LineRenderer _outline;
+        float _timer;
+
+        internal static bool ModifierHeld() =>
+            Plugin.AreaToolsEnabled.Value && Plugin.AreaModifier.Value != KeyCode.None &&
+            BepInEx.UnityInput.Current.GetKey(Plugin.AreaModifier.Value);
+
+        void Awake()
+        {
+            _outline = SpawnView.CreateLine(transform, "AreaOutline", AreaColor, 0.06f);
+            _outline.gameObject.SetActive(false);
+        }
+
+        void Update()
+        {
+            _timer -= Time.deltaTime;
+            if (_timer > 0f) return;
+            _timer = RefreshInterval;
+            Refresh(Player.m_localPlayer);
+            DrawPreview();
+        }
+
+        void OnDisable()
+        {
+            Current = Kind.None;
+            Cells.Clear();
+            DrawPreview();
+        }
+
+        static Kind KindOf(Player player, out Piece piece, out GameObject ghost)
+        {
+            piece = null;
+            ghost = player != null && player.InPlaceMode() ? PlacementGhost(player) : null;
+            if (!Plugin.AreaToolsEnabled.Value || ghost == null || !ghost.activeInHierarchy) return Kind.None;
+            piece = player.GetSelectedPiece();
+            if (piece == null) return Kind.None;
+            if (piece.GetComponent<Plant>() != null)
+                return Compat.AreaPlantingDisabledBy == null ? Kind.Plant : Kind.None;
+            // Read the prefab: the game strips terrain components from the ghost.
+            var op = piece.GetComponent<TerrainOp>();
+            if (op != null && Plugin.AreaTerrain.Value && Compat.AreaTerrainDisabledBy == null && !op.m_settings.m_raise)
+                return Kind.Terrain;
+            return Kind.None;
+        }
+
+        static void Refresh(Player player)
+        {
+            Cells.Clear();
+            CellOk.Clear();
+            Valid = 0;
+            Current = KindOf(player, out var piece, out var ghost);
+            if (Current == Kind.None) return;
+
+            int[,] shapes = Current == Kind.Plant ? PlantShapes : TerrainShapes;
+            int index = Mathf.Clamp(Current == Kind.Plant ? _plantShape : _terrainShape, 0, shapes.GetLength(0) - 1);
+            Columns = shapes[index, 0];
+            Rows = shapes[index, 1];
+
+            Vector3 center = ghost.transform.position;
+            if (Current == Kind.Plant)
+            {
+                var plant = ghost.GetComponent<Plant>();
+                _spacing = plant.m_growRadius + FootprintRadius(ghost) + 0.05f;
+                // Rows follow the ghost's rotation, so scroll, fine rotation and match rotation line them up with a
+                // fence. Pieces that re-roll their rotation each placement use the view direction instead.
+                _gridRotation = piece.m_randomInitBuildRotation ? ViewYaw(45f) : Quaternion.Euler(0f, ghost.transform.eulerAngles.y, 0f);
+            }
+            else
+            {
+                _tileRadius = CoverRadius(piece.GetComponent<TerrainOp>().m_settings);
+                _spacing = _tileRadius * TileOverlap;
+                _gridRotation = Quaternion.Euler(0f, ghost.transform.eulerAngles.y, 0f);
+            }
+
+            bool level = Current == Kind.Terrain && piece.GetComponent<TerrainOp>().m_settings.m_level;
+            for (int r = 0; r < Rows; r++)
+            for (int c = 0; c < Columns; c++)
+            {
+                var offset = new Vector3((c - (Columns - 1) * 0.5f) * _spacing, 0f, (r - (Rows - 1) * 0.5f) * _spacing);
+                Vector3 p = center + _gridRotation * offset;
+                // Levelling flattens every tile to the ghost's height; everything else sits on the ground there.
+                if (!level && ZoneSystem.instance != null && ZoneSystem.instance.GetGroundHeight(p, out float h)) p.y = h;
+                else if (level) p.y = center.y;
+                bool ok = offset == Vector3.zero || CellAllowed(Current, ghost, p);
+                Cells.Add(p);
+                CellOk.Add(ok);
+                if (ok) Valid++;
+            }
+        }
+
+        // The part of the op that has to tile without gaps: for levelling that's the level radius, not the wider
+        // smoothing around it, or strips between tiles would stay unlevelled.
+        static float CoverRadius(TerrainOp.Settings s)
+        {
+            if (s.m_level) return s.m_levelRadius;
+            if (s.m_paintCleared) return s.m_paintRadius;
+            if (s.m_smooth) return s.m_smoothRadius;
+            return s.GetRadius();
+        }
+
+        static bool CellAllowed(Kind kind, GameObject ghost, Vector3 p)
+        {
+            if (Location.IsInsideNoBuildLocation(p) || !PrivateArea.CheckAccess(p, 0f, false, false)) return false;
+            return kind != Kind.Plant || PlantPreview.WhyWontGrow(ghost.GetComponent<Plant>(), p) == null;
+        }
+
+        // Horizontal size of the seed's own collider, so neighbours sit just outside each other's grow space.
+        static float FootprintRadius(GameObject ghost)
+        {
+            float radius = 0f;
+            foreach (var col in ghost.GetComponentsInChildren<Collider>())
+            {
+                if (col.isTrigger) continue;
+                Vector3 e = col.bounds.extents;
+                radius = Mathf.Max(radius, Mathf.Max(e.x, e.z));
+            }
+            return Mathf.Min(radius, 0.5f);
+        }
+
+        static Quaternion ViewYaw(float snap)
+        {
+            float yaw = GameCamera.instance != null ? GameCamera.instance.transform.eulerAngles.y : 0f;
+            return Quaternion.Euler(0f, Mathf.Round(yaw / snap) * snap, 0f);
+        }
+
+        void DrawPreview()
+        {
+            bool show = Current != Kind.None && Cells.Count > 1;
+            int rings = show && Current == Kind.Plant ? Cells.Count : 0;
+            while (_rings.Count < rings) _rings.Add(SpawnView.CreateLine(transform, "AreaCell", GoodColor, 0.04f));
+            for (int i = 0; i < _rings.Count; i++)
+            {
+                var ring = _rings[i];
+                bool on = i < rings && Cells[i] != Cells[Cells.Count / 2];
+                if (ring.gameObject.activeSelf != on) ring.gameObject.SetActive(on);
+                if (!on) continue;
+                ring.startColor = ring.endColor = CellOk[i] ? GoodColor : BadColor;
+                SpawnView.DrawRing(ring, Cells[i], Mathf.Max(0.25f, _spacing * 0.45f));
+            }
+
+            bool outline = show && Current == Kind.Terrain;
+            if (_outline.gameObject.activeSelf != outline) _outline.gameObject.SetActive(outline);
+            if (outline) DrawSquare(_outline, Cells[Cells.Count / 2], (Columns - 1) * 0.5f * _spacing + _tileRadius, _gridRotation);
+        }
+
+        // Square outline that follows the ground, for the area a hoe click will cover.
+        static void DrawSquare(LineRenderer lr, Vector3 center, float half, Quaternion rotation)
+        {
+            const int perSide = 12;
+            lr.positionCount = perSide * 4;
+            Vector3[] corners =
+            {
+                new Vector3(-half, 0f, -half), new Vector3(-half, 0f, half), new Vector3(half, 0f, half), new Vector3(half, 0f, -half)
+            };
+            for (int side = 0; side < 4; side++)
+            for (int i = 0; i < perSide; i++)
+            {
+                Vector3 local = Vector3.Lerp(corners[side], corners[(side + 1) % 4], i / (float)perSide);
+                Vector3 p = center + rotation * local;
+                if (ZoneSystem.instance != null && ZoneSystem.instance.GetGroundHeight(p, out float h)) p.y = h;
+                p.y += 0.3f;
+                lr.SetPosition(side * perSide + i, p);
+            }
+        }
+
+        // ---------- Size key ----------
+
+        internal static void StepSize(int direction)
+        {
+            if (Current == Kind.Plant)
+                _plantShape = Mathf.Clamp(_plantShape + direction, 0, MaxPlantShape());
+            else if (Current == Kind.Terrain)
+                _terrainShape = Mathf.Clamp(_terrainShape + direction, 0, TerrainShapes.GetLength(0) - 1);
+        }
+
+        // The largest planting shape allowed by the "Max planting grid" setting.
+        static int MaxPlantShape()
+        {
+            int max = 0;
+            for (int i = 0; i < PlantShapes.GetLength(0); i++)
+                if (PlantShapes[i, 0] <= Plugin.MaxPlantGrid.Value && PlantShapes[i, 1] <= Plugin.MaxPlantGrid.Value) max = i;
+            return max;
+        }
+
+        // ---------- Info box ----------
+
+        internal static void AddRows(InfoLines lines)
+        {
+            if (Current == Kind.None || Cells.Count <= 1) return;
+            string shape = Columns == 1 ? $"Row of {Rows}" : $"{Columns} × {Rows}";
+            if (Current == Kind.Plant)
+                lines.Add(null, "Area", $"{shape}, {Valid} of {Cells.Count} can grow", "one seed and stamina each",
+                    Valid == Cells.Count ? Tone.Good : Tone.Warn);
+            else
+                lines.Add(null, "Area", $"{shape}, {Cells.Count} tiles", "stamina and durability per tile",
+                    Valid == Cells.Count ? Tone.None : Tone.Warn);
+        }
+
+        // Footer hint when nothing else is using the footer.
+        internal static void AddHint(InfoLines lines)
+        {
+            if (Current != Kind.None && lines.HintKeys.Count == 0 && Plugin.AreaModifier.Value != KeyCode.None)
+                lines.Hint($"{Ui.KeyName(Plugin.AreaModifier.Value)} + Scroll", "Area size");
+        }
+
+        // ---------- Placing ----------
+
+        // Called when vanilla placed the centre piece: remember the other cells while the ghost is still there.
+        internal static void OnPlaced(Player player, Piece piece)
+        {
+            _pending = null;
+            Refresh(player);
+            if (Current == Kind.None || Cells.Count <= 1) return;
+            PendingCells.Clear();
+            Vector3 center = Cells[Cells.Count / 2];
+            for (int i = 0; i < Cells.Count; i++)
+                if (Cells[i] != center) PendingCells.Add(Cells[i]);
+            // Nearest first, so running out of seeds or stamina leaves a tidy patch.
+            PendingCells.Sort((a, b) => (a - center).sqrMagnitude.CompareTo((b - center).sqrMagnitude));
+            _pending = piece;
+            _pendingRotation = PlacementGhost(player).transform.rotation;
+        }
+
+        // After vanilla paid for the centre: place each extra cell that is still allowed and affordable.
+        internal static void PlacePending(Player player)
+        {
+            var piece = _pending;
+            _pending = null;
+            if (piece == null) return;
+
+            var ghost = PlacementGhost(player);
+            var tool = player.GetCurrentWeapon(); // the hammer, hoe or cultivator in build mode
+            var table = BuildPieces(player);
+            Kind kind = piece.GetComponent<Plant>() != null ? Kind.Plant : Kind.Terrain;
+            int placed = 0;
+            string stopped = null;
+            foreach (var cell in PendingCells)
+            {
+                bool free = player.PlacementCostDisabled;
+                if (!free && !player.HaveRequirements(piece, Player.RequirementMode.CanBuild)) { stopped = "out of materials"; break; }
+                float stamina = GetBuildStamina(player);
+                if (!player.HaveStamina(stamina)) { stopped = "out of stamina"; break; }
+                if (tool != null && tool.m_shared.m_useDurability && tool.m_durability <= 0f) { stopped = "tool broken"; break; }
+                if (ghost == null || !CellAllowed(kind, ghost, cell)) continue;
+
+                Quaternion rotation = kind == Kind.Plant ? Quaternion.Euler(0f, UnityEngine.Random.Range(0f, 360f), 0f) : _pendingRotation;
+                player.PlacePiece(piece, cell, rotation, doAttack: false);
+                placed++;
+
+                // The same costs vanilla charges for a click (Player.UpdatePlacement).
+                if (!free && !ZoneSystem.instance.GetGlobalKey(piece.FreeBuildKey())) player.ConsumeResources(piece.m_resources, 0);
+                player.UseStamina(stamina);
+                if (table != null && table.m_skill != 0) player.RaiseSkill(table.m_skill);
+                if (tool != null && tool.m_shared.m_useDurability)
+                    tool.m_durability -= GetPlaceDurability(player, tool) * Game.m_durabilityRate;
+            }
+            if (stopped != null)
+                player.Message(MessageHud.MessageType.TopLeft, $"Area: placed {placed + 1} of {PendingCells.Count + 1}, {stopped}");
+        }
+    }
+
+    // L Ctrl + scroll changes the area size instead of rotating the piece; the extras are placed after a click.
+    [HarmonyPatch(typeof(Player), "UpdatePlacement")]
+    static class AreaToolsPlacementPatch
+    {
+        static void Prefix(Player __instance, out int __state) => __state = BuildHelpers.PlaceRotation(__instance);
+
+        static void Postfix(Player __instance, int __state)
+        {
+            if (__instance != Player.m_localPlayer) return;
+            int now = BuildHelpers.PlaceRotation(__instance);
+            if (now != __state && AreaTools.ModifierHeld() && AreaTools.Current != AreaTools.Kind.None)
+            {
+                BuildHelpers.PlaceRotation(__instance) = __state;
+                AreaTools.StepSize(now > __state ? 1 : -1);
+            }
+            AreaTools.PlacePending(__instance);
+        }
+    }
+
+    // Crouch is a toggle in Valheim, and the default size key is Left Ctrl (Crouch): without this every size
+    // change would switch sneaking on or off.
+    [HarmonyPatch(typeof(Player), nameof(Player.SetControls))]
+    static class AreaToolsCrouchPatch
+    {
+        static void Prefix(Player __instance, ref bool crouch)
+        {
+            if (crouch && __instance == Player.m_localPlayer && AreaTools.Current != AreaTools.Kind.None && AreaTools.ModifierHeld())
+                crouch = false;
+        }
+    }
+
+    [HarmonyPatch(typeof(Player), nameof(Player.TryPlacePiece))]
+    static class AreaToolsClickPatch
+    {
+        static void Postfix(Player __instance, Piece piece, bool __result)
+        {
+            if (__result && __instance == Player.m_localPlayer) AreaTools.OnPlaced(__instance, piece);
+        }
+    }
+}

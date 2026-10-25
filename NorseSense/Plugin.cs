@@ -64,6 +64,12 @@ namespace NorseSense
         internal static ConfigEntry<float> FreecamRange;
         internal static ConfigEntry<float> FreecamReach;
 
+        // Area tools
+        internal static ConfigEntry<bool> AreaToolsEnabled;
+        internal static ConfigEntry<KeyCode> AreaModifier;
+        internal static ConfigEntry<int> MaxPlantGrid;
+        internal static ConfigEntry<bool> AreaTerrain;
+
         // Farming
         internal static ConfigEntry<bool> ShowPlantingPreview;
         internal static ConfigEntry<bool> ShowPlantSpacing;
@@ -202,6 +208,16 @@ namespace NorseSense
             ShowComfortBreakdown = Config.Bind("Resting", "Comfort breakdown", true,
                 "While resting or sitting, lists what adds to your comfort and what doesn't count.");
 
+            const string area = "Area Tools";
+            AreaToolsEnabled = Config.Bind(area, "Enabled", true,
+                "Plant rows and grids of seeds, or hoe a bigger area, in one click. Each seed or tile costs the same as placing it yourself.");
+            AreaModifier = Config.Bind(area, "Size modifier", KeyCode.LeftControl,
+                "Hold while scrolling with the cultivator or hoe to change the area size. None = off.");
+            MaxPlantGrid = Config.Bind(area, "Max planting size", 5,
+                new ConfigDescription("Largest row or grid side for planting.", new AcceptableValueRange<int>(1, 5)));
+            AreaTerrain = Config.Bind(area, "Bigger hoe and cultivator", true,
+                "Lets level, path, paving and cultivate cover 3 x 3 tiles. Raise ground always stays single.");
+
             const string farming = "Farming";
             ShowPlantingPreview = Config.Bind(farming, "Planting preview", true,
                 "Shows if a seed will grow where you aim, and why not.");
@@ -273,6 +289,7 @@ namespace NorseSense
             _spawnViewObject.AddComponent<PlacementInfo>();
             _spawnViewObject.AddComponent<ComfortInfo>();
             _spawnViewObject.AddComponent<Freecam>();
+            _spawnViewObject.AddComponent<AreaTools>();
             _spawnViewObject.AddComponent<MarkerManager>();
 
             _harmony = new Harmony(Guid);

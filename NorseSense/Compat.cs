@@ -19,6 +19,8 @@ namespace NorseSense
         internal static bool CartographyManagerDisabled;
         internal static bool FreecamDisabled;
         internal static string FreecamDisabledBy;
+        internal static string AreaPlantingDisabledBy;
+        internal static string AreaTerrainDisabledBy;
         internal static string SpawnRulesChangedBy;
         internal static string RaidRulesChangedBy;
         internal static string PlantRulesChangedBy;
@@ -29,6 +31,8 @@ namespace NorseSense
         static readonly string[] SpawnMods = { "spawn_that", "spawnthat", "spawn that", "expand_world_spawns", "expand world spawns" };
         static readonly string[] TableManagerMods = { "cartographyadmin", "cartography admin" };
         static readonly string[] CameraBuildMods = { "buildcamera", "build camera", "build_camera", "freecam", "free cam", "freebuildcam" };
+        static readonly string[] PlantingMods = { "planteasily", "plant easily", "massfarming", "mass farming" };
+        static readonly string[] TerrainRadiusMods = { "advancedterrainmodifiers", "advanced terrain", "terraintools", "terrain tools", "hoeradius" };
         static readonly string[] RaidMods = { "custom_raids", "customraids", "custom raids", "expand_world_events", "expand world events" };
 
         internal static void Run(string ownHarmonyId, ManualLogSource log)
@@ -57,6 +61,19 @@ namespace NorseSense
                 FreecamDisabled = true;
                 FreecamDisabledBy = cameraMod;
                 notes.Add($"Freecam building is off because {cameraMod} provides a build camera.");
+            }
+
+            string plantingMod = FindPlugin(PlantingMods);
+            if (plantingMod != null && auto)
+            {
+                AreaPlantingDisabledBy = plantingMod;
+                notes.Add($"Area planting is off because {plantingMod} plants in grids.");
+            }
+            string terrainMod = FindPlugin(TerrainRadiusMods);
+            if (terrainMod != null && auto)
+            {
+                AreaTerrainDisabledBy = terrainMod;
+                notes.Add($"The bigger hoe is off because {terrainMod} changes the hoe's area.");
             }
 
             string tweakMod = FindPlugin(PlayerTweakMods);

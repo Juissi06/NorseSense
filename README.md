@@ -29,9 +29,9 @@ Shows where mobs can and can't spawn, using the same checks the game itself uses
 - **Legend** with coverage % and how much exposed ground is left.
 
 #### Repairs
-- **Damaged pieces** are tinted from yellow to red by health, with a count and the lowest health in the legend, so a repair round misses nothing.
+- **Damaged pieces** glow yellow, or deep red below 50% health, with a count and the lowest health in the legend, so a repair round misses nothing.
 - **Weathering:** pieces with no roof above are marked blue, because rain wears them down to 50% health. Pieces standing in water are marked teal. The game never tells you which pieces are exposed.
-- **Base summary:** how many pieces are around you and what they're built from, e.g. *Built from 830 Wood, 96 Stone, 40 Core wood*.
+- **Base summary:** how many pieces are around you and the three materials they use most, e.g. *830 Wood, 96 Stone, 40 Core wood*.
 
 #### Comfort
 - The floor around you is coloured by the comfort you'd get standing there: green is the most comfort in view, yellow is less, orange is not sheltered. A ring marks the best spot, so you know where the bed or chair should go.
@@ -63,6 +63,13 @@ In build mode, press **F10** to detach the camera and fly around your build. You
 ### Farming
 - **Planting preview:** while planting with the cultivator, shows whether the seed will grow where you're aiming, and if not, why: *won't grow, too close to Carrot seedling*, *no open sky*, *wrong biome*, *too cold*...
 - **Plant spacing rings:** the grow space of the seed and of nearby plants is drawn on the ground. Plants that aren't growing are red.
+
+### Area tools (Left Ctrl + scroll)
+Hold **Left Ctrl** and scroll with the cultivator or hoe to work on more than one spot per click.
+- **Planting:** a single seed, a row of 3 or 5, or a 3 × 3 or 5 × 5 grid. Seeds are spaced as close as the game still lets them grow. Each spot gets a green or red ring, and red spots are skipped. Rows turn with the piece, so scroll, fine rotation and Left Alt + T (match rotation) line them up with a fence.
+- **Hoe and cultivator:** level ground, paths, paving and cultivate can cover 3 × 3 tiles. Levelling flattens the whole area to the height you aim at. Raise ground always stays single, because overlapping raises leave bumps.
+- **Same cost as clicking:** every seed or tile takes its own seed, stamina, durability and skill gain. If you run out, it places what you can afford, nearest first.
+- Each tile is an ordinary vanilla placement, so other players and vanilla servers see exactly the same result.
 
 ### Portals
 - **Where it leads:** looking at a connected portal shows how far its partner is, in which direction and in which biome, e.g. *Leads to: 1.4 km north-east, Swamp*.
@@ -105,6 +112,7 @@ Reading also **updates shared markers you already have** when someone renamed, r
 | Left Shift + E at a cartography table | Open the marker manager |
 | Left Alt + scroll | Fine rotation while building |
 | Left Alt + T | Match or reset rotation |
+| Left Ctrl + scroll | Area size with the cultivator or hoe |
 
 All keys can be changed in the config.
 
@@ -150,6 +158,7 @@ Norse Sense only adds to the game's code and never replaces it, so other mods' c
 
 - **Gizmo** (or any mod that handles build rotation): fine rotation turns itself off.
 - **Build Camera** and other freecam mods: Norse Sense's freecam turns itself off.
+- **Plant Easily, Mass Farming**: area planting turns itself off. **Advanced Terrain Modifiers** and other hoe-radius mods: the bigger hoe turns itself off.
 - **Valheim Plus**: build distance and pickup range are left to Valheim Plus.
 - **CartographyAdmin**: Norse Sense's marker manager and marker updates turn off.
 - **Spawn That, Custom Raids, Expand World** or any mod that changes spawn or raid rules: the legend warns that the overlay may not be exact.

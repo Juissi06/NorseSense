@@ -18,7 +18,15 @@ Ideas for Norse Sense, in rough order. Rules for anything on this list:
 9. [x] **Portal pairing.** Where a portal leads, why it isn't connected, warn about shared tags.
 10. [x] **Freecam building.** Fly the camera around the build within a set range; building rules still apply where you stand.
 
-## Ideas
+## Done: area tools (planting grid and bigger hoe)
+One system for both: extra placements of the same vanilla piece around the ghost, each paid for like a normal click.
+- **Size:** L Ctrl + scroll while holding the cultivator or hoe. Shown as an "Area" row in the info box with a key-cap hint.
+- **Planting grid:** 1x1 up to 5x5, or a row along where you look. Spacing is the closest the game still lets plants grow. Lines up with crops already there. Each cell is checked like the planting preview (green or red ring); bad cells are skipped.
+- **Bigger hoe and cultivator:** level, paths, paving and cultivate are covered with several vanilla-sized operations, so every player and a vanilla server see the same result. Level flattens the whole area to the ghost's height. Raise stays single, because overlapping raises make bumps. Can only go bigger than vanilla, not smaller.
+- **Cost:** seeds, stamina, durability and skill per seed or tile, same as clicking each one. Places as many as you can afford, nearest first.
+- **Why tiles and not a radius setting:** the game sends only the tool's ID, and whoever owns that patch of terrain applies their own radius. A changed radius would only work in single player or when every player has the same setting.
+- **Compat:** off if Plant Easily or another grid-planting mod is installed; info only if another mod patches terrain ops.
+
 Grouped by the feature they extend, so the mod gains depth without new screens or hotkeys.
 
 ### Base view (grows out of the spawn view, F7)

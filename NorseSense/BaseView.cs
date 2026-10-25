@@ -82,8 +82,13 @@ namespace NorseSense
             foreach (var line in legend.Lines) if (line.Key.a > 0f) keyLines++;
             int statLines = legend.Lines.Count - keyLines;
 
-            const float w = 360f, lineH = 22f, pad = 12f, tabsH = 28f, barH = 37f;
+            const float lineH = 22f, pad = 12f, tabsH = 28f, barH = 37f;
             bool bar = legend.BarFraction >= 0f;
+            float content = TabsWidth();
+            if (bar) content = Mathf.Max(content, Ui.LineWidth(legend.BarText, Ui.Small));
+            foreach (var line in legend.Lines)
+                content = Mathf.Max(content, Ui.LineWidth(line.Value, Ui.Text) + (line.Key.a > 0f ? 22f : 0f));
+            float w = Mathf.Clamp(content + pad * 2f + 4f, 300f, 520f);
             float h = pad * 2 + tabsH + 6f + (bar ? barH : 0f) + legend.Lines.Count * lineH + (statLines > 0 && keyLines > 0 ? 9f : 0f);
             float x = Plugin.LegendX.Value * (sw - w - 20f) + 10f;
             float y = Plugin.LegendY.Value * (sh - h - 20f) + 10f;
@@ -122,6 +127,14 @@ namespace NorseSense
             }
 
             GUI.matrix = oldMatrix;
+        }
+
+        static float TabsWidth()
+        {
+            float width = Ui.KeycapWidth(Ui.KeyName(Plugin.ToggleKey.Value)) + 6f + Ui.LineWidth("Next", Ui.Small) + 16f;
+            foreach (var mode in Order)
+                if (InCycle(mode)) width += Ui.LineWidth($"<b>{Name(mode)}</b>", Ui.Title) + 16f;
+            return width;
         }
 
         // "Spawns  Repairs  Comfort        [F7] Next": shows where you are in the cycle and how to move on.

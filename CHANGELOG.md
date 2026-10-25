@@ -8,8 +8,9 @@ New features
 - Placement reasons: when a piece can't be placed, says why: what it overlaps, too steep, wrong biome, too close to another piece, needs water or ground, and so on.
 - Portal pairing: looking at a portal shows where it leads (distance, direction, biome), or why it isn't connected, and warns when 3 or more portals share a tag.
 - Base view (F7): F7 now steps through three overlays, Spawns → Repairs → Comfort → off, with one shared legend that shows the current mode.
-  - Repairs: damaged pieces tinted yellow to red by health; pieces with no roof (they wear in rain down to 50%) and pieces in water marked; how many pieces are around you and what they're built from.
+  - Repairs: damaged pieces tinted yellow, or deep red under 50% health; pieces with no roof (they wear in rain down to 50%) and pieces in water marked; how many pieces are around you and what they're built from.
   - Comfort: the floor coloured by the comfort you'd get standing there, with the best spot ringed.
+- Area tools (Left Ctrl + scroll): plant a row of 3 or 5 or a 3 × 3 or 5 × 5 grid of seeds, or level, path, pave and cultivate 3 × 3 tiles, in one click. Each seed or tile costs the same as clicking it, and every one is a normal vanilla placement, so it works on vanilla servers.
 - Freecam building (F10): in build mode, fly the camera around your build and place from there. Your character stays put, the camera stays within 25 m, the piece itself must be inside a workbench's range, wards still apply, and taking damage ends it.
 
 New look

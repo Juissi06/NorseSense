@@ -168,6 +168,7 @@ namespace NorseSense
             if (Freecam.Active) Freecam.AddRows(lines, player);
             lines.Add(plantLine, piece);
             lines.Add(placementLine, piece);
+            AreaTools.AddRows(lines);
             lines.Add(_stationLine, piece);
             lines.Add(TerrainInfo.Line, piece);
             if (showRotation) lines.Add(piece, "Rotation", $"<b>{CurrentYaw(player):0.#}°</b>", $"{Plugin.FineRotationStep.Value:0.#}° fine steps");
@@ -192,6 +193,7 @@ namespace NorseSense
                 lines.Hint(Ui.KeyName(Plugin.ToggleKey.Value), "Base view");
                 lines.Hint(Ui.KeyName(Plugin.BuildInfoToggleKey.Value), "Hide this");
             }
+            AreaTools.AddHint(lines);
             if (lines.Count == 0 && lines.HintKeys.Count == 0) return;
             InfoBox.Draw(lines);
         }

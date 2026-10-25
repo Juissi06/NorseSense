@@ -218,15 +218,13 @@ namespace NorseSense
             if (_best > 0)
             {
                 _legend.BarFraction = Mathf.Clamp01((float)_here / _best);
-                _legend.BarText = $"Here <b>{_here}</b> of the best <b>{_best}</b> nearby <size=12><color={Ui.Muted}>(Rested {ComfortInfo.RestedMinutes(_here):0} of {ComfortInfo.RestedMinutes(_best):0} min)</color></size>";
+                _legend.BarText = $"Here <b>{_here}</b>, best <b>{_best}</b> <size=12><color={Ui.Muted}>(Rested {ComfortInfo.RestedMinutes(_best):0} min)</color></size>";
                 _legend.BarColor = Color.Lerp(LowColor, HighColor, _legend.BarFraction);
             }
-            _legend.Add(HighColor, "Most comfort, the ring marks the best spot");
-            _legend.Add(LowColor, "Sheltered, less comfort");
-            _legend.Add(NoShelterColor, "Not sheltered: comfort pieces don't count");
-            if (_sheltered == 0)
-                _legend.Add($"<color={Ui.Warn}>No sheltered floor nearby. Comfort needs a roof and 80% cover.</color>");
-            _legend.Add($"<size=13><color={Ui.Muted}>Comfort counts pieces within 10 m of where you stand.</color></size>");
+            _legend.Add(HighColor, "Best (ringed)");
+            _legend.Add(LowColor, "Less comfort");
+            _legend.Add(NoShelterColor, "Not sheltered");
+            if (_sheltered == 0) _legend.Add($"<color={Ui.Warn}>No sheltered floor nearby</color>");
         }
     }
 }
