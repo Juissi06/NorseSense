@@ -1,7 +1,7 @@
 # Changelog
 
 ## Unreleased
-- Marker manager: checkboxes no longer draw a grey bar behind their label.
+- Marker manager: checkboxes no longer draw a grey bar behind their label, also right after you click them, and ticked ones show green.
 
 ## 0.11.2
 - Comfort breakdown is a small card on the right, under the status effects it explains, instead of a big box in the middle, with each comfort piece as an icon and its value.

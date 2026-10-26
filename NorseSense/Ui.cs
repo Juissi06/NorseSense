@@ -407,6 +407,24 @@ namespace NorseSense
             return tex;
         }
 
+        // A copy with every pixel's colour multiplied (alpha kept), e.g. to tint the ticked checkbox green.
+        static Texture2D Tint(Texture2D source, Color tint)
+        {
+            var tex = new Texture2D(source.width, source.height, TextureFormat.RGBA32, false)
+            {
+                wrapMode = TextureWrapMode.Clamp, filterMode = FilterMode.Bilinear, hideFlags = HideFlags.HideAndDontSave
+            };
+            var pixels = source.GetPixels();
+            for (int i = 0; i < pixels.Length; i++)
+            {
+                Color c = pixels[i];
+                pixels[i] = new Color(Mathf.Clamp01(c.r * tint.r), Mathf.Clamp01(c.g * tint.g), Mathf.Clamp01(c.b * tint.b), c.a);
+            }
+            tex.SetPixels(pixels);
+            tex.Apply();
+            return tex;
+        }
+
         static Texture2D Shrink(Texture2D source, int size)
         {
             var tex = new Texture2D(size, size, TextureFormat.RGBA32, false)
@@ -477,11 +495,14 @@ namespace NorseSense
                 alignment = TextAnchor.MiddleLeft
             };
             var off = PadRight(_toggleOff);
-            var on = PadRight(_toggleOn);
-            _skin.toggle.normal.background = _skin.toggle.hover.background = _skin.toggle.active.background = off;
-            _skin.toggle.onNormal.background = _skin.toggle.onHover.background = _skin.toggle.onActive.background = on;
+            var on = PadRight(Tint(_toggleOn, new Color(0.75f, 1.35f, 0.6f)));
+            _skin.toggle.normal.background = _skin.toggle.hover.background = _skin.toggle.active.background = _skin.toggle.focused.background = off;
+            _skin.toggle.onNormal.background = _skin.toggle.onHover.background = _skin.toggle.onActive.background = _skin.toggle.onFocused.background = on;
             Colors(_skin.toggle, cream);
-            _skin.toggle.hover.textColor = _skin.toggle.onHover.textColor = GoldColor;
+            _skin.toggle.hover.textColor = GoldColor;
+            // On reads green (box and label), so it's clear at a glance which switches are on.
+            _skin.toggle.onNormal.textColor = _skin.toggle.onActive.textColor = _skin.toggle.onFocused.textColor = new Color(0.61f, 0.88f, 0.48f);
+            _skin.toggle.onHover.textColor = new Color(0.75f, 0.95f, 0.62f);
 
             _skin.box = new GUIStyle(_skin.box) { border = new RectOffset(6, 6, 6, 6) };
             _skin.box.normal.background = _panel;
