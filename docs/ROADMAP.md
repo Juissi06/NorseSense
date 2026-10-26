@@ -27,6 +27,7 @@ One system for both: extra placements of the same vanilla piece around the ghost
 - **Why tiles and not a radius setting:** the game sends only the tool's ID, and whoever owns that patch of terrain applies their own radius. A changed radius would only work in single player or when every player has the same setting.
 - **Compat:** off if Plant Easily or another grid-planting mod is installed; info only if another mod patches terrain ops.
 
+## Ideas
 Grouped by the feature they extend, so the mod gains depth without new screens or hotkeys.
 
 ### Base view (grows out of the spawn view, F7)
@@ -66,10 +67,26 @@ Small toggles on the large map instead of separate features:
     - Balance: no free items, only fewer trips. Opt-in or on by default is a decision for later.
 11. **Quick stack to nearby containers.** One key puts items into nearby chests that already hold the same item. QuickStackStore does exactly this (plus restock and sorting), and many players use it, so: off whenever QuickStackStore or a similar mod is installed, and only worth building if craft from containers is done, since they share the "find nearby chests I may use" part.
 
+### Server settings
+12. **Server-enforced settings.** Let a server admin set and lock the balance options for everyone: freecam range and reach, area tool sizes, stamina multipliers, build distance and pickup range. Today each player uses their own config. Needs a sync library (ServerSync or the ConditionalConfigSync already in the mod list). Players without the mod are unaffected, and the readouts stay client-side.
+
+### Improvements to existing features
+- **Shelter row:** a small compass graphic with the open sides lit, instead of "Open ahead-right (up), behind-right (up), behind (up)…", which is the longest line in the box.
+- **Support row:** a small bar coloured like the game's blue-to-red support tint, next to or instead of "80 / 100".
+- **Info box priority:** when many rows are active (freecam, shelter, support, station, placement), keep the urgent ones and fold the rest into one line so the box doesn't grow tall.
+- **Repairs mode:** re-tint a piece right after the game's own build-mode highlight resets it, so hovered pieces don't flicker.
+- **Freecam:** remember the camera position between uses, and an optional setting that stops it passing through walls.
+- **Area tools:** a 1 × 3 row shape for hoe paths (road strips), and new crops lining up with rows already planted.
+
+### UI and HUD
+- **Layout mode:** press a key, drag the info box, legend and comfort card where you want them, and it saves. Replaces the X/Y position sliders and solves most "it covers my other mod" cases.
+- **Compact legend:** an option to show only the mode tabs and the bar, for players who know the colours.
+- **Scale per panel**, instead of one UI scale for everything.
+- **Icons on every row:** Freecam, Area and Removal rows get icons too, so the box lines up.
+- **Gamepad:** controller bindings for the new keys (base view, freecam, removal lock, area size), and key hints that show controller buttons when a controller is in use.
+
 ## Maybe later
-- Translations: about 130 in-game strings would move into one table. Worth it once people ask for a language.
-- Grid planting with the cultivator (opt-in, conflicts with Plant Easily).
-- Server-controlled settings (ServerSync) for the balance options.
+- Translations: about 150 in-game strings would move into one table. Only when people ask for a language.
 
 ## Not doing
 - Sailing overhaul: belongs in its own mod.
