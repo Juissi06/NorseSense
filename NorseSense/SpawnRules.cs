@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace NorseSense
 {
-    internal enum SpawnCell : byte { Unknown, Blocked, Protected, Steep, Exposed }
+    internal enum SpawnCell : byte { Unknown, Blocked, Protected, Steep, Exposed, Water }
 
     // Mirrors the point checks in SpawnSystem.IsSpawnPointGood and raid eligibility in RandEventSystem.
     internal static class SpawnRules
@@ -21,17 +21,50 @@ namespace NorseSense
         internal static readonly Color SteepColor = new Color(1f, 0.85f, 0.2f, 0.22f);
         internal static readonly Color PreviewColor = new Color(0.3f, 1f, 0.85f, 0.5f);
         internal static readonly Color RaidColor = new Color(1f, 0.55f, 0f, 0.9f);
+        internal static readonly Color WaterColor = new Color(0.8f, 0.8f, 0.8f, 0.16f); // neutral grey: not blue, so it never reads as protected
 
         // Unknown = terrain not loaded here, so the game itself can't evaluate the point either.
         internal static SpawnCell Classify(ref Vector3 p)
         {
             var zs = ZoneSystem.instance;
-            zs.GetGroundData(ref p, out Vector3 normal, out _, out _, out Heightmap hmap);
+            zs.GetGroundData(ref p, out Vector3 normal, out Heightmap.Biome biome, out Heightmap.BiomeArea area, out Heightmap hmap);
             if (hmap == null) return SpawnCell.Unknown;
             if (zs.IsBlocked(p)) return SpawnCell.Blocked;
             if (EffectArea.IsPointInsideArea(p, EffectArea.Type.PlayerBase)) return SpawnCell.Protected;
+            if (p.y < zs.m_waterLevel && OnlySeaCreatures(p, biome, area, hmap)) return SpawnCell.Water;
             if (normal.y < MinNormalY) return SpawnCell.Steep;
             return SpawnCell.Exposed;
+        }
+
+        // ---------- Water ----------
+
+        static readonly AccessTools.FieldRef<List<SpawnSystem>> SpawnSystems =
+            AccessTools.StaticFieldRefAccess<List<SpawnSystem>>(AccessTools.Field(typeof(SpawnSystem), "m_instances"));
+
+        // Underwater ground where none of the world's spawn entries for that biome could put a land creature: the
+        // same altitude (height above the water line, which is at 30) and ocean depth checks as
+        // SpawnSystem.IsSpawnPointGood. Read from the game's own spawn lists, so modded spawns count too. Sea
+        // creatures are the ones that only spawn underwater or in the deep (serpents) and fish.
+        static bool OnlySeaCreatures(Vector3 p, Heightmap.Biome biome, Heightmap.BiomeArea area, Heightmap hmap)
+        {
+            var systems = SpawnSystems != null ? SpawnSystems() : null;
+            if (systems == null || systems.Count == 0 || systems[0] == null) return false; // can't tell: leave it as it was
+            float altitude = p.y - ZoneSystem.instance.m_waterLevel;
+            float depth = -1f;
+            foreach (var list in systems[0].m_spawnLists)
+            foreach (var spawn in list.m_spawners)
+            {
+                if (!spawn.m_enabled || spawn.m_prefab == null || (spawn.m_biome & biome) == 0 || (spawn.m_biomeArea & area) == 0) continue;
+                if (spawn.m_maxAltitude < 0f || spawn.m_minOceanDepth > 0f || spawn.m_prefab.GetComponent<Fish>() != null) continue;
+                if (altitude < spawn.m_minAltitude || altitude > spawn.m_maxAltitude) continue;
+                if (spawn.m_minOceanDepth != spawn.m_maxOceanDepth)
+                {
+                    if (depth < 0f) depth = hmap.GetOceanDepth(p);
+                    if (depth < spawn.m_minOceanDepth || depth > spawn.m_maxOceanDepth) continue;
+                }
+                return false; // a land creature could spawn here
+            }
+            return true;
         }
 
         // ---------- Raids ----------

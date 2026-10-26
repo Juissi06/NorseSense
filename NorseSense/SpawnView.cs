@@ -37,7 +37,7 @@ namespace NorseSense
         float _colorTimer;
         float _markerTimer;
         Vector3 _gridCenter;
-        int _protected, _exposed, _steep, _preview, _exposedLeft;
+        int _protected, _exposed, _steep, _preview, _exposedLeft, _water;
 
         LineRenderer _playerRing;
         LineRenderer _ghostRing;
@@ -273,7 +273,7 @@ namespace NorseSense
             float radiusSqr = _ghostRadius * _ghostRadius;
             Color preview = SpawnRules.PreviewColor;
             preview.a *= 0.6f + 0.4f * Mathf.Sin(Time.time * 6f);
-            _protected = _exposed = _steep = _preview = _exposedLeft = 0;
+            _protected = _exposed = _steep = _preview = _exposedLeft = _water = 0;
 
             for (int c = 0; c < _cells.Length; c++)
             {
@@ -283,6 +283,7 @@ namespace NorseSense
                     case SpawnCell.Protected: col = SpawnRules.ProtectedColor; _protected++; break;
                     case SpawnCell.Steep: col = SpawnRules.SteepColor; _steep++; break;
                     case SpawnCell.Exposed: col = SpawnRules.ExposedColor; _exposed++; break;
+                    case SpawnCell.Water: col = SpawnRules.WaterColor; _water++; break;
                     default: col = Color.clear; break;
                 }
 
@@ -487,6 +488,7 @@ namespace NorseSense
             Add(SpawnRules.ProtectedColor, "Protected: mobs can't spawn");
             Add(SpawnRules.ExposedColor, "Exposed: mobs can spawn");
             Add(SpawnRules.SteepColor, "Too steep for most mobs");
+            if (_water > 0) Add(SpawnRules.WaterColor, "Water: only sea creatures");
             if (_ghostActive) Add(SpawnRules.PreviewColor, "Protected once placed");
             Add(PlayerRingColor, "No spawns within 40 m of a player");
             if (Plugin.ShowSpawners.Value) Add(NestSpawnColor, "Nest: ignores workbenches, destroy it");
