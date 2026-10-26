@@ -251,6 +251,41 @@ namespace NorseSense
             return box;
         }
 
+        // Everything visible under a HUD object, as one rect: for lists whose container is bigger than its content.
+        internal static bool ContentRect(GameObject root, float scale, out Rect r)
+        {
+            r = default(Rect);
+            if (root == null || !root.activeInHierarchy) return false;
+            bool any = false;
+            TempGraphics.Clear();
+            root.GetComponentsInChildren(false, TempGraphics);
+            foreach (var g in TempGraphics)
+            {
+                if (!g.enabled || g.color.a < 0.05f || !ScreenRect(g.rectTransform, scale, out Rect gr)) continue;
+                r = any ? Rect.MinMaxRect(Mathf.Min(r.xMin, gr.xMin), Mathf.Min(r.yMin, gr.yMin),
+                    Mathf.Max(r.xMax, gr.xMax), Mathf.Max(r.yMax, gr.yMax)) : gr;
+                any = true;
+            }
+            return any;
+        }
+
+        // Where a piece of the game's HUD is on screen, in scaled GUI units (origin top-left). False if hidden.
+        internal static bool ScreenRect(RectTransform rt, float scale, out Rect r)
+        {
+            r = default(Rect);
+            if (rt == null || !rt.gameObject.activeInHierarchy) return false;
+            var canvas = rt.GetComponentInParent<Canvas>();
+            if (canvas == null) return false;
+            canvas = canvas.rootCanvas;
+            Camera cam = canvas.renderMode == RenderMode.ScreenSpaceOverlay ? null : canvas.worldCamera;
+            rt.GetWorldCorners(Corners);
+            Vector2 a = RectTransformUtility.WorldToScreenPoint(cam, Corners[0]);
+            Vector2 b = RectTransformUtility.WorldToScreenPoint(cam, Corners[2]);
+            r = Rect.MinMaxRect(Mathf.Min(a.x, b.x) / scale, (Screen.height - Mathf.Max(a.y, b.y)) / scale,
+                Mathf.Max(a.x, b.x) / scale, (Screen.height - Mathf.Min(a.y, b.y)) / scale);
+            return r.width > 1f && r.height > 1f;
+        }
+
         static void Collect(GameObject root, float scale, float sw, float sh)
         {
             if (root == null || !root.activeInHierarchy) return;

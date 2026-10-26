@@ -207,7 +207,7 @@ namespace NorseSense
                 new ConfigDescription("How far from the camera you can place and remove pieces (m).", new AcceptableValueRange<float>(3f, 15f)));
 
             ShowComfortBreakdown = Config.Bind("Resting", "Comfort breakdown", true,
-                "While resting or sitting, lists what adds to your comfort and what doesn't count.");
+                "While sitting, a small card shows what adds to your comfort and how long Rested lasts.");
 
             const string area = "Area Tools";
             AreaToolsEnabled = Config.Bind(area, "Enabled", true,

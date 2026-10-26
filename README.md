@@ -58,7 +58,7 @@ In build mode, press **F10** to detach the camera and fly around your build. You
 - Freecam ends when you leave build mode or take damage.
 
 ### Resting
-- **Comfort breakdown:** while resting or sitting, lists every piece that adds to your comfort and how much, which nearby pieces don't count because a better one of the same kind already does, and how long Rested will last. If you're not sheltered, it says which sides are open.
+- **Comfort breakdown:** while you sit, a small card under the status effects on the right (below Resting and Rested) shows your comfort, how long Rested will last, each piece that adds to it as an icon with its value, and how many nearby pieces don't count because a better one of the same kind already does. If you're not sheltered, it says which sides are open.
 
 ### Farming
 - **Planting preview:** while planting with the cultivator, shows whether the seed will grow where you're aiming, and if not, why: *won't grow, too close to Carrot seedling*, *no open sky*, *wrong biome*, *too cold*...

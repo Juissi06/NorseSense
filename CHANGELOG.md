@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.11.2
+- Comfort breakdown is a small card on the right, under the status effects it explains, instead of a big box in the middle, with each comfort piece as an icon and its value.
+- It only shows while you sit, not every time you walk into your base by a fire.
+
 ## 0.11.1
 - Area tools: Left Ctrl + scroll now also works with the hoe (its pieces can't rotate, so the wheel zoomed the camera instead).
 - Area tools: the hoe and cultivator area grows in even steps (single, 2 × 2, 3 × 3, 4 × 4) instead of jumping from single straight to a very large 3 × 3. New setting: Area Tools → Max hoe size.

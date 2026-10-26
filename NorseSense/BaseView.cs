@@ -18,6 +18,11 @@ namespace NorseSense
 
         internal static ViewMode Mode => Plugin.BaseViewMode.Value;
 
+        // Where the legend was last drawn (scaled GUI units), so other panels can keep clear of it.
+        internal static Rect LegendRect;
+        internal static float LegendDrawnAt = -10f;
+        internal static bool LegendShowing => Time.unscaledTime - LegendDrawnAt < 0.25f;
+
         static bool InCycle(ViewMode mode)
         {
             var modes = Plugin.BaseViewModes.Value;
@@ -94,7 +99,9 @@ namespace NorseSense
             float y = Plugin.LegendY.Value * (sh - h - 20f) + 10f;
             float cx = x + pad, cy = y + pad, inner = w - pad * 2;
 
-            Ui.Panel(new Rect(x, y, w, h));
+            LegendRect = new Rect(x, y, w, h);
+            LegendDrawnAt = Time.unscaledTime;
+            Ui.Panel(LegendRect);
             DrawTabs(cx, cy, inner, tabsH);
             cy += tabsH;
             Ui.Divider(cx, cy + 2f, inner);
