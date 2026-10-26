@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using HarmonyLib;
 using UnityEngine;
@@ -83,6 +84,9 @@ namespace NorseSense
             _ghostRing.gameObject.SetActive(false);
         }
 
+        // A disabled object stops its coroutines without running their finally blocks.
+        void OnDisable() => _rebuilding = false;
+
         void OnDestroy()
         {
             if (_mesh != null) Destroy(_mesh);
@@ -130,10 +134,10 @@ namespace NorseSense
             float dt = Time.deltaTime;
 
             _gridTimer -= dt;
-            if (_gridTimer <= 0f || Utils.DistanceXZ(pos, _gridCenter) > Plugin.OverlayCellSize.Value * 2f)
+            if (!_rebuilding && (_gridTimer <= 0f || Utils.DistanceXZ(pos, _gridCenter) > Plugin.OverlayCellSize.Value * 2f))
             {
                 _gridTimer = GridRefreshInterval;
-                RebuildGrid(pos);
+                StartCoroutine(RebuildGrid(pos));
             }
 
             _colorTimer -= dt;
@@ -202,68 +206,92 @@ namespace NorseSense
 
         // ---------- Ground grid ----------
 
-        void RebuildGrid(Vector3 playerPos)
+        // Built over several frames: a big grid is thousands of ground checks, which in one frame would hitch
+        // every couple of seconds. The finished grid replaces the old one in one go.
+        const int CellsPerFrame = 1500;
+        bool _rebuilding;
+
+        IEnumerator RebuildGrid(Vector3 playerPos)
         {
-            var zs = ZoneSystem.instance;
-            float cell = Plugin.OverlayCellSize.Value;
-            float radius = Plugin.OverlayRadius.Value;
-            int n = Mathf.Clamp(Mathf.CeilToInt(radius * 2f / cell), 4, 128);
-            _gridCenter = playerPos;
-
-            if (n != _n)
+            _rebuilding = true;
+            try
             {
-                _n = n;
-                _verts = new Vector3[n * n * 4];
-                _colors = new Color[n * n * 4];
-                _cells = new SpawnCell[n * n];
-                _cellPoints = new Vector3[n * n];
-                _heights = new float[(n + 1) * (n + 1)];
-                var tris = new int[n * n * 6];
-                for (int c = 0; c < n * n; c++)
+                var zs = ZoneSystem.instance;
+                float cell = Plugin.OverlayCellSize.Value;
+                float radius = Plugin.OverlayRadius.Value;
+                int n = Mathf.Clamp(Mathf.CeilToInt(radius * 2f / cell), 4, 128);
+                _gridCenter = playerPos;
+
+                // Snap to the cell grid so squares don't swim as you walk.
+                float originX = Mathf.Floor(playerPos.x / cell) * cell - n / 2 * cell;
+                float originZ = Mathf.Floor(playerPos.z / cell) * cell - n / 2 * cell;
+                float water = zs.m_waterLevel;
+
+                var heights = new float[(n + 1) * (n + 1)];
+                var cells = new SpawnCell[n * n];
+                var points = new Vector3[n * n];
+                int work = 0;
+
+                for (int z = 0; z <= n; z++)
+                for (int x = 0; x <= n; x++)
                 {
-                    int v = c * 4, t = c * 6;
-                    tris[t] = v; tris[t + 1] = v + 1; tris[t + 2] = v + 2;
-                    tris[t + 3] = v; tris[t + 4] = v + 2; tris[t + 5] = v + 3;
+                    var p = new Vector3(originX + x * cell, playerPos.y, originZ + z * cell);
+                    float h = zs.GetGroundHeight(p, out float ground) ? ground : playerPos.y;
+                    heights[z * (n + 1) + x] = Mathf.Max(h, water) + GroundOffset;
+                    if (++work % (CellsPerFrame * 3) == 0) yield return null;
                 }
-                _mesh.Clear();
+
+                for (int z = 0; z < n; z++)
+                for (int x = 0; x < n; x++)
+                {
+                    if (ZoneSystem.instance == null) yield break;
+                    int c = z * n + x;
+                    var p = new Vector3(originX + x * cell + cell * 0.5f, playerPos.y, originZ + z * cell + cell * 0.5f);
+                    cells[c] = Utils.DistanceXZ(p, playerPos) > radius ? SpawnCell.Unknown : SpawnRules.Classify(ref p);
+                    points[c] = p;
+                    if (++work % CellsPerFrame == 0) yield return null;
+                }
+
+                if (n != _n)
+                {
+                    _n = n;
+                    _verts = new Vector3[n * n * 4];
+                    _colors = new Color[n * n * 4];
+                    var tris = new int[n * n * 6];
+                    for (int c = 0; c < n * n; c++)
+                    {
+                        int v = c * 4, tr = c * 6;
+                        tris[tr] = v; tris[tr + 1] = v + 1; tris[tr + 2] = v + 2;
+                        tris[tr + 3] = v; tris[tr + 4] = v + 2; tris[tr + 5] = v + 3;
+                    }
+                    _mesh.Clear();
+                    _mesh.vertices = _verts;
+                    _mesh.colors = _colors;
+                    _mesh.triangles = tris;
+                }
+                _heights = heights;
+                _cells = cells;
+                _cellPoints = points;
+
+                for (int z = 0; z < n; z++)
+                for (int x = 0; x < n; x++)
+                {
+                    int v = (z * n + x) * 4;
+                    float x0 = originX + x * cell, z0 = originZ + z * cell;
+                    _verts[v] = new Vector3(x0, heights[z * (n + 1) + x], z0);
+                    _verts[v + 1] = new Vector3(x0, heights[(z + 1) * (n + 1) + x], z0 + cell);
+                    _verts[v + 2] = new Vector3(x0 + cell, heights[(z + 1) * (n + 1) + x + 1], z0 + cell);
+                    _verts[v + 3] = new Vector3(x0 + cell, heights[z * (n + 1) + x + 1], z0);
+                }
+
                 _mesh.vertices = _verts;
-                _mesh.colors = _colors;
-                _mesh.triangles = tris;
+                _mesh.RecalculateBounds();
+                UpdateColors();
             }
-
-            // Snap to the cell grid so squares don't swim as you walk.
-            float originX = Mathf.Floor(playerPos.x / cell) * cell - n / 2 * cell;
-            float originZ = Mathf.Floor(playerPos.z / cell) * cell - n / 2 * cell;
-            float water = zs.m_waterLevel;
-
-            for (int z = 0; z <= n; z++)
-            for (int x = 0; x <= n; x++)
+            finally
             {
-                var p = new Vector3(originX + x * cell, playerPos.y, originZ + z * cell);
-                float h = zs.GetGroundHeight(p, out float ground) ? ground : playerPos.y;
-                _heights[z * (n + 1) + x] = Mathf.Max(h, water) + GroundOffset;
+                _rebuilding = false;
             }
-
-            for (int z = 0; z < n; z++)
-            for (int x = 0; x < n; x++)
-            {
-                int c = z * n + x;
-                float x0 = originX + x * cell, z0 = originZ + z * cell;
-                var p = new Vector3(x0 + cell * 0.5f, playerPos.y, z0 + cell * 0.5f);
-
-                _cells[c] = Utils.DistanceXZ(p, playerPos) > radius ? SpawnCell.Unknown : SpawnRules.Classify(ref p);
-                _cellPoints[c] = p;
-
-                int v = c * 4;
-                _verts[v] = new Vector3(x0, _heights[z * (n + 1) + x], z0);
-                _verts[v + 1] = new Vector3(x0, _heights[(z + 1) * (n + 1) + x], z0 + cell);
-                _verts[v + 2] = new Vector3(x0 + cell, _heights[(z + 1) * (n + 1) + x + 1], z0 + cell);
-                _verts[v + 3] = new Vector3(x0 + cell, _heights[z * (n + 1) + x + 1], z0);
-            }
-
-            _mesh.vertices = _verts;
-            _mesh.RecalculateBounds();
-            UpdateColors();
         }
 
         void UpdateColors()

@@ -5,7 +5,7 @@ namespace NorseSense
     static class StaminaPatches
     {
         // Humanoid.GetRightItem() is protected, so read the field directly.
-        static readonly AccessTools.FieldRef<Humanoid, ItemDrop.ItemData> RightItem =
+        internal static readonly AccessTools.FieldRef<Humanoid, ItemDrop.ItemData> RightItem =
             AccessTools.FieldRefAccess<Humanoid, ItemDrop.ItemData>("m_rightItem");
 
         internal static float GetToolMultiplier(Player player)

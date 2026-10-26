@@ -55,16 +55,28 @@ namespace NorseSense
             float altitude = p.y - ZoneSystem.instance.m_waterLevel;
             float depth = -1f;
             foreach (var spawn in list)
+                if (CouldSpawn(spawn, p, altitude, hmap, ref depth)) return false; // something other than fish or a serpent
+            // Zones that border another biome also spawn from that biome's list (SpawnSystem.UpdateSpawning).
+            try
             {
-                if (altitude < spawn.m_minAltitude || altitude > spawn.m_maxAltitude) continue;
-                if (spawn.m_minOceanDepth != spawn.m_maxOceanDepth)
-                {
-                    if (depth < 0f) depth = hmap.GetOceanDepth(p);
-                    if (depth < spawn.m_minOceanDepth || depth > spawn.m_maxOceanDepth) continue;
-                }
-                return false; // something other than fish or a serpent could spawn here
+                foreach (var alt in hmap.m_cornerAltBiomes)
+                foreach (var spawn in alt.m_spawn)
+                    if (Counts(spawn) && (spawn.m_biome & biome) != 0 && (spawn.m_biomeArea & area) != 0 && CouldSpawn(spawn, p, altitude, hmap, ref depth))
+                        return false;
+            }
+            catch (Exception)
+            {
+                return false; // a game update changed these: can't tell, leave it as it was
             }
             return true;
+        }
+
+        static bool CouldSpawn(SpawnSystem.SpawnData spawn, Vector3 p, float altitude, Heightmap hmap, ref float depth)
+        {
+            if (altitude < spawn.m_minAltitude || altitude > spawn.m_maxAltitude) return false;
+            if (spawn.m_minOceanDepth == spawn.m_maxOceanDepth) return true;
+            if (depth < 0f) depth = hmap.GetOceanDepth(p);
+            return depth >= spawn.m_minOceanDepth && depth <= spawn.m_maxOceanDepth;
         }
 
         // The entries that matter for one biome and area, worked out once per world: thousands of water cells are
@@ -99,14 +111,13 @@ namespace NorseSense
         {
             if (spawns == null) return;
             foreach (var spawn in spawns)
-            {
-                if (spawn == null || !spawn.m_enabled || spawn.m_prefab == null) continue;
-                if (spawn.m_prefab.GetComponent<Fish>() != null) continue;
-                // Serpents: out at sea only, always underwater.
-                if (spawn.m_biome == Heightmap.Biome.Ocean && spawn.m_maxAltitude < 0f) continue;
-                Candidates.Add(spawn);
-            }
+                if (Counts(spawn)) Candidates.Add(spawn);
         }
+
+        // Everything but fish and serpents (out at sea only, always underwater).
+        static bool Counts(SpawnSystem.SpawnData spawn) =>
+            spawn != null && spawn.m_enabled && spawn.m_prefab != null && spawn.m_prefab.GetComponent<Fish>() == null &&
+            !(spawn.m_biome == Heightmap.Biome.Ocean && spawn.m_maxAltitude < 0f);
 
         // ---------- Raids ----------
 

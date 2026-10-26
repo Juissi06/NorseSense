@@ -28,6 +28,7 @@ namespace NorseSense
             AccessTools.FieldRefAccess<Player, GameObject>("m_placementGhost");
         static readonly AccessTools.FieldRef<Player, PieceTable> BuildPieces =
             AccessTools.FieldRefAccess<Player, PieceTable>("m_buildPieces");
+        static readonly AccessTools.FieldRef<Player, int> BuildRemoveDebt = AccessTools.FieldRefAccess<Player, int>("m_buildRemoveDebt");
         static readonly Func<Player, float> GetBuildStamina =
             AccessTools.MethodDelegate<Func<Player, float>>(AccessTools.Method(typeof(Player), "GetBuildStamina"));
         static readonly Func<Player, ItemDrop.ItemData, float> GetPlaceDurability =
@@ -340,7 +341,8 @@ namespace NorseSense
             if (piece == null) return;
 
             var ghost = PlacementGhost(player);
-            var tool = player.GetCurrentWeapon(); // the hammer, hoe or cultivator in build mode
+            // The hammer, hoe or cultivator: GetCurrentWeapon would give bare hands, since tools aren't weapons.
+            var tool = StaminaPatches.RightItem(player);
             var table = BuildPieces(player);
             Kind kind = piece.GetComponent<Plant>() != null ? Kind.Plant : Kind.Terrain;
             int placed = 0;
@@ -349,8 +351,10 @@ namespace NorseSense
             {
                 bool free = player.PlacementCostDisabled;
                 if (!free && !player.HaveRequirements(piece, Player.RequirementMode.CanBuild)) { stopped = "out of materials"; break; }
+                // GetBuildStamina already has the stamina setting in it; HaveStamina would apply it again here,
+                // since this runs inside UpdatePlacement.
                 float stamina = GetBuildStamina(player);
-                if (!player.HaveStamina(stamina)) { stopped = "out of stamina"; break; }
+                if (player.GetStamina() < stamina) { stopped = "out of stamina"; break; }
                 if (tool != null && tool.m_shared.m_useDurability && tool.m_durability <= 0f) { stopped = "tool broken"; break; }
                 if (ghost == null || !CellAllowed(kind, ghost, cell)) continue;
 
@@ -361,7 +365,12 @@ namespace NorseSense
                 // The same costs vanilla charges for a click (Player.UpdatePlacement).
                 if (!free && !ZoneSystem.instance.GetGlobalKey(piece.FreeBuildKey())) player.ConsumeResources(piece.m_resources, 0);
                 player.UseStamina(stamina);
-                if (table != null && table.m_skill != 0) player.RaiseSkill(table.m_skill);
+                // As vanilla: removing pieces runs up a debt that placing pays off before any skill is gained.
+                if (table != null && table.m_skill != 0)
+                {
+                    if (BuildRemoveDebt(player) > 0) BuildRemoveDebt(player)--;
+                    else player.RaiseSkill(table.m_skill);
+                }
                 if (tool != null && tool.m_shared.m_useDurability)
                     tool.m_durability -= GetPlaceDurability(player, tool) * Game.m_durabilityRate;
             }

@@ -146,10 +146,18 @@ namespace NorseSense
                 return false;
             }
 
+            // The game's own rule for writing to a table (MapTable.OnWrite) first: every ward covering it must let
+            // you in, whoever built it.
+            Vector3 pos = table.transform.position;
+            if (!PrivateArea.CheckAccess(pos, 0f, false))
+            {
+                why = "A ward covering this table doesn't permit you.";
+                return false;
+            }
+
             var piece = table.GetComponent<Piece>();
             if (piece != null && piece.GetCreator() == Player.m_localPlayer.GetPlayerID()) return true;
 
-            Vector3 pos = table.transform.position;
             foreach (var ward in Game.AllWards())
                 if (ward != null && Game.WardEnabled(ward) && Game.WardIsInside(ward, pos, 0f) && Game.WardHasAccess(ward)) return true;
 
@@ -157,10 +165,12 @@ namespace NorseSense
             return false;
         }
 
-        void Reload()
+        // fromSave: what was just written. On a table someone else owns, the local copy only catches up once the
+        // owner has applied it, so reading it back right away would show the old markers again.
+        void Reload(TableData fromSave = null)
         {
             _rows.Clear();
-            var data = TableData.Load(_table, Minimap.instance);
+            var data = fromSave ?? TableData.Load(_table, Minimap.instance);
             if (data != null)
             {
                 RememberNames();
@@ -212,19 +222,29 @@ namespace NorseSense
             float dup = Mathf.Max(1f, Plugin.DuplicateMergeDistance.Value);
             float d2 = dup * dup;
             foreach (var r in _rows) { r.Duplicate = false; r.Group = -1; }
+            // A marker only joins a group when it's within the distance of every marker already in it, so a row of
+            // markers along a road never chains into one group that "keep one" would wipe out.
             int group = 0;
+            var members = new List<Row>();
             for (int i = 0; i < _rows.Count; i++)
             {
                 var a = _rows[i];
-                if (a.Deleted) continue;
+                if (a.Deleted || a.Group >= 0) continue;
+                members.Clear();
+                members.Add(a);
                 for (int j = i + 1; j < _rows.Count; j++)
                 {
                     var b = _rows[j];
-                    if (b.Deleted || a.Edit.Type != b.Edit.Type || (a.Edit.Pos - b.Edit.Pos).sqrMagnitude > d2) continue;
-                    if (a.Group < 0) a.Group = group++;
-                    b.Group = a.Group;
-                    a.Duplicate = b.Duplicate = true;
+                    if (b.Deleted || b.Group >= 0 || a.Edit.Type != b.Edit.Type) continue;
+                    if (members.All(m => (m.Edit.Pos - b.Edit.Pos).sqrMagnitude <= d2)) members.Add(b);
                 }
+                if (members.Count < 2) continue;
+                foreach (var m in members)
+                {
+                    m.Group = group;
+                    m.Duplicate = true;
+                }
+                group++;
             }
 
             string search = _search.Trim().ToLowerInvariant();
@@ -287,7 +307,7 @@ namespace NorseSense
 
             _status = $"Saved {changed} change(s) to the table." +
                       (missing > 0 ? $" {missing} marker(s) were already removed by someone else." : "");
-            Reload();
+            Reload(fresh);
         }
 
         // Your own markers live on your map with owner 0; mirror edits to them so the table and your map agree.
@@ -515,7 +535,10 @@ namespace NorseSense
             else
             {
                 GUI.enabled = _canEdit;
-                string name = GUI.TextField(new Rect(x, y + 2, nameW, RowH - 4), row.Edit.Name ?? "", 40, _rowStyle);
+                // 40 like the game's own pin names, but never shorter than a name already there: cutting it would
+                // count as an edit and rewrite it on the shared table.
+                string current = row.Edit.Name ?? "";
+                string name = GUI.TextField(new Rect(x, y + 2, nameW, RowH - 4), current, Mathf.Max(40, current.Length), _rowStyle);
                 if (name != row.Edit.Name) row.Edit.Name = name;
                 GUI.enabled = true;
             }

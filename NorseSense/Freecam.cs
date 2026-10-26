@@ -11,6 +11,7 @@ namespace NorseSense
     {
         const float RunMultiplier = 3f;
         const float GroundClearance = 0.4f;
+        const float CameraRadius = 0.3f;
 
         internal static bool Active;
         internal static Vector3 Position;
@@ -59,6 +60,8 @@ namespace NorseSense
             if (!Mathf.Approximately(player.m_maxPlaceDistance, reach)) player.m_maxPlaceDistance = reach;
 
             Move(player, Time.unscaledDeltaTime);
+            // Walking away with a wall between you and the camera leaves it behind; then it's time to come back.
+            if (DistanceFromPlayer(player) > Plugin.FreecamRange.Value + 2f) Exit("too far from you");
         }
 
         void Enter(Player player)
@@ -128,13 +131,35 @@ namespace NorseSense
 
             Vector3 target = dir * Plugin.FreecamSpeed.Value * (run ? RunMultiplier : 1f);
             _velocity = Vector3.Lerp(_velocity, target, 1f - Mathf.Exp(-12f * dt));
-            Position += _velocity * dt;
+            Vector3 next = Position + _velocity * dt;
 
             Vector3 anchor = player.GetCenterPoint();
-            Vector3 offset = Position - anchor;
-            if (offset.magnitude > Plugin.FreecamRange.Value) Position = anchor + offset.normalized * Plugin.FreecamRange.Value;
+            Vector3 offset = next - anchor;
+            if (offset.magnitude > Plugin.FreecamRange.Value) next = anchor + offset.normalized * Plugin.FreecamRange.Value;
             if (ZoneSystem.instance != null)
-                Position.y = Mathf.Max(Position.y, ZoneSystem.instance.GetGroundHeight(Position) + GroundClearance);
+                next.y = Mathf.Max(next.y, ZoneSystem.instance.GetGroundHeight(next) + GroundClearance);
+            // Walls, pieces and rocks stop it like they stop the game's own camera, so it can't look into sealed
+            // rooms, other bases or crypts.
+            Position = Sweep(Position, next);
+        }
+
+        // Moves as far toward the target as the game camera's collision allows, sliding along what it touches.
+        static Vector3 Sweep(Vector3 from, Vector3 to)
+        {
+            if (GameCamera.instance == null) return to;
+            int mask = GameCamera.instance.m_blockCameraMask;
+            for (int i = 0; i < 3; i++)
+            {
+                Vector3 move = to - from;
+                float length = move.magnitude;
+                if (length < 0.0001f) return from;
+                Vector3 dir = move / length;
+                if (!Physics.SphereCast(from, CameraRadius, dir, out var hit, length, mask, QueryTriggerInteraction.Ignore)) return to;
+                Vector3 stop = from + dir * Mathf.Max(0f, hit.distance - 0.02f);
+                to = stop + Vector3.ProjectOnPlane(to - stop, hit.normal);
+                from = stop;
+            }
+            return from;
         }
 
         internal static float DistanceFromPlayer(Player player) => Vector3.Distance(Position, player.GetCenterPoint());
