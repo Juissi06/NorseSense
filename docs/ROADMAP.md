@@ -77,6 +77,7 @@ Small toggles on the large map instead of separate features:
 - **Repairs mode:** re-tint a piece right after the game's own build-mode highlight resets it, so hovered pieces don't flicker.
 - **Freecam:** remember the camera position between uses, and an optional setting that stops it passing through walls.
 - **Area tools:** a 1 × 3 row shape for hoe paths (road strips), and new crops lining up with rows already planted.
+- **Planting grid spacing:** every seed in a grid must have enough room to grow, also once its neighbours are planted. Today the spacing is the seed's grow radius plus its own collider, which can be too tight. Space by the full grow space instead (about twice the grow radius, or the larger radius when crops differ), re-check each spot with the game's own grow test after the neighbours are placed, and skip or warn about spots that would end up "too close".
 
 ### UI and HUD
 - **Layout mode:** press a key, drag the info box, legend and comfort card where you want them, and it saves. Replaces the X/Y position sliders and solves most "it covers my other mod" cases.
