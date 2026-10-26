@@ -44,8 +44,10 @@ namespace NorseSense
             }
             if (!Active) return;
 
+            // At full health, food wearing off lowers your max health and your health follows it down; that's not
+            // damage, so a drop only counts when it leaves you below your max.
             float health = player.GetHealth();
-            if (health < _lastHealth - 0.01f)
+            if (health < _lastHealth - 0.01f && health < player.GetMaxHealth() - 0.01f)
             {
                 Exit("you took damage");
                 return;
