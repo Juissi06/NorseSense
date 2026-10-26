@@ -89,6 +89,23 @@ Small toggles on the large map instead of separate features:
 ## Maybe later
 - Translations: about 150 in-game strings would move into one table. Only when people ask for a language.
 
+## Standalone project ideas
+Too big or too different for Norse Sense; each would be its own mod and repo.
+
+### Huginn: what am I looking at (like WAILA / WTHIT in Minecraft)
+A small panel at the top of the screen that names whatever is under the crosshair and which mod added it.
+- **Look-at panel:** name, icon, health, owner, creature level and tame state, growth time. Also for things the game shows no tooltip for: build pieces, rocks, trees, terrain. Raycast code can come from Odin's Eye's Inspect tab and Norse Sense's hover info.
+- **Item tooltips:** a "Mod: X" line on inventory items, added alongside MyLittleUI's tooltip.
+- **Which mod it's from**, most reliable first:
+  1. Snapshot the game's own prefab list before mods add theirs: anything outside it is modded.
+  2. Jotunn's registry, which records the source mod of every item, piece and creature it adds.
+  3. Track which plugin loads each asset bundle and match prefabs to the bundle they came from.
+  4. Custom components: a prefab with a script from a plugin's assembly points to that plugin.
+  5. Otherwise "Added by a mod" with no name (mods that clone and rename vanilla prefabs in code).
+- **Effort:** about a day for the panel with Vanilla/Modded, 2–3 more days for accurate mod names tested against real modpacks.
+- **Before starting:** check Nexus and Thunderstore for an existing Valheim mod that already does this.
+- The mod lookup could also feed Odin's Eye's Inspect tab ("from: Mod X").
+
 ## Not doing
 - Sailing overhaul: belongs in its own mod.
 - Pickup filters (QuickStackStore), plant/tame hover info (MyLittleUI), weather warning (MyLittleUI).
