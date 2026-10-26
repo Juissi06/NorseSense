@@ -390,6 +390,23 @@ namespace NorseSense
                       $"{(_wood != null ? "game" : "built-in")} window, {(_gameButtons ? "game" : "built-in")} buttons.");
         }
 
+        // The box plus three transparent columns on the right.
+        static Texture2D PadRight(Texture2D box)
+        {
+            int w = box.width + 3, h = box.height;
+            var tex = new Texture2D(w, h, TextureFormat.RGBA32, false)
+            {
+                wrapMode = TextureWrapMode.Clamp, filterMode = FilterMode.Bilinear, hideFlags = HideFlags.HideAndDontSave
+            };
+            var pixels = new Color[w * h];
+            for (int y = 0; y < h; y++)
+                for (int x = 0; x < box.width; x++)
+                    pixels[y * w + x] = box.GetPixel(x, y);
+            tex.SetPixels(pixels); // the extra columns stay transparent (default Color is 0,0,0,0)
+            tex.Apply();
+            return tex;
+        }
+
         static Texture2D Shrink(Texture2D source, int size)
         {
             var tex = new Texture2D(size, size, TextureFormat.RGBA32, false)
@@ -451,15 +468,18 @@ namespace NorseSense
             _skin.textField.focused.background = _skin.textField.active.background = _fieldFocus;
             Colors(_skin.textField, cream);
 
-            // Left/top border covers the whole box texture, so only the box is drawn and the label sits beside it.
+            // Left/top border covers the box, and the 9-slice's middle and right come from transparent columns
+            // (PadRight), so only the box is drawn and a wide toggle doesn't smear its edge into a bar.
             _skin.toggle = new GUIStyle(_skin.toggle)
             {
-                font = _body, fontSize = 14, border = new RectOffset(_toggleSize, 0, _toggleSize, 0),
+                font = _body, fontSize = 14, border = new RectOffset(_toggleSize, 2, _toggleSize, 0),
                 padding = new RectOffset(_toggleSize + 6, 2, 0, 0), overflow = new RectOffset(0, 0, -(24 - _toggleSize) / 2, 0),
                 alignment = TextAnchor.MiddleLeft
             };
-            _skin.toggle.normal.background = _skin.toggle.hover.background = _skin.toggle.active.background = _toggleOff;
-            _skin.toggle.onNormal.background = _skin.toggle.onHover.background = _skin.toggle.onActive.background = _toggleOn;
+            var off = PadRight(_toggleOff);
+            var on = PadRight(_toggleOn);
+            _skin.toggle.normal.background = _skin.toggle.hover.background = _skin.toggle.active.background = off;
+            _skin.toggle.onNormal.background = _skin.toggle.onHover.background = _skin.toggle.onActive.background = on;
             Colors(_skin.toggle, cream);
             _skin.toggle.hover.textColor = _skin.toggle.onHover.textColor = GoldColor;
 

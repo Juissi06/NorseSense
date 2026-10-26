@@ -1,5 +1,8 @@
 # Changelog
 
+## Unreleased
+- Marker manager: checkboxes no longer draw a grey bar behind their label.
+
 ## 0.11.2
 - Comfort breakdown is a small card on the right, under the status effects it explains, instead of a big box in the middle, with each comfort piece as an icon and its value.
 - It only shows while you sit, not every time you walk into your base by a fire.
