@@ -58,6 +58,14 @@ Small toggles on the large map instead of separate features:
 - Remember the freecam position between uses.
 - One "Norse Sense" section at the top of ConfigurationManager with the most-used toggles; the rest grouped under it.
 
+### Containers
+10. **Craft from nearby containers.** Workbench, forge and the build menu count materials in chests within range (say 20 m, same base), and take them from there when you craft or build. The recipe list shows how many come from chests. Notes:
+    - Not covered by QuickStackStore or MyLittleUI. Off if a craft-from-containers mod is installed (Craft From Containers, AzuCraftyBoxes and so on).
+    - Multiplayer: a chest's items can only be changed by whoever owns it, so it has to ask for the chest like opening it does, and skip chests someone else has open. Must stay safe on vanilla servers: never take items that didn't arrive.
+    - Respect wards: only chests you could open yourself.
+    - Balance: no free items, only fewer trips. Opt-in or on by default is a decision for later.
+11. **Quick stack to nearby containers.** One key puts items into nearby chests that already hold the same item. QuickStackStore does exactly this (plus restock and sorting), and many players use it, so: off whenever QuickStackStore or a similar mod is installed, and only worth building if craft from containers is done, since they share the "find nearby chests I may use" part.
+
 ## Maybe later
 - Translations: about 130 in-game strings would move into one table. Worth it once people ask for a language.
 - Grid planting with the cultivator (opt-in, conflicts with Plant Easily).
