@@ -1,6 +1,7 @@
 # Changelog
 
 ## Unreleased
+- The comfort card no longer shows while you sit on a ship.
 - Marker manager: checkboxes no longer draw a grey bar behind their label, also right after you click them, and ticked ones show green.
 
 ## 0.11.2

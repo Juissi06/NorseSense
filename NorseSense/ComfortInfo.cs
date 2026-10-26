@@ -87,8 +87,8 @@ namespace NorseSense
         {
             var player = Player.m_localPlayer;
             // Only while sitting: the game counts you as Resting whenever you're sheltered near a fire, so
-            // following that would keep the card up the whole time you walk around your base.
-            _show = Plugin.ShowComfortBreakdown.Value && player != null && !player.InPlaceMode() && player.IsSitting();
+            // following that would keep the card up the whole time you walk around your base. Not on a ship's seats.
+            _show = Plugin.ShowComfortBreakdown.Value && player != null && !player.InPlaceMode() && player.IsSitting() && !player.IsAttachedToShip();
             if (!_show)
             {
                 _timer = 0f;

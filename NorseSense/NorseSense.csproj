@@ -102,13 +102,13 @@
         <RemoveDir Directories="$(PackDir)" />
         <MakeDir Directories="$(ReleaseDir)" />
 
-        <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(TsDir)\plugins" />
-        <Copy SourceFiles="$(PackageAssets)\icon.png;..\README.md;..\CHANGELOG.md" DestinationFolder="$(TsDir)" />
+        <!-- Thunderstore: the DLL, the manifest, a README with just the install steps, and the icon Thunderstore requires. -->
+        <Copy SourceFiles="$(TargetPath);$(PackageAssets)\icon.png;$(PackageAssets)\README.md" DestinationFolder="$(TsDir)" />
         <WriteLinesToFile File="$(TsDir)\manifest.json" Lines="$(Manifest)" Overwrite="true" />
         <ZipDirectory SourceDirectory="$(TsDir)" DestinationFile="$(ReleaseDir)\NorseSense-$(Version)-thunderstore.zip" Overwrite="true" />
 
-        <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(NexusDir)\BepInEx\plugins\NorseSense" />
-        <Copy SourceFiles="..\README.md;..\CHANGELOG.md" DestinationFolder="$(NexusDir)\BepInEx\plugins\NorseSense" />
+        <!-- Nexus: only the DLL. -->
+        <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(NexusDir)" />
         <ZipDirectory SourceDirectory="$(NexusDir)" DestinationFile="$(ReleaseDir)\NorseSense-$(Version)-nexus.zip" Overwrite="true" />
 
         <Message Importance="high" Text="Release zips written to $(ReleaseDir)" />
