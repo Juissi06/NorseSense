@@ -1,9 +1,15 @@
 # Nexus drafts
 
+## Changelog / file description (0.11.1)
+- Hoe and cultivator area now grows in steps (single, 2x2, 3x3, 4x4) instead of jumping straight to a huge one. New setting for the max size
+- Left Ctrl + scroll works with the hoe too, it zoomed the camera before
+- Planting grid follows the cursor smoothly and doesn't jump around when you look around
+- The game hides tooltips while you hold the cultivator or hammer, so the info box now shows the crop you look at (growing, ready in about X min, or why not) and the fire (fuel, and why it burns low)
+
 ## Changelog / file description (0.11.0)
 - Base view (F7) now has 3 modes: Spawns, Repairs and Comfort. Repairs shows damaged pieces and the ones rain or water is wearing down, Comfort colours your floor by comfort and rings the best spot
 - Freecam building (F10): fly the camera around your build and place from there
-- Area tools (Left Ctrl + scroll): plant rows and grids of seeds, or hoe and cultivate a 3x3 area in one click. Costs the same as clicking each one
+- Area tools (Left Ctrl + scroll): plant rows and grids of seeds, or hoe and cultivate up to a 4x4 area in one click. Costs the same as clicking each one
 - Crafting stations show their level and why an extension doesn't count
 - Comfort breakdown while sitting or resting
 - Says why a piece can't be placed instead of just "Invalid placement"
@@ -19,38 +25,130 @@ See what Valheim hides: where mobs can spawn, which pieces need repair, where co
 
 ## Description
 THIS MOD IS STILL IN ALPHA
-Norse Sense shows you the annoying things that Valheim keeps hidden: where mobs can spawn, which pieces are falling apart, why your seed won't grow, why your workbench won't level up and why that piece just won't place. Also makes building less of a chore with freecam building and planting grids. Even has a cartography table manager! Client-side, vanilla-balanced and fully customisable.
+Norse Sense shows you the annoying things that Valheim keeps hidden: where mobs can spawn, how much of your base is protected, if raids can reach you, which pieces need repair, how much comfort a piece adds and why a portal won't let you through. Building helpers included for precise building, freecam building and planting grids, and it even has a cartography table manager!
+Client-side, vanilla-balanced and fully customisable.
+Installation
+Mod managers: automatic install
+Manual: put the DLL file in \Steam\steamapps\common\Valheim\BepInEx\plugins
+Base view (F7 cycles Spawns, Repairs, Comfort, off)
+Spawns: see where mobs can and can't spawn, on the ground and on the map
+Rings around workbenches and fires, nests and spawners marked
+Raid check: can raids target you here?
+Repairs: damaged pieces glow yellow (deep red under 50%), pieces with no roof or in water are marked, plus what your base is built from
+Comfort: the floor is coloured by how much comfort you'd get standing there, and the best spot for your bed is ringed
+Building
+Fine rotation: Left Alt + scroll for 5 degree steps, Left Alt + T copies a piece's rotation
+Freecam building: fly the camera around your build and place pieces from there, stays within 25 m of you and the workbench rules still apply
+Placement reasons: tells you why a piece can't be placed, like what it overlaps or that the ground is too steep
+Crafting stations: shows the level, which extensions count and which are too far or doubled up
+Comfort preview before you place a chair, banner etc.
+Shelter, support and terrain readouts: which sides are open, when a piece falls, how deep you can dig
+Removal lock: no more deleting your build by accident
+Farming, portals and fires
+Planting preview: will the seed grow here, and if not, why
+Area tools: Left Ctrl + scroll plants a row or grid of seeds in one click, or levels, paths and cultivates an area up to 4x4. Costs the same as clicking each one
+Comfort breakdown while sitting: what adds comfort and what doesn't count
+Portals: where the portal leads, why it isn't connected and the items stopping you from teleporting
+Fires: tells you why a fire won't burn
+Crop and fire info while holding the cultivator or hammer, when the game hides its own tooltips
+Cartography table
+Skip crossed-out and duplicate markers when reading a table
+Left Shift + E: edit, rename, cross out and delete the table's markers
+Optional(off by default)
+Customisable building and planting stamina, longer build distance and pickup range
+Every feature can be turned off and fully tuned.
+No mod conflicts from my experience, mods changing same things might clash
+Default Keys(all changeable in the config)
+F6 removal lock
+F7 base view (Spawns, Repairs, Comfort)
+F8 build info
+F10 freecam building
+Left Alt + scroll fine rotation
+Left Alt + T match rotation
+Left Ctrl + scroll area size (cultivator and hoe)
+Left Shift + E at a cartography table
+Requirements
+BepInEx
+Valheim Configuration Manager (optional, but highly recommended for config)
 
-Installation:
-- Mod managers; automatic install
-- Manual: Put the DLL file to \Steam\steamapps\common\Valheim\BepInEx\plugins
-- Client-side only, the server doesn't need it
+## Description (BBCode, styled)
+[center][size=4][b][color=#ff6f55]THIS MOD IS STILL IN ALPHA[/color][/b][/size][/center]
 
-Main features
-- Base view (F7): cycles 3 overlays
-  - Spawns: shows on the ground and on the map where mobs can and can't spawn, rings around your workbenches and fires, nests and spawners, and if raids can target you
-  - Repairs: damaged pieces glow yellow (deep red under 50%), pieces without a roof or in water are marked, plus how many pieces your base has and what it's built from
-  - Comfort: colours the floor by how much comfort you'd get standing there and rings the best spot for your bed
-- Freecam building (F10): fly the camera around your build and place pieces from there. Stays within 25 m of you and the workbench rules still apply
-- Area tools (Left Ctrl + scroll): plant a row or grid of seeds, or level, path and cultivate a 3x3 area in one click. Every seed and tile costs the same as placing it yourself
-- Build info box: rotation, comfort, shelter, support and terrain limits in one tidy box that stays out of the way of the game's build bar
-- Placement reasons: tells you why a piece can't be placed, like what it overlaps or that the ground is too steep
-- Crafting stations: level, which extensions count and which are too far or doubled up
-- Fine rotation: Left Alt + scroll rotates pieces in 5° steps, Left Alt + T copies the rotation of the piece you look at
-- Comfort: see how much comfort you'd get before placing a chair, and a breakdown of your comfort while sitting
-- Removal lock (F6): stops the hammer from deleting your build by accident
-- Planting preview: shows if the seed will grow where you aim and why not, plus grow space rings
-- Portals: where the portal leads, why it isn't connected and which items stop you from teleporting
-- Fires: tells you why a fire won't burn or burns low
-- Cartography table: skip crossed-out and duplicate markers when reading a table, and edit, rename, cross out and delete the table's markers with Left Shift + E
-- Optional: cheaper building/planting stamina, longer build distance and pickup range (off by default)
-- Every feature can be turned off, and the whole mod can be switched off in game
+Norse Sense shows you the annoying things that Valheim keeps hidden: where mobs can spawn, how much of your base is protected, if raids can reach you, which pieces need repair, how much comfort a piece adds and why a portal won't let you through. Building helpers included for precise building, freecam building and planting grids, and it even has a cartography table manager!
 
-Looking for ship stuff like hull health? That's in my sailing mod Seaworthy: <link>
+[b]Client-side, vanilla-balanced and fully customisable.[/b]
 
-Requirements:
--BepInEx
--Valheim Configuration Manager (optional, but highly recommended for config)
+[line]
+[size=5][b][color=#e8c77e]Installation[/color][/b][/size]
+[list]
+[*][b]Mod managers:[/b] automatic install
+[*][b]Manual:[/b] put the DLL file in [i]\Steam\steamapps\common\Valheim\BepInEx\plugins[/i]
+[/list]
+
+[line]
+[size=5][b][color=#e8c77e]Base view[/color][/b][/size] [color=#b9ad98](F7 cycles Spawns, Repairs, Comfort, off)[/color]
+[list]
+[*][b]Spawns:[/b] see where mobs can and can't spawn, on the ground and on the map
+[*]Rings around workbenches and fires, nests and spawners marked
+[*][b]Raid check:[/b] can raids target you here?
+[*][b]Repairs:[/b] damaged pieces glow yellow (deep red under 50%), pieces with no roof or in water are marked, plus what your base is built from
+[*][b]Comfort:[/b] the floor is coloured by how much comfort you'd get standing there, and the best spot for your bed is ringed
+[/list]
+
+[size=5][b][color=#e8c77e]Building[/color][/b][/size]
+[list]
+[*][b]Fine rotation:[/b] Left Alt + scroll for 5 degree steps, Left Alt + T copies a piece's rotation
+[*][b]Freecam building:[/b] fly the camera around your build and place pieces from there, stays within 25 m of you and the workbench rules still apply
+[*][b]Placement reasons:[/b] tells you why a piece can't be placed, like what it overlaps or that the ground is too steep
+[*][b]Crafting stations:[/b] shows the level, which extensions count and which are too far or doubled up
+[*][b]Comfort preview[/b] before you place a chair, banner etc.
+[*][b]Shelter, support and terrain readouts:[/b] which sides are open, when a piece falls, how deep you can dig
+[*][b]Removal lock:[/b] no more deleting your build by accident
+[/list]
+
+[size=5][b][color=#e8c77e]Farming, portals and fires[/color][/b][/size]
+[list]
+[*][b]Planting preview:[/b] will the seed grow here, and if not, why
+[*][b]Area tools:[/b] Left Ctrl + scroll plants a row or grid of seeds in one click, or levels, paths and cultivates an area up to 4x4. Costs the same as clicking each one
+[*][b]Comfort breakdown[/b] while sitting: what adds comfort and what doesn't count
+[*][b]Portals:[/b] where the portal leads, why it isn't connected and the items stopping you from teleporting
+[*][b]Fires:[/b] tells you why a fire won't burn
+[*][b]Crop and fire info[/b] while holding the cultivator or hammer, when the game hides its own tooltips
+[/list]
+
+[size=5][b][color=#e8c77e]Cartography table[/color][/b][/size]
+[list]
+[*]Skip crossed-out and duplicate markers when reading a table
+[*][b]Left Shift + E:[/b] edit, rename, cross out and delete the table's markers
+[/list]
+
+[size=5][b][color=#e8c77e]Optional[/color][/b][/size] [color=#b9ad98](off by default)[/color]
+[list]
+[*]Customisable building and planting stamina, longer build distance and pickup range
+[/list]
+
+Every feature can be turned off and fully tuned.
+[i]No mod conflicts from my experience, mods changing same things might clash.[/i]
+
+[line]
+[size=5][b][color=#e8c77e]Default keys[/color][/b][/size] [color=#b9ad98](all changeable in the config)[/color]
+[list]
+[*][b]F6[/b] removal lock
+[*][b]F7[/b] base view (Spawns, Repairs, Comfort)
+[*][b]F8[/b] build info
+[*][b]F10[/b] freecam building
+[*][b]Left Alt + scroll[/b] fine rotation
+[*][b]Left Alt + T[/b] match rotation
+[*][b]Left Ctrl + scroll[/b] area size (cultivator and hoe)
+[*][b]Left Shift + E[/b] at a cartography table
+[/list]
+
+[line]
+[size=5][b][color=#e8c77e]Requirements[/color][/b][/size]
+[list]
+[*]BepInEx
+[*]Valheim Configuration Manager [color=#b9ad98](optional, but highly recommended for config)[/color]
+[/list]
 
 ## Image captions
 - New Bitmap image (2).png: Repairs mode and freecam building. Pieces without a roof are blue, the legend counts what needs repair, and the info box sits above the game's build bar

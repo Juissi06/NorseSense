@@ -69,6 +69,7 @@ namespace NorseSense
         internal static ConfigEntry<KeyCode> AreaModifier;
         internal static ConfigEntry<int> MaxPlantGrid;
         internal static ConfigEntry<bool> AreaTerrain;
+        internal static ConfigEntry<int> MaxHoeSize;
 
         // Farming
         internal static ConfigEntry<bool> ShowPlantingPreview;
@@ -216,7 +217,10 @@ namespace NorseSense
             MaxPlantGrid = Config.Bind(area, "Max planting size", 5,
                 new ConfigDescription("Largest row or grid side for planting.", new AcceptableValueRange<int>(1, 5)));
             AreaTerrain = Config.Bind(area, "Bigger hoe and cultivator", true,
-                "Lets level, path, paving and cultivate cover 3 x 3 tiles. Raise ground always stays single.");
+                "Lets level, path, paving and cultivate cover more tiles at once. Raise ground always stays single.");
+            MaxHoeSize = Config.Bind(area, "Max hoe size", 4,
+                new ConfigDescription("Largest hoe and cultivator area, in tiles per side (each tile adds about one hoe radius).",
+                    new AcceptableValueRange<int>(1, 4)));
 
             const string farming = "Farming";
             ShowPlantingPreview = Config.Bind(farming, "Planting preview", true,

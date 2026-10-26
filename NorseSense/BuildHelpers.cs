@@ -32,7 +32,7 @@ namespace NorseSense
         bool _showComfort, _inShelter;
         float _comfortTimer;
         string _noGainReason;
-        InfoRow _shelterLine, _stationLine, _supportLine;
+        InfoRow _shelterLine, _stationLine, _supportLine, _hoverLine;
         float _shelterTimer;
 
         internal static bool FineModifierHeld() =>
@@ -54,6 +54,7 @@ namespace NorseSense
                 _shelterLine = null;
                 _supportLine = null;
                 _stationLine = null;
+                _hoverLine = null;
                 return;
             }
 
@@ -68,6 +69,7 @@ namespace NorseSense
                 UpdateComfort(player);
                 var hovered = player.GetHoveringPiece();
                 _supportLine = Plugin.ShowSupportInfo.Value ? SupportInfo.Describe(hovered) : null;
+                _hoverLine = HoverInfo.Describe(hovered);
                 var ghost = PlacementGhost(player);
                 var extension = Plugin.ShowStationInfo.Value && ghost != null && ghost.activeInHierarchy ? ghost.GetComponent<StationExtension>() : null;
                 _stationLine = extension != null ? StationInfo.DescribeGhost(extension, ghost.transform.position) : null;
@@ -174,6 +176,7 @@ namespace NorseSense
             if (showRotation) lines.Add(piece, "Rotation", $"<b>{CurrentYaw(player):0.#}°</b>", $"{Plugin.FineRotationStep.Value:0.#}° fine steps");
             if (_showComfort) AddComfort(lines);
             lines.Add(shelterLine);
+            lines.Add(_hoverLine);
             lines.Add(_supportLine);
 
             if (Freecam.Active) Freecam.AddHints(lines);

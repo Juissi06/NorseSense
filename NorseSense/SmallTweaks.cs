@@ -65,37 +65,45 @@ namespace NorseSense
     [HarmonyPatch(typeof(Fireplace), nameof(Fireplace.GetHoverText))]
     static class FireStatusPatch
     {
-        static readonly AccessTools.FieldRef<Fireplace, ZNetView> NView = AccessTools.FieldRefAccess<Fireplace, ZNetView>("m_nview");
+        internal static readonly AccessTools.FieldRef<Fireplace, ZNetView> NView = AccessTools.FieldRefAccess<Fireplace, ZNetView>("m_nview");
         static readonly AccessTools.FieldRef<Fireplace, bool> Blocked = AccessTools.FieldRefAccess<Fireplace, bool>("m_blocked");
         static readonly AccessTools.FieldRef<Fireplace, bool> Wet = AccessTools.FieldRefAccess<Fireplace, bool>("m_wet");
 
         static void Postfix(Fireplace __instance, ref string __result)
         {
-            if (!Plugin.ShowFireStatus.Value || __instance.m_infiniteFuel || string.IsNullOrEmpty(__result)) return;
-            var nview = NView(__instance);
-            if (nview == null || !nview.IsValid()) return;
-            var zdo = nview.GetZDO();
-            if (zdo.GetFloat(ZDOVars.s_fuel) <= 0f || zdo.GetInt(ZDOVars.s_state, 1) != 1) return;
+            if (!Plugin.ShowFireStatus.Value || string.IsNullOrEmpty(__result)) return;
+            string problem = Problem(__instance, out Tone tone);
+            if (problem != null) __result += $"\n<color={(tone == Tone.Bad ? Ui.Bad : Ui.Warn)}>{problem}</color>";
+        }
 
-            string status = null;
-            if (Blocked(__instance))
+        // Why a fire with fuel isn't burning or burns low; null when it's fine (or out of fuel, which is plain to see).
+        internal static string Problem(Fireplace fire, out Tone tone)
+        {
+            tone = Tone.None;
+            if (fire.m_infiniteFuel) return null;
+            var nview = NView(fire);
+            if (nview == null || !nview.IsValid()) return null;
+            var zdo = nview.GetZDO();
+            if (zdo.GetFloat(ZDOVars.s_fuel) <= 0f || zdo.GetInt(ZDOVars.s_state, 1) != 1) return null;
+
+            if (Blocked(fire))
             {
-                Vector3 pos = __instance.transform.position;
-                bool buried = Heightmap.GetHeight(pos, out float h) && h > pos.y + __instance.m_checkTerrainOffset;
-                status = buried
-                    ? "<color=#ff6f55>Not burning: buried in the ground</color>"
-                    : "<color=#ff6f55>Not burning: something is too close above the flames, the smoke can't get out</color>";
+                tone = Tone.Bad;
+                Vector3 pos = fire.transform.position;
+                bool buried = Heightmap.GetHeight(pos, out float h) && h > pos.y + fire.m_checkTerrainOffset;
+                return buried
+                    ? "Not burning: buried in the ground"
+                    : "Not burning: something is too close above the flames, the smoke can't get out";
             }
-            else if (Wet(__instance))
+            if (Wet(fire))
             {
+                tone = Tone.Warn;
                 bool rain = EnvMan.IsWet() &&
-                            !Cover.IsUnderRoof(__instance.transform.position + Vector3.up * __instance.m_coverCheckOffset);
+                            !Cover.IsUnderRoof(fire.transform.position + Vector3.up * fire.m_coverCheckOffset);
                 string cause = rain ? "rain and no roof above" : "strong wind and not enough cover (needs 70%)";
-                status = __instance.m_canTurnOff
-                    ? $"<color=#f0b04a>Goes out: {cause}</color>"
-                    : $"<color=#f0b04a>Burning low: {cause}</color>";
+                return fire.m_canTurnOff ? $"Goes out: {cause}" : $"Burning low: {cause}";
             }
-            if (status != null) __result += "\n" + status;
+            return null;
         }
     }
 }

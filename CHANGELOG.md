@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.11.1
+- Area tools: Left Ctrl + scroll now also works with the hoe (its pieces can't rotate, so the wheel zoomed the camera instead).
+- Area tools: the hoe and cultivator area grows in even steps (single, 2 × 2, 3 × 3, 4 × 4) instead of jumping from single straight to a very large 3 × 3. New setting: Area Tools → Max hoe size.
+- Area tools: the planting grid follows the cursor smoothly, and no longer jumps around as you look about with seeds that re-roll their rotation.
+- With the cultivator or hammer out the game hides hover text, so the info box now shows the crop you look at (growing, ready in about 12 min, or why it isn't growing) and the fire you look at (fuel, and why it burns low).
+
 ## 0.11.0
 New features
 - Comfort breakdown: while resting or sitting, lists what adds to your comfort, which pieces don't count because a better one of the same kind is near, and how long Rested will last.

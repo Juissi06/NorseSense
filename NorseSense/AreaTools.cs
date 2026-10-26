@@ -12,14 +12,17 @@ namespace NorseSense
     // the tool's id and whoever owns the terrain applies their own radius; tiles work for everyone.
     internal class AreaTools : MonoBehaviour
     {
-        const float RefreshInterval = 0.15f;
-        const float TileOverlap = 1.4f; // circles of radius r cover a square grid without gaps up to r * sqrt(2)
+        const float ValidateInterval = 0.1f; // positions follow the ghost every frame; growth checks a bit less often
+        const float ScrollCooldown = 0.08f;
+        // Tiles one radius apart: no gaps (circles cover a square grid up to r * sqrt(2)), and each size step adds
+        // about one radius on each side, so the area grows in even steps instead of jumping.
+        const float TileSpacing = 1f;
 
         internal enum Kind { None, Plant, Terrain }
 
         // Shapes the size key steps through: columns across, rows forward.
         static readonly int[,] PlantShapes = { { 1, 1 }, { 1, 3 }, { 1, 5 }, { 3, 3 }, { 5, 5 } };
-        static readonly int[,] TerrainShapes = { { 1, 1 }, { 3, 3 } };
+        static readonly int[,] TerrainShapes = { { 1, 1 }, { 2, 2 }, { 3, 3 }, { 4, 4 } };
 
         static readonly AccessTools.FieldRef<Player, GameObject> PlacementGhost =
             AccessTools.FieldRefAccess<Player, GameObject>("m_placementGhost");
@@ -42,7 +45,8 @@ namespace NorseSense
         static readonly List<Vector3> Cells = new List<Vector3>(25);
         static readonly List<bool> CellOk = new List<bool>(25);
         static Quaternion _gridRotation;
-        static float _spacing, _tileRadius;
+        static int _centerIndex;
+        static float _spacing, _tileRadius, _growRadius, _stableYaw = float.NaN, _scrollReadyAt;
 
         // A click that placed the centre piece; the extras follow once vanilla has paid for it.
         static Piece _pending;
@@ -50,6 +54,7 @@ namespace NorseSense
         static Quaternion _pendingRotation;
 
         readonly List<LineRenderer> _rings = new List<LineRenderer>();
+        readonly List<Vector3> _ringDrawnAt = new List<Vector3>();
         LineRenderer _outline;
         float _timer;
 
@@ -65,12 +70,27 @@ namespace NorseSense
 
         void Update()
         {
+            HandleScroll();
             _timer -= Time.deltaTime;
-            if (_timer > 0f) return;
-            _timer = RefreshInterval;
-            Refresh(Player.m_localPlayer);
+            bool validate = _timer <= 0f;
+            if (validate) _timer = ValidateInterval;
+            Refresh(Player.m_localPlayer, validate);
             DrawPreview();
         }
+
+        // Read the wheel directly: hoe pieces can't rotate, so for them the game zooms the camera instead of
+        // turning the piece, and there is no rotation change to react to.
+        static void HandleScroll()
+        {
+            if (!ScrollCaptured() || Plugin.IsTyping() || Hud.IsPieceSelectionVisible() || Time.time < _scrollReadyAt) return;
+            float scroll = ZInput.GetMouseScrollWheel();
+            if (Mathf.Abs(scroll) < 0.001f) return;
+            _scrollReadyAt = Time.time + ScrollCooldown;
+            StepSize(scroll > 0f ? 1 : -1);
+        }
+
+        // While true the wheel belongs to the area size: no piece rotation, no camera zoom.
+        internal static bool ScrollCaptured() => Current != Kind.None && ModifierHeld();
 
         void OnDisable()
         {
@@ -95,10 +115,11 @@ namespace NorseSense
             return Kind.None;
         }
 
-        static void Refresh(Player player)
+        static void Refresh(Player player, bool validate)
         {
+            int previous = Cells.Count;
             Cells.Clear();
-            CellOk.Clear();
+            if (validate || previous == 0) CellOk.Clear();
             Valid = 0;
             Current = KindOf(player, out var piece, out var ghost);
             if (Current == Kind.None) return;
@@ -112,15 +133,17 @@ namespace NorseSense
             if (Current == Kind.Plant)
             {
                 var plant = ghost.GetComponent<Plant>();
+                _growRadius = plant.m_growRadius;
                 _spacing = plant.m_growRadius + FootprintRadius(ghost) + 0.05f;
                 // Rows follow the ghost's rotation, so scroll, fine rotation and match rotation line them up with a
-                // fence. Pieces that re-roll their rotation each placement use the view direction instead.
-                _gridRotation = piece.m_randomInitBuildRotation ? ViewYaw(45f) : Quaternion.Euler(0f, ghost.transform.eulerAngles.y, 0f);
+                // fence. Pieces that re-roll their rotation each placement follow the view instead, but only once
+                // you turn well away, so the grid doesn't twitch as you look around.
+                _gridRotation = piece.m_randomInitBuildRotation ? StableViewYaw() : Quaternion.Euler(0f, ghost.transform.eulerAngles.y, 0f);
             }
             else
             {
                 _tileRadius = CoverRadius(piece.GetComponent<TerrainOp>().m_settings);
-                _spacing = _tileRadius * TileOverlap;
+                _spacing = _tileRadius * TileSpacing;
                 _gridRotation = Quaternion.Euler(0f, ghost.transform.eulerAngles.y, 0f);
             }
 
@@ -128,15 +151,17 @@ namespace NorseSense
             for (int r = 0; r < Rows; r++)
             for (int c = 0; c < Columns; c++)
             {
-                var offset = new Vector3((c - (Columns - 1) * 0.5f) * _spacing, 0f, (r - (Rows - 1) * 0.5f) * _spacing);
+                // The aimed spot is always one of the cells; even sizes grow forward and to the right of it.
+                var offset = new Vector3((c - (Columns - 1) / 2) * _spacing, 0f, (r - (Rows - 1) / 2) * _spacing);
+                if (offset == Vector3.zero) _centerIndex = Cells.Count;
                 Vector3 p = center + _gridRotation * offset;
                 // Levelling flattens every tile to the ghost's height; everything else sits on the ground there.
                 if (!level && ZoneSystem.instance != null && ZoneSystem.instance.GetGroundHeight(p, out float h)) p.y = h;
                 else if (level) p.y = center.y;
-                bool ok = offset == Vector3.zero || CellAllowed(Current, ghost, p);
+                int cell = Cells.Count;
                 Cells.Add(p);
-                CellOk.Add(ok);
-                if (ok) Valid++;
+                if (cell >= CellOk.Count) CellOk.Add(offset == Vector3.zero || CellAllowed(Current, ghost, p));
+                if (CellOk[cell]) Valid++;
             }
         }
 
@@ -169,30 +194,64 @@ namespace NorseSense
             return Mathf.Min(radius, 0.5f);
         }
 
-        static Quaternion ViewYaw(float snap)
+        static Quaternion StableViewYaw()
         {
             float yaw = GameCamera.instance != null ? GameCamera.instance.transform.eulerAngles.y : 0f;
-            return Quaternion.Euler(0f, Mathf.Round(yaw / snap) * snap, 0f);
+            if (float.IsNaN(_stableYaw) || Mathf.Abs(Mathf.DeltaAngle(yaw, _stableYaw)) > 35f)
+                _stableYaw = Mathf.Round(yaw / 45f) * 45f;
+            return Quaternion.Euler(0f, _stableYaw, 0f);
         }
 
         void DrawPreview()
         {
             bool show = Current != Kind.None && Cells.Count > 1;
             int rings = show && Current == Kind.Plant ? Cells.Count : 0;
-            while (_rings.Count < rings) _rings.Add(SpawnView.CreateLine(transform, "AreaCell", GoodColor, 0.04f));
+            while (_rings.Count < rings)
+            {
+                _rings.Add(SpawnView.CreateLine(transform, "AreaCell", GoodColor, 0.04f));
+                _ringDrawnAt.Add(Vector3.positiveInfinity);
+            }
             for (int i = 0; i < _rings.Count; i++)
             {
                 var ring = _rings[i];
-                bool on = i < rings && Cells[i] != Cells[Cells.Count / 2];
+                bool on = i < rings && i != _centerIndex; // the aimed spot is the planting preview's own ring
                 if (ring.gameObject.activeSelf != on) ring.gameObject.SetActive(on);
-                if (!on) continue;
+                if (!on)
+                {
+                    _ringDrawnAt[i] = Vector3.positiveInfinity;
+                    continue;
+                }
                 ring.startColor = ring.endColor = CellOk[i] ? GoodColor : BadColor;
-                SpawnView.DrawRing(ring, Cells[i], Mathf.Max(0.25f, _spacing * 0.45f));
+                if ((Cells[i] - _ringDrawnAt[i]).sqrMagnitude < 0.0001f) continue;
+                DrawFlatRing(ring, Cells[i], _growRadius);
+                _ringDrawnAt[i] = Cells[i];
             }
 
             bool outline = show && Current == Kind.Terrain;
             if (_outline.gameObject.activeSelf != outline) _outline.gameObject.SetActive(outline);
-            if (outline) DrawSquare(_outline, Cells[Cells.Count / 2], (Columns - 1) * 0.5f * _spacing + _tileRadius, _gridRotation);
+            if (outline) DrawSquare(_outline, AreaCenter(), (Columns - 1) * 0.5f * _spacing + _tileRadius, _gridRotation);
+        }
+
+        // Middle of the whole area, which for even sizes isn't the aimed spot.
+        static Vector3 AreaCenter()
+        {
+            Vector3 sum = Vector3.zero;
+            foreach (var cell in Cells) sum += cell;
+            Vector3 mid = sum / Cells.Count;
+            mid.y = Cells[_centerIndex].y;
+            return mid;
+        }
+
+        // Flat ring at the seed's height: cheap enough to move every frame with the ghost.
+        static void DrawFlatRing(LineRenderer lr, Vector3 center, float radius)
+        {
+            const int segments = 20;
+            lr.positionCount = segments;
+            for (int i = 0; i < segments; i++)
+            {
+                float a = i * Mathf.PI * 2f / segments;
+                lr.SetPosition(i, new Vector3(center.x + Mathf.Cos(a) * radius, center.y + 0.08f, center.z + Mathf.Sin(a) * radius));
+            }
         }
 
         // Square outline that follows the ground, for the area a hoe click will cover.
@@ -222,7 +281,7 @@ namespace NorseSense
             if (Current == Kind.Plant)
                 _plantShape = Mathf.Clamp(_plantShape + direction, 0, MaxPlantShape());
             else if (Current == Kind.Terrain)
-                _terrainShape = Mathf.Clamp(_terrainShape + direction, 0, TerrainShapes.GetLength(0) - 1);
+                _terrainShape = Mathf.Clamp(_terrainShape + direction, 0, Mathf.Clamp(Plugin.MaxHoeSize.Value, 1, TerrainShapes.GetLength(0)) - 1);
         }
 
         // The largest planting shape allowed by the "Max planting grid" setting.
@@ -261,10 +320,10 @@ namespace NorseSense
         internal static void OnPlaced(Player player, Piece piece)
         {
             _pending = null;
-            Refresh(player);
+            Refresh(player, true);
             if (Current == Kind.None || Cells.Count <= 1) return;
             PendingCells.Clear();
-            Vector3 center = Cells[Cells.Count / 2];
+            Vector3 center = Cells[_centerIndex];
             for (int i = 0; i < Cells.Count; i++)
                 if (Cells[i] != center) PendingCells.Add(Cells[i]);
             // Nearest first, so running out of seeds or stamina leaves a tidy patch.
@@ -320,13 +379,23 @@ namespace NorseSense
         static void Postfix(Player __instance, int __state)
         {
             if (__instance != Player.m_localPlayer) return;
-            int now = BuildHelpers.PlaceRotation(__instance);
-            if (now != __state && AreaTools.ModifierHeld() && AreaTools.Current != AreaTools.Kind.None)
-            {
-                BuildHelpers.PlaceRotation(__instance) = __state;
-                AreaTools.StepSize(now > __state ? 1 : -1);
-            }
+            // The wheel is the area size right now (AreaTools.HandleScroll), so undo the piece rotation it caused.
+            if (AreaTools.ScrollCaptured()) BuildHelpers.PlaceRotation(__instance) = __state;
             AreaTools.PlacePending(__instance);
+        }
+    }
+
+    // Pieces that can't rotate (the hoe's) make the wheel zoom the camera; hold the zoom while it sizes the area.
+    [HarmonyPatch(typeof(GameCamera), "UpdateCamera")]
+    static class AreaToolsZoomPatch
+    {
+        static readonly AccessTools.FieldRef<GameCamera, float> Distance = AccessTools.FieldRefAccess<GameCamera, float>("m_distance");
+
+        static void Prefix(GameCamera __instance, out float __state) => __state = Distance(__instance);
+
+        static void Postfix(GameCamera __instance, float __state)
+        {
+            if (AreaTools.ScrollCaptured()) Distance(__instance) = __state;
         }
     }
 
