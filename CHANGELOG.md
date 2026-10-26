@@ -2,7 +2,7 @@
 
 ## Unreleased
 - The comfort card no longer shows while you sit on a ship.
-- Spawn view: water where only sea creatures can spawn shows grey instead of red, and no longer counts as exposed ground or against the protected %. Read from the game's own spawn lists, so shallow water where necks spawn stays red.
+- Spawn view: water where only fish and sea serpents can spawn shows grey instead of red, on the ground and on the map, and no longer counts as exposed ground or against the protected %. Read from the game's own spawn lists and raids, so shallow water where necks, leeches or raiders can spawn stays red. With only water in view the bar says so instead of "Protected 100%".
 - Freecam no longer turns itself off at full health when food wearing off lowers your max health ("you took damage").
 - Marker manager: checkboxes no longer draw a grey bar behind their label, also right after you click them, and ticked ones show green.
 

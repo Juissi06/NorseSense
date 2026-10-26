@@ -14,6 +14,7 @@ namespace NorseSense
         static readonly Color32 ProtectedPixel = new Color32(50, 130, 255, 140);
         static readonly Color32 ExposedPixel = new Color32(255, 60, 25, 170);
         static readonly Color32 SteepPixel = new Color32(255, 215, 50, 70);
+        static readonly Color32 WaterPixel = new Color32(205, 205, 205, 45); // as on the ground grid: grey, only fish and serpents
         static readonly Color32 ClearPixel = new Color32(0, 0, 0, 0);
 
         Texture2D _texture;
@@ -142,6 +143,7 @@ namespace NorseSense
                         case SpawnCell.Protected: color = ProtectedPixel; break;
                         case SpawnCell.Exposed: color = ExposedPixel; break;
                         case SpawnCell.Steep: color = SteepPixel; break;
+                        case SpawnCell.Water: color = WaterPixel; break;
                     }
                 }
                 pixels[z * n + x] = color;

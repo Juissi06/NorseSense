@@ -38,33 +38,74 @@ namespace NorseSense
 
         // ---------- Water ----------
 
-        static readonly AccessTools.FieldRef<List<SpawnSystem>> SpawnSystems =
-            AccessTools.StaticFieldRefAccess<List<SpawnSystem>>(AccessTools.Field(typeof(SpawnSystem), "m_instances"));
+        static readonly System.Reflection.FieldInfo SpawnSystemsField = AccessTools.Field(typeof(SpawnSystem), "m_instances");
 
-        // Underwater ground where none of the world's spawn entries for that biome could put a land creature: the
-        // same altitude (height above the water line, which is at 30) and ocean depth checks as
-        // SpawnSystem.IsSpawnPointGood. Read from the game's own spawn lists, so modded spawns count too. Sea
-        // creatures are the ones that only spawn underwater or in the deep (serpents) and fish.
+        static SpawnSystem _builtFor;
+        static readonly List<SpawnSystem.SpawnData> Candidates = new List<SpawnSystem.SpawnData>();
+        static readonly Dictionary<int, List<SpawnSystem.SpawnData>> ByBiome = new Dictionary<int, List<SpawnSystem.SpawnData>>();
+
+        // Underwater ground where nothing but fish and sea serpents could spawn: every other entry in the world's
+        // spawn lists and in the raids is put through the same altitude (height above the water line) and ocean
+        // depth checks as SpawnSystem.IsSpawnPointGood. Read from the game's own lists, so modded spawns count too.
+        // Leeches and other swamp-water mobs count as a threat, since they're right by your base.
         static bool OnlySeaCreatures(Vector3 p, Heightmap.Biome biome, Heightmap.BiomeArea area, Heightmap hmap)
         {
-            var systems = SpawnSystems != null ? SpawnSystems() : null;
-            if (systems == null || systems.Count == 0 || systems[0] == null) return false; // can't tell: leave it as it was
+            var list = CandidatesFor(biome, area);
+            if (list == null) return false; // can't tell: leave it as it was
             float altitude = p.y - ZoneSystem.instance.m_waterLevel;
             float depth = -1f;
-            foreach (var list in systems[0].m_spawnLists)
-            foreach (var spawn in list.m_spawners)
+            foreach (var spawn in list)
             {
-                if (!spawn.m_enabled || spawn.m_prefab == null || (spawn.m_biome & biome) == 0 || (spawn.m_biomeArea & area) == 0) continue;
-                if (spawn.m_maxAltitude < 0f || spawn.m_minOceanDepth > 0f || spawn.m_prefab.GetComponent<Fish>() != null) continue;
                 if (altitude < spawn.m_minAltitude || altitude > spawn.m_maxAltitude) continue;
                 if (spawn.m_minOceanDepth != spawn.m_maxOceanDepth)
                 {
                     if (depth < 0f) depth = hmap.GetOceanDepth(p);
                     if (depth < spawn.m_minOceanDepth || depth > spawn.m_maxOceanDepth) continue;
                 }
-                return false; // a land creature could spawn here
+                return false; // something other than fish or a serpent could spawn here
             }
             return true;
+        }
+
+        // The entries that matter for one biome and area, worked out once per world: thousands of water cells are
+        // checked every grid rebuild.
+        static List<SpawnSystem.SpawnData> CandidatesFor(Heightmap.Biome biome, Heightmap.BiomeArea area)
+        {
+            var systems = SpawnSystemsField != null ? SpawnSystemsField.GetValue(null) as List<SpawnSystem> : null;
+            var system = systems != null && systems.Count > 0 ? systems[0] : null;
+            if (system == null) return null;
+            if (system != _builtFor)
+            {
+                _builtFor = system;
+                Candidates.Clear();
+                ByBiome.Clear();
+                foreach (var spawnList in system.m_spawnLists) Add(spawnList.m_spawners);
+                // Raids spawn through the same check, with their own entries.
+                if (RandEventSystem.instance != null)
+                    foreach (var ev in RandEventSystem.instance.m_events) Add(ev.m_spawn);
+            }
+            int key = (int)biome * 8 + (int)area;
+            if (!ByBiome.TryGetValue(key, out var list))
+            {
+                list = new List<SpawnSystem.SpawnData>();
+                foreach (var spawn in Candidates)
+                    if ((spawn.m_biome & biome) != 0 && (spawn.m_biomeArea & area) != 0) list.Add(spawn);
+                ByBiome[key] = list;
+            }
+            return list;
+        }
+
+        static void Add(List<SpawnSystem.SpawnData> spawns)
+        {
+            if (spawns == null) return;
+            foreach (var spawn in spawns)
+            {
+                if (spawn == null || !spawn.m_enabled || spawn.m_prefab == null) continue;
+                if (spawn.m_prefab.GetComponent<Fish>() != null) continue;
+                // Serpents: out at sea only, always underwater.
+                if (spawn.m_biome == Heightmap.Biome.Ocean && spawn.m_maxAltitude < 0f) continue;
+                Candidates.Add(spawn);
+            }
         }
 
         // ---------- Raids ----------

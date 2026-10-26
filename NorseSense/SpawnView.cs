@@ -488,20 +488,30 @@ namespace NorseSense
             Add(SpawnRules.ProtectedColor, "Protected: mobs can't spawn");
             Add(SpawnRules.ExposedColor, "Exposed: mobs can spawn");
             Add(SpawnRules.SteepColor, "Too steep for most mobs");
-            if (_water > 0) Add(SpawnRules.WaterColor, "Water: only sea creatures");
+            if (_water > 0) Add(SpawnRules.WaterColor, "Water: only fish and serpents");
             if (_ghostActive) Add(SpawnRules.PreviewColor, "Protected once placed");
             Add(PlayerRingColor, "No spawns within 40 m of a player");
             if (Plugin.ShowSpawners.Value) Add(NestSpawnColor, "Nest: ignores workbenches, destroy it");
 
             // Coverage bar: share of spawnable ground around you that's protected.
+            // Nothing spawnable at all (only open water, say) isn't "100% protected": it says so instead.
             int spawnable = _protected + _exposed + _steep;
-            int pct = spawnable > 0 ? Mathf.RoundToInt(100f * (_protected + _preview) / spawnable) : 100;
-            float coverage = pct / 100f;
-            _legend.BarFraction = coverage;
-            _legend.BarText = $"Protected <b>{pct}%</b>{(_preview > 0 ? $" <size=12><color={Ui.Muted}>(with preview)</color></size>" : "")}";
-            Color barColor = coverage >= 0.999f ? SpawnRules.ProtectedColor : Color.Lerp(SpawnRules.ExposedColor, SpawnRules.ProtectedColor, coverage);
-            barColor.a = 0.95f;
-            _legend.BarColor = barColor;
+            if (spawnable == 0)
+            {
+                _legend.BarFraction = 0f;
+                _legend.BarText = $"<color={Ui.Muted}>No ground to protect in view</color>";
+                _legend.BarColor = new Color(0.5f, 0.5f, 0.5f, 0.6f);
+            }
+            else
+            {
+                int pct = Mathf.RoundToInt(100f * (_protected + _preview) / spawnable);
+                float coverage = pct / 100f;
+                _legend.BarFraction = coverage;
+                _legend.BarText = $"Protected <b>{pct}%</b>{(_preview > 0 ? $" <size=12><color={Ui.Muted}>(with preview)</color></size>" : "")}";
+                Color barColor = coverage >= 0.999f ? SpawnRules.ProtectedColor : Color.Lerp(SpawnRules.ExposedColor, SpawnRules.ProtectedColor, coverage);
+                barColor.a = 0.95f;
+                _legend.BarColor = barColor;
+            }
 
             float cell = Plugin.OverlayCellSize.Value;
             _legend.Add(_exposedLeft > 0
