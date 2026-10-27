@@ -109,6 +109,7 @@ namespace NorseSense
         // what doesn't count.
         const float Pad = 10f, HeaderH = 24f, CellH = 30f, IconSize = 26f, Gap = 12f, FootH = 18f;
         readonly PanelMotion _motion = new PanelMotion();
+        internal static Rect LastRect; // for layout mode
         const int PerRow = 6;
 
         void OnGUI()
@@ -136,6 +137,7 @@ namespace NorseSense
             float h = Pad * 2f + HeaderH + rows * CellH + (foot != null ? FootH : 0f);
 
             Rect target = Place(w, h, sw, sh, scale);
+            LastRect = target;
             Rect box = _motion.Step(target);
             Color oldColor = GUI.color;
             GUI.color = new Color(oldColor.r, oldColor.g, oldColor.b, oldColor.a * _motion.Alpha);
@@ -178,6 +180,9 @@ namespace NorseSense
         static Rect Place(float w, float h, float sw, float sh, float scale)
         {
             const float margin = 10f;
+            // Put somewhere with layout mode: stays there.
+            if (Plugin.ComfortX.Value >= 0f && Plugin.ComfortY.Value >= 0f)
+                return new Rect(Plugin.ComfortX.Value * (sw - w - margin * 2f) + margin, Plugin.ComfortY.Value * (sh - h - margin * 2f) + margin, w, h);
             float right = sw - 24f, top = sh * 0.4f;
             var hud = Hud.instance;
             if (hud != null && hud.m_statusEffectListRoot != null &&

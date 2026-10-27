@@ -46,7 +46,9 @@ namespace NorseSense
         internal static ConfigEntry<bool> ShowComfortPreview;
         internal static ConfigEntry<bool> ShowBuildInfo;
         internal static ConfigEntry<KeyboardShortcut> BuildInfoToggleKey;
-        internal static ConfigEntry<float> BuildInfoY;
+        internal static ConfigEntry<float> BuildInfoY, BuildInfoX;
+        internal static ConfigEntry<float> ComfortX, ComfortY;
+        internal static ConfigEntry<KeyboardShortcut> LayoutKey;
         internal static ConfigEntry<KeyboardShortcut> RemovalLockKey;
         internal static ConfigEntry<bool> ShowShelterInfo;
         internal static ConfigEntry<bool> ShowTerrainLimits;
@@ -122,11 +124,17 @@ namespace NorseSense
             ModEnabled = Bind(general, "Enabled", true, "Turns the whole mod on or off, no restart needed.", "General");
             LegendScale = Bind(general, "UI scale", 1f, "Size of the legend, info box and other panels.", "General",
                 new AcceptableValueRange<float>(0.5f, 2f));
+            LayoutKey = Bind(general, "Layout key", new KeyboardShortcut(KeyCode.L, KeyCode.LeftControl),
+                "Move the panels: drag the legend, build info and comfort card where you want them. The key again or Esc when done.", "General");
             ShowKeyTips = Bind(general, "Key tips", true, "Lists the mod's keys for a few seconds the first time you build each session.", "Building");
             ShowComfortBreakdown = Bind(general, "Comfort breakdown", true,
                 "While sitting, a small card shows what adds to your comfort and how long Rested lasts.", "Resting");
             PickupRange = Bind(general, "Auto pickup range", 0f, "Item pickup radius (m). 0 = vanilla.", "Player",
                 new AcceptableValueRange<float>(0f, 10f));
+            ComfortX = Bind(general, "Comfort card position X", -1f, "Set by layout mode. -1 = automatic, under the status effects.", "General",
+                new AcceptableValueRange<float>(-1f, 1f), true);
+            ComfortY = Bind(general, "Comfort card position Y", -1f, "Set by layout mode. -1 = automatic, under the status effects.", "General",
+                new AcceptableValueRange<float>(-1f, 1f), true);
             AutoCompat = Bind(general, "Auto-adjust for other mods", true,
                 "Turns off features another mod already does (like fine rotation with Gizmo).", "Compatibility");
             ShowCompatWarnings = Bind(general, "Show warnings in game", true,
@@ -150,8 +158,8 @@ namespace NorseSense
                 new AcceptableValueRange<float>(1f, 4f), true);
             MapOverlayRadius = Bind(view, "Map overlay radius", 96f, "How far around you the map overlay checks (m). Only loaded ground works, about 100 m.",
                 "Spawn Display", new AcceptableValueRange<float>(32f, 160f), true);
-            LegendX = Bind(view, "Legend position X", 1f, "0 = left, 1 = right.", "Base View", new AcceptableValueRange<float>(0f, 1f), true);
-            LegendY = Bind(view, "Legend position Y", 0.6f, "0 = top, 1 = bottom.", "Base View", new AcceptableValueRange<float>(0f, 1f), true);
+            LegendX = Bind(view, "Legend position X", 1f, "0 = left, 1 = right. Easiest set with layout mode.", "Base View", new AcceptableValueRange<float>(0f, 1f), true);
+            LegendY = Bind(view, "Legend position Y", 0.6f, "0 = top, 1 = bottom. Easiest set with layout mode.", "Base View", new AcceptableValueRange<float>(0f, 1f), true);
 
             ShowBuildInfo = Bind(build, "Show build info", true, "The info box while building: rotation, comfort, shelter, support and more.", "Building");
             BuildInfoToggleKey = Bind(build, "Build info toggle key", new KeyboardShortcut(KeyCode.F8), "Shows or hides the build info.", "Building");
@@ -171,7 +179,10 @@ namespace NorseSense
             BuildStaminaMultiplier = Bind(build, "Stamina multiplier", 1f, "Stamina cost of building, removing and repairing. 0 = free, 1 = vanilla.",
                 "Stamina", new AcceptableValueRange<float>(0f, 1f), key: "Building multiplier");
             BuildDistance = Bind(build, "Build distance", 0f, "How far you can build (m). 0 = vanilla.", "Player", new AcceptableValueRange<float>(0f, 20f));
-            BuildInfoY = Bind(build, "Build info position Y", 0.78f, "0 = top, 1 = bottom.", "Building", new AcceptableValueRange<float>(0f, 1f), true);
+            BuildInfoX = Bind(build, "Build info position X", 0.5f, "0 = left, 1 = right. Easiest set with layout mode.", "Building",
+                new AcceptableValueRange<float>(0f, 1f), true);
+            BuildInfoY = Bind(build, "Build info position Y", 0.78f, "0 = top, 1 = bottom. Easiest set with layout mode.", "Building",
+                new AcceptableValueRange<float>(0f, 1f), true);
 
             FreecamKey = Bind(freecam, "Toggle key", new KeyboardShortcut(KeyCode.F10),
                 "In build mode, detaches the camera so you can fly around your build and place from there.", "Freecam");
@@ -239,6 +250,7 @@ namespace NorseSense
             _spawnViewObject.AddComponent<Freecam>();
             _spawnViewObject.AddComponent<AreaTools>();
             _spawnViewObject.AddComponent<MarkerManager>();
+            _spawnViewObject.AddComponent<LayoutMode>();
 
             _harmony = new Harmony(Guid);
             ModEnabled.SettingChanged += (s, e) => ApplyEnabled();

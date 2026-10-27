@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+- Layout mode (Ctrl + L): drag the legend, build info and comfort card where you want them; right-click one to put it back. Replaces fiddling with position sliders.
+- Settings in six sections (General, Base View, Building, Freecam, Farming, Map and Portals) instead of fourteen, in a sensible order, with the fiddly ones under ConfigurationManager's advanced settings. Your old values carry over.
+- Every panel has the same look: icons sit in inventory-style slots, and the legend and comfort card fade in and ease between sizes.
+- Clearer wording: "Open behind and to the left" and "71% covered, needs 80%" for shelter, monsters throughout the spawn legend, and the raid line says the base value it needs.
+
 ## 0.12.0
 - The comfort card no longer shows while you sit on a ship.
 - Spawn view: water where no monster but a sea serpent can spawn shows grey instead of red, on the ground and on the map, and no longer counts as exposed ground or against the protected %. Read from the game's own spawn lists and the raids you've unlocked, so shallow water where necks or leeches can spawn stays red, and water where only an unlocked raid could spawn something shows orange; fish, seagulls and other animals that never attack don't count. With only water in view the bar says so instead of "Protected 100%".

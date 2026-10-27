@@ -94,7 +94,8 @@ namespace NorseSense
             w = Mathf.Clamp(w, 260f, sw * 0.7f);
             float h = PadY * 2f + lines.Count * RowH + (lines.HintKeys.Count > 0 ? HintH + (lines.Count > 0 ? 7f : 0f) : 0f);
 
-            var target = new Rect((sw - w) * 0.5f, Plugin.BuildInfoY.Value * (sh - h), w, h);
+            var target = new Rect(Plugin.BuildInfoX.Value * (sw - w), Plugin.BuildInfoY.Value * (sh - h), w, h);
+            LastRect = target;
             Rect box = Animate(AvoidVanillaHud(target, sw, sh));
 
             Color oldColor = GUI.color;
@@ -139,6 +140,7 @@ namespace NorseSense
         }
 
         static Rect _rect;
+        internal static Rect LastRect; // where it was last placed, for layout mode
         static float _alpha, _lastDrawn = -10f, _lastStep, _width, _shrinkAt;
 
         // Eases the box towards its new size and place instead of jumping when a row comes or goes, fades it in

@@ -678,14 +678,14 @@ namespace NorseSense
         static void Postfix(ref string __result) => MarkerManagerHooks.AppendHint(ref __result);
     }
 
-    // While the manager is open, tell the game a text box is open: this frees the cursor and blocks
+    // While the manager or layout mode is open, tell the game a text box is open: this frees the cursor and blocks
     // movement, camera, the map key and the menu key, the same way typing on a sign does.
     [HarmonyPatch(typeof(TextInput), nameof(TextInput.IsVisible))]
     static class TextInputVisiblePatch
     {
         static void Postfix(ref bool __result)
         {
-            if (MarkerManager.IsOpen) __result = true;
+            if (MarkerManager.IsOpen || LayoutMode.Active) __result = true;
         }
     }
 
@@ -693,7 +693,7 @@ namespace NorseSense
     [HarmonyPatch(typeof(InventoryGui), nameof(InventoryGui.Show))]
     static class InventoryShowPatch
     {
-        static bool Prefix() => !MarkerManager.IsOpen;
+        static bool Prefix() => !MarkerManager.IsOpen && !LayoutMode.Active;
     }
 
     static class MarkerManagerHooks
