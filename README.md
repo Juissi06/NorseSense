@@ -40,6 +40,7 @@ Shows where mobs can and can't spawn, using the same checks the game itself uses
 ### Building
 - **Fine rotation:** hold **Left Alt** and scroll to rotate in 5° steps instead of 22.5°. Snapping still works.
 - **Match rotation:** **Left Alt + T** copies the exact rotation of the piece you're looking at. Looking at nothing resets fine rotation.
+- **Precision helpers:** while you hold **Left Alt**, the snap points of the piece you're placing (cyan) and of the pieces around it (white) are shown, the pair that snaps turns green, and the info box says how high the piece sits: *0.50 m above Wood floor*.
 - **Comfort preview:** when placing a chair, banner, rug and so on, shows the comfort level you'd have after placing it, or why it wouldn't add any, e.g. *Raven throne (+3) already counts as your chair*.
 - **Shelter readout:** while building under a roof or placing a comfort piece, shows whether your spot counts as shelter, and if not, why: *no roof above* or *open behind and to the left, 71% covered, needs 80%*. Directions are relative to where you look.
 - **Terrain limits:** with the hoe or pickaxe, shows how much further the ground can be dug or raised where you aim, e.g. *Ground: 6.2 m below original. Can dig 1.8 m deeper*. The game silently stops at 8 m above or below the original height.

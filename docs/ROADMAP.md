@@ -38,8 +38,8 @@ F7 cycles overlay modes instead of only switching spawns on and off: **Spawns â†
 
 ### Precision building (grows out of fine rotation, hold L Alt)
 Holding the fine-rotation key already means "I'm placing carefully", so it shows the precision helpers together instead of each needing a setting.
-4. **Snap points** of the ghost and of the piece you aim at, with the pair that will snap highlighted.
-5. **Height** of the ghost above the ground or the piece below, e.g. "2.0 m above Wood floor".
+4. [x] **Snap points** of the ghost and of the piece you aim at, with the pair that will snap highlighted.
+5. [x] **Height** of the ghost above the ground or the piece below, e.g. "2.0 m above Wood floor".
 
 ### Support readout
 6. **Removal preview**: while aiming at a piece with the hammer, pieces that would fall if you removed it are tinted red. Pairs naturally with the removal lock. Needs a support simulation, so the biggest item here.

@@ -174,6 +174,8 @@ namespace NorseSense
             lines.Add(_stationLine, piece);
             lines.Add(TerrainInfo.Line, piece);
             if (showRotation) lines.Add(piece, "Rotation", $"<b>{CurrentYaw(player):0.#}°</b>", $"{Plugin.FineRotationStep.Value:0.#}° fine steps");
+            lines.Add(PrecisionInfo.SnapLine, piece);
+            lines.Add(PrecisionInfo.HeightLine, piece);
             if (_showComfort) AddComfort(lines);
             lines.Add(shelterLine);
             lines.Add(_hoverLine);

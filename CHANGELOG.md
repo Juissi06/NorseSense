@@ -1,6 +1,7 @@
 # Changelog
 
 ## Unreleased
+- Precision helpers while holding Left Alt: snap points of the piece you place and of the pieces around it, the snapped pair in green, and the piece's height above the ground or the piece below.
 - Farm check: with the cultivator out, every crop around you gets its grow ring, and the ones that aren't growing say why (no open sky, too close, not cultivated...).
 - Planting preview and grids also keep out of a neighbour's grow space, not only the new seed's own, so planting can't stop a bigger neighbour growing. Grid seeds sit a little further apart.
 - Map layers: two toggles on the large map. Wards and stations shows each ward's area (green where you may build, red where you may not, grey when off) and crafting stations' build range; Portals draws a line between each pair, marks unpaired ones in orange and shows tags when zoomed in. Complete when you host; on a server it fills in as you travel.

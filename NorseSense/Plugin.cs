@@ -261,6 +261,7 @@ namespace NorseSense
             _spawnViewObject.AddComponent<RepairView>();
             _spawnViewObject.AddComponent<ComfortView>();
             _spawnViewObject.AddComponent<BuildHelpers>();
+            _spawnViewObject.AddComponent<PrecisionInfo>();
             _spawnViewObject.AddComponent<PlantPreview>();
             _spawnViewObject.AddComponent<TerrainInfo>();
             _spawnViewObject.AddComponent<PlacementInfo>();
