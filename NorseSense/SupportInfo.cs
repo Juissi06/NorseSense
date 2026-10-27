@@ -41,7 +41,7 @@ namespace NorseSense
             if (support >= max) return null; // grounded: nothing to worry about, keep the screen clear
             Tone tone = support < min ? Tone.Bad : support < min * 2f ? Tone.Warn : Tone.None;
             // The same scale and colours as the game's own support tint (WearNTear.GetSupportColorValue).
-            float shade = Mathf.Clamp01((support - min) / (max * 0.5f - min));
+            float shade = Mathf.Clamp01((support - min) / Mathf.Max(1f, max * 0.5f - min));
             return new InfoRow("Support", $"<b>{support:0}</b> / {max:0}", $"{name}, {material} falls below {min:0}", tone, piece.m_icon)
             {
                 Bar = shade,

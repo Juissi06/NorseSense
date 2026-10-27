@@ -318,6 +318,14 @@ namespace NorseSense
 
             foreach (var m in _moved) Carry(m.Key, m.Value);
 
+            // Ship settings from before the ship features moved to Seaworthy: nothing reads them any more.
+            foreach (var old in new List<ConfigDefinition>(orphans.Keys))
+                if (old.Section == "Ships")
+                {
+                    orphans.Remove(old);
+                    moved = true;
+                }
+
             if (!moved) return;
             Config.Save();
             Logger.LogInfo("Moved settings to their new sections.");
