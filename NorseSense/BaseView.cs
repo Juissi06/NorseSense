@@ -22,6 +22,7 @@ namespace NorseSense
         internal static Rect LegendRect;
         internal static float LegendDrawnAt = -10f;
         internal static bool LegendShowing => Time.unscaledTime - LegendDrawnAt < 0.25f;
+        static readonly PanelMotion LegendMotion = new PanelMotion();
 
         static bool InCycle(ViewMode mode)
         {
@@ -97,11 +98,16 @@ namespace NorseSense
             float h = pad * 2 + tabsH + 6f + (bar ? barH : 0f) + legend.Lines.Count * lineH + (statLines > 0 && keyLines > 0 ? 9f : 0f);
             float x = Plugin.LegendX.Value * (sw - w - 20f) + 10f;
             float y = Plugin.LegendY.Value * (sh - h - 20f) + 10f;
-            float cx = x + pad, cy = y + pad, inner = w - pad * 2;
 
             LegendRect = new Rect(x, y, w, h);
             LegendDrawnAt = Time.unscaledTime;
-            Ui.Panel(LegendRect);
+            Rect box = LegendMotion.Step(LegendRect);
+            Color oldColor = GUI.color;
+            GUI.color = new Color(oldColor.r, oldColor.g, oldColor.b, oldColor.a * LegendMotion.Alpha);
+            Ui.Panel(box);
+            // Laid out for the final size, clipped to the eased one.
+            GUI.BeginClip(box);
+            float cx = pad, cy = pad, inner = w - pad * 2;
             DrawTabs(cx, cy, inner, tabsH);
             cy += tabsH;
             Ui.Divider(cx, cy + 2f, inner);
@@ -133,6 +139,8 @@ namespace NorseSense
                 cy += lineH;
             }
 
+            GUI.EndClip();
+            GUI.color = oldColor;
             GUI.matrix = oldMatrix;
         }
 

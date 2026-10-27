@@ -110,7 +110,7 @@ namespace NorseSense
                 cx += AccentW + 6f;
                 if (anyIcon)
                 {
-                    Ui.Icon(new Rect(cx, y + (RowH - IconSize) * 0.5f, IconSize, IconSize), row.Icon);
+                    if (row.Icon != null) Ui.SlotIcon(new Rect(cx, y + (RowH - IconSize) * 0.5f, IconSize, IconSize), row.Icon);
                     cx += iconCol;
                 }
                 if (row.Label != null) Ui.Label(new Rect(cx, y, labelW + 4f, RowH), row.Label, Ui.Caption);

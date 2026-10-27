@@ -164,6 +164,25 @@ namespace NorseSense
             GUI.color = old;
         }
 
+        // A dark square with a faint gold edge, like an inventory slot, for an icon to sit in.
+        internal static void Slot(Rect r)
+        {
+            if (Event.current.type != EventType.Repaint) return;
+            Color old = GUI.color;
+            GUI.color = new Color(GoldColor.r, GoldColor.g, GoldColor.b, 0.22f * old.a);
+            GUI.DrawTexture(r, Texture2D.whiteTexture);
+            GUI.color = new Color(0f, 0f, 0f, 0.55f * old.a);
+            GUI.DrawTexture(new Rect(r.x + 1f, r.y + 1f, r.width - 2f, r.height - 2f), Texture2D.whiteTexture);
+            GUI.color = old;
+        }
+
+        // An icon sitting in a slot, the way every panel shows its icons.
+        internal static void SlotIcon(Rect r, Sprite sprite)
+        {
+            Slot(r);
+            if (sprite != null) Icon(new Rect(r.x + 2f, r.y + 2f, r.width - 4f, r.height - 4f), sprite);
+        }
+
         // Draws a game sprite (also from an atlas), keeping its aspect, with a soft shadow.
         internal static void Icon(Rect r, Sprite sprite)
         {

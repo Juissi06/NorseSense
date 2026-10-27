@@ -107,7 +107,8 @@ namespace NorseSense
         // A small card under the game's status effects, right below the Resting and Rested entries it explains:
         // total and Rested time on one line, then each piece that counts as its icon and value, and one line for
         // what doesn't count.
-        const float Pad = 10f, HeaderH = 24f, CellH = 28f, IconSize = 22f, Gap = 14f, FootH = 18f;
+        const float Pad = 10f, HeaderH = 24f, CellH = 30f, IconSize = 26f, Gap = 12f, FootH = 18f;
+        readonly PanelMotion _motion = new PanelMotion();
         const int PerRow = 6;
 
         void OnGUI()
@@ -127,18 +128,22 @@ namespace NorseSense
             // Cells: shelter first, then every comfort slot.
             int cells = _inShelter ? _entries.Count + 1 : 0;
             int rows = (cells + PerRow - 1) / PerRow;
-            float cellW = IconSize + 4f + Ui.LineWidth("<b>+3</b>", Ui.Small) + Gap;
+            float cellW = IconSize + 5f + Ui.LineWidth("<b>+3</b>", Ui.Small) + Gap;
             float w = Mathf.Max(Ui.LineWidth(header, Ui.Text) + 16f + Ui.LineWidth(rested, Ui.Small),
                 Mathf.Min(cells, PerRow) * cellW - Gap);
             if (foot != null) w = Mathf.Max(w, Ui.LineWidth(foot, Ui.Small));
             w = Mathf.Min(w, sw * 0.4f) + Pad * 2f;
             float h = Pad * 2f + HeaderH + rows * CellH + (foot != null ? FootH : 0f);
 
-            Rect box = Place(w, h, sw, sh, scale);
+            Rect target = Place(w, h, sw, sh, scale);
+            Rect box = _motion.Step(target);
+            Color oldColor = GUI.color;
+            GUI.color = new Color(oldColor.r, oldColor.g, oldColor.b, oldColor.a * _motion.Alpha);
             Ui.Panel(box);
-            float x = box.x + Pad, y = box.y + Pad;
+            GUI.BeginClip(box);
+            float x = Pad, y = Pad;
             Ui.Label(new Rect(x, y, w, HeaderH), header, Ui.Text);
-            Ui.Label(new Rect(box.xMax - Pad - Ui.LineWidth(rested, Ui.Small) - 2f, y, w, HeaderH), rested, Ui.Small);
+            Ui.Label(new Rect(w - Pad - Ui.LineWidth(rested, Ui.Small) - 2f, y, w, HeaderH), rested, Ui.Small);
             y += HeaderH;
 
             for (int i = 0; i < cells; i++)
@@ -157,12 +162,14 @@ namespace NorseSense
                     icon = e.Piece.m_icon;
                     value = e.Value > 0 ? $"<b>+{e.Value}</b>" : $"<color={Ui.Warn}>+0</color>";
                 }
-                Ui.Icon(new Rect(cx, cy + (CellH - IconSize) * 0.5f, IconSize, IconSize), icon);
-                Ui.Label(new Rect(cx + IconSize + 4f, cy, cellW, CellH), value, Ui.Small);
+                Ui.SlotIcon(new Rect(cx, cy + (CellH - IconSize) * 0.5f, IconSize, IconSize), icon);
+                Ui.Label(new Rect(cx + IconSize + 5f, cy, cellW, CellH), value, Ui.Small);
             }
             y += rows * CellH;
 
             if (foot != null) Ui.Label(new Rect(x, y, w - Pad * 2f, FootH), foot, Ui.Small);
+            GUI.EndClip();
+            GUI.color = oldColor;
             GUI.matrix = oldMatrix;
         }
 
