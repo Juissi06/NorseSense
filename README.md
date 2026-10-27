@@ -41,7 +41,7 @@ Shows where mobs can and can't spawn, using the same checks the game itself uses
 - **Fine rotation:** hold **Left Alt** and scroll to rotate in 5° steps instead of 22.5°. Snapping still works.
 - **Match rotation:** **Left Alt + T** copies the exact rotation of the piece you're looking at. Looking at nothing resets fine rotation.
 - **Comfort preview:** when placing a chair, banner, rug and so on, shows the comfort level you'd have after placing it, or why it wouldn't add any, e.g. *Raven throne (+3) already counts as your chair*.
-- **Shelter readout:** while building under a roof or placing a comfort piece, shows whether your spot counts as shelter, and if not, why: *no roof above* or *cover 71% of 80%, open behind, left (up)*. Directions are relative to where you look.
+- **Shelter readout:** while building under a roof or placing a comfort piece, shows whether your spot counts as shelter, and if not, why: *no roof above* or *open behind and to the left, 71% covered, needs 80%*. Directions are relative to where you look.
 - **Terrain limits:** with the hoe or pickaxe, shows how much further the ground can be dug or raised where you aim, e.g. *Ground: 6.2 m below original. Can dig 1.8 m deeper*. The game silently stops at 8 m above or below the original height.
 - **Support readout:** looking at a piece that isn't on the ground shows its exact support, e.g. *Wood beam: support 34 / 100 (wood falls below 10)*. The game only tints pieces blue to red.
 - **Placement reasons:** when a piece turns red, says why instead of just *Invalid placement*: *overlaps Wood beam*, *surface too steep (42°, max 37°)*, *Bed can't hold other pieces*, *too close to Chopping block*, *only in Plains*.
