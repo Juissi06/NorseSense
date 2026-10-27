@@ -114,6 +114,7 @@ Reading also **updates shared markers you already have** when someone renamed, r
 | Left Alt + scroll | Fine rotation while building |
 | Left Alt + T | Match or reset rotation |
 | Left Ctrl + scroll | Area size with the cultivator or hoe |
+| Left Ctrl + L | Layout mode: drag the legend, build info and comfort card where you want them |
 
 All keys can be changed in the config.
 
@@ -152,7 +153,9 @@ Delete the `BepInEx/plugins/NorseSense` folder, and optionally `BepInEx/config/N
 ## Configuration
 Settings are in `BepInEx/config/NorseSense.cfg`. With [Configuration Manager](https://thunderstore.io/c/valheim/p/shudnal/ConfigurationManager/) installed, press **F1** to change them in game. Changes take effect immediately.
 
-**General → Enabled** switches the whole mod on or off without restarting. Off removes every change Norse Sense makes to the game and hides all its overlays, as if it weren't installed.
+Settings come in six sections: **1. General**, **2. Base View**, **3. Building**, **4. Freecam**, **5. Farming** and **6. Map and Portals**. Fine-tuning settings (overlay sizes, positions, marker filters) are marked advanced, so Configuration Manager shows them once you tick *Advanced settings*. Panel positions are easiest to set with layout mode (**Left Ctrl + L**).
+
+**1. General → Enabled** switches the whole mod on or off without restarting. Off removes every change Norse Sense makes to the game and hides all its overlays, as if it weren't installed.
 
 ## Compatibility
 Norse Sense only adds to the game's code and never replaces it, so other mods' changes to the same code still run. When you load into a world, it checks for mods that overlap with its features:
