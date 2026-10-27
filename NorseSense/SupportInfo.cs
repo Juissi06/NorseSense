@@ -40,7 +40,13 @@ namespace NorseSense
 
             if (support >= max) return null; // grounded: nothing to worry about, keep the screen clear
             Tone tone = support < min ? Tone.Bad : support < min * 2f ? Tone.Warn : Tone.None;
-            return new InfoRow("Support", $"<b>{support:0}</b> / {max:0}", $"{name}, {material} falls below {min:0}", tone, piece.m_icon);
+            // The same scale and colours as the game's own support tint (WearNTear.GetSupportColorValue).
+            float shade = Mathf.Clamp01((support - min) / (max * 0.5f - min));
+            return new InfoRow("Support", $"<b>{support:0}</b> / {max:0}", $"{name}, {material} falls below {min:0}", tone, piece.m_icon)
+            {
+                Bar = shade,
+                BarColor = Color.Lerp(new Color(1f, 0f, 0f), new Color(0f, 1f, 0f), shade)
+            };
         }
     }
 }

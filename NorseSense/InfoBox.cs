@@ -15,6 +15,8 @@ namespace NorseSense
         internal string Value;
         internal string Detail;
         internal Tone Tone;
+        internal float Bar = -1f; // 0..1: a small bar after the value, e.g. support; < 0 for none
+        internal Color BarColor;
 
         internal InfoRow(string label, string value, string detail = null, Tone tone = Tone.None, Sprite icon = null)
         {
@@ -62,7 +64,7 @@ namespace NorseSense
     // up out of the way when it would cover the game's own build HUD or key hints.
     internal static class InfoBox
     {
-        const float RowH = 26f, PadX = 14f, PadY = 9f, IconSize = 20f, Gap = 8f, AccentW = 3f;
+        const float RowH = 26f, PadX = 14f, PadY = 9f, IconSize = 20f, Gap = 8f, AccentW = 3f, RowBarW = 64f, RowBarH = 8f;
         const float HintH = 24f, KeyH = 18f, ObstacleRefresh = 0.5f, Margin = 10f;
 
         static readonly List<Rect> Obstacles = new List<Rect>();
@@ -119,6 +121,11 @@ namespace NorseSense
 
                 float valueW = Ui.LineWidth(row.Value, Ui.Text);
                 Ui.Label(new Rect(cx, y, Mathf.Max(0f, right - cx), RowH), row.Value, Ui.Text);
+                if (row.Bar >= 0f)
+                {
+                    Ui.Bar(new Rect(cx + valueW + 10f, y + (RowH - RowBarH) * 0.5f, RowBarW, RowBarH), row.Bar, row.BarColor);
+                    valueW += 10f + RowBarW;
+                }
                 if (!string.IsNullOrEmpty(row.Detail) && cx + valueW + 10f < right)
                     Ui.Label(new Rect(cx + valueW + 10f, y + 1f, right - cx - valueW - 10f, RowH), row.Detail, Ui.Small);
                 y += RowH;
@@ -183,6 +190,7 @@ namespace NorseSense
         static float ValueWidth(InfoRow row)
         {
             float width = Ui.LineWidth(row.Value, Ui.Text);
+            if (row.Bar >= 0f) width += 10f + RowBarW;
             if (!string.IsNullOrEmpty(row.Detail)) width += 10f + Ui.LineWidth(row.Detail, Ui.Small);
             return width;
         }
