@@ -42,7 +42,7 @@ Holding the fine-rotation key already means "I'm placing carefully", so it shows
 5. [x] **Height** of the ghost above the ground or the piece below, e.g. "2.0 m above Wood floor".
 
 ### Support readout
-6. **Removal preview**: while aiming at a piece with the hammer, pieces that would fall if you removed it are tinted red. Pairs naturally with the removal lock. Needs a support simulation, so the biggest item here.
+6. [x] **Removal preview**: while aiming at a piece with the hammer, pieces that would fall if you removed it are tinted red. Pairs naturally with the removal lock. Needs a support simulation, so the biggest item here.
 
 ### Planting preview
 7. [x] **Farm check**: with the cultivator out, every crop nearby gets its grow ring, red with the reason if it isn't growing, not only the ones next to the seed you're placing.
@@ -57,7 +57,7 @@ Small toggles on the large map instead of separate features:
 - [x] Key tips the first time you build each session.
 - [x] Remember the base view mode between sessions.
 - [x] Remember the freecam position between uses.
-- One "Norse Sense" section at the top of ConfigurationManager with the most-used toggles; the rest grouped under it.
+- [x] One "Norse Sense" section at the top of ConfigurationManager with the most-used toggles; the rest grouped under it.
 
 ### Containers
 10. **Craft from nearby containers.** Workbench, forge and the build menu count materials in chests within range (say 20 m, same base), and take them from there when you craft or build. The recipe list shows how many come from chests. Notes:

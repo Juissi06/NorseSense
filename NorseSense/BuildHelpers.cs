@@ -180,6 +180,7 @@ namespace NorseSense
             lines.Add(shelterLine);
             lines.Add(_hoverLine);
             lines.Add(_supportLine);
+            lines.Add(RemovalPreview.Line);
 
             if (Freecam.Active) Freecam.AddHints(lines);
             else if (showRotation && !Compat.FineRotationDisabled)

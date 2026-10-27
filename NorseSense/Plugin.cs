@@ -58,6 +58,7 @@ namespace NorseSense
         internal static ConfigEntry<bool> ShowShelterInfo;
         internal static ConfigEntry<bool> ShowTerrainLimits;
         internal static ConfigEntry<bool> ShowSupportInfo;
+        internal static ConfigEntry<bool> ShowRemovalPreview;
         internal static ConfigEntry<bool> ShowStationInfo;
         internal static ConfigEntry<bool> ShowPlacementReasons;
         internal static ConfigEntry<bool> ShowKeyTips;
@@ -178,6 +179,8 @@ namespace NorseSense
             ShowComfortPreview = Bind(build, "Comfort preview", true, "The comfort you'd get after placing a comfort piece.", "Building");
             ShowShelterInfo = Bind(build, "Shelter readout", true, "Whether your spot counts as shelter, and if not, which sides are open.", "Building");
             ShowSupportInfo = Bind(build, "Support readout", true, "The exact support of the piece you look at and when it breaks.", "Building");
+            ShowRemovalPreview = Bind(build, "Removal preview", true,
+                "Hold the fine-rotation key (or lock removal) and aim at a piece: the pieces that would fall if you removed it are tinted red.", build);
             ShowStationInfo = Bind(build, "Station readout", true, "A crafting station's level, which extensions count and why others don't.", "Building");
             ShowPlacementReasons = Bind(build, "Placement reasons", true, "Why a piece can't be placed, e.g. what it overlaps.", "Building");
             ShowTerrainLimits = Bind(build, "Terrain limits", true, "How much more you can dig or raise the ground (the limit is 8 m).", "Building");
@@ -262,6 +265,7 @@ namespace NorseSense
             _spawnViewObject.AddComponent<ComfortView>();
             _spawnViewObject.AddComponent<BuildHelpers>();
             _spawnViewObject.AddComponent<PrecisionInfo>();
+            _spawnViewObject.AddComponent<RemovalPreview>();
             _spawnViewObject.AddComponent<PlantPreview>();
             _spawnViewObject.AddComponent<TerrainInfo>();
             _spawnViewObject.AddComponent<PlacementInfo>();

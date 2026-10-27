@@ -1,6 +1,7 @@
 # Changelog
 
 ## Unreleased
+- Removal preview: hold Left Alt (or lock removal with F6) and aim at a piece to see which pieces would fall if you removed it, tinted red, with a count in the info box.
 - Area tools: a 1 × 3 strip for the hoe and cultivator, along where you look, for paths and roads.
 - Repairs mode: pieces keep their tint while you hover them with the hammer instead of flickering back to normal.
 - Shelter readout: a small compass lights up the open sides and the sky instead of a long list of directions.

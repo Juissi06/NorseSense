@@ -48,6 +48,7 @@ Shows where mobs can and can't spawn, using the same checks the game itself uses
 - **Placement reasons:** when a piece turns red, says why instead of just *Invalid placement*: *overlaps Wood beam*, *surface too steep (42°, max 37°)*, *Bed can't hold other pieces*, *too close to Chopping block*, *only in Plains*.
 - **Crafting stations:** looking at a workbench, forge and so on shows its level and which extensions count, e.g. *Level 3 of 5*, *Adze: 5.6 m away, must be within 5 m*, *Doesn't count: second Tanning rack*, *Can't craft: too exposed, cover 55% of 70%*. While placing an extension: *Workbench level 3 » 4*, or why it adds nothing.
 - **Removal lock (F6):** stops the hammer from removing pieces, so you can't delete your build by accident.
+- **Removal preview:** hold **Left Alt** (or lock removal) and aim at a piece: everything that would fall if you removed it turns red, and the info box counts them: *Removing: 6 pieces would fall*. Worked out with the game's own support rules.
 - **F8** hides or shows the build info box. The box moves itself above the game's own build bar and key hints, so it never covers them.
 
 ### Freecam building (F10)
