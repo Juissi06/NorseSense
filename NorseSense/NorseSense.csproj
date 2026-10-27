@@ -21,6 +21,10 @@
         <HintPath>$(ValheimDir)\BepInEx\core\BepInEx.dll</HintPath>
         <Private>false</Private>
       </Reference>
+      <Reference Include="Unity.TextMeshPro">
+        <HintPath>$(ManagedDir)\Unity.TextMeshPro.dll</HintPath>
+        <Private>false</Private>
+      </Reference>
       <Reference Include="assembly_valheim">
         <HintPath>$(ManagedDir)\assembly_valheim.dll</HintPath>
         <Private>false</Private>

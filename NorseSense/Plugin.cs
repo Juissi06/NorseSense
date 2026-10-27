@@ -39,6 +39,10 @@ namespace NorseSense
         internal static ConfigEntry<bool> ShowOnMap;
         internal static ConfigEntry<float> MapOverlayRadius;
 
+        // Map layers
+        internal static ConfigEntry<bool> MapWards;
+        internal static ConfigEntry<bool> MapPortals;
+
         // Building
         internal static ConfigEntry<KeyCode> FineRotationModifier;
         internal static ConfigEntry<float> FineRotationStep;
@@ -77,6 +81,7 @@ namespace NorseSense
         // Farming
         internal static ConfigEntry<bool> ShowPlantingPreview;
         internal static ConfigEntry<bool> ShowPlantSpacing;
+        internal static ConfigEntry<bool> ShowFarmCheck;
 
         // Portals
         internal static ConfigEntry<bool> ShowTeleportBlockers;
@@ -194,6 +199,8 @@ namespace NorseSense
 
             ShowPlantingPreview = Bind(farming, "Planting preview", true, "Whether a seed will grow where you aim, and why not.", "Farming");
             ShowPlantSpacing = Bind(farming, "Show plant spacing", true, "The grow space of nearby plants. Red = not growing.", "Farming");
+            ShowFarmCheck = Bind(farming, "Farm check", true,
+                "With the cultivator out, every crop around you gets its grow ring, and the ones that aren't growing say why.", farming);
             AreaToolsEnabled = Bind(farming, "Area tools", true,
                 "Plant rows and grids of seeds, or hoe a bigger area, in one click. Each seed or tile costs the same as placing it yourself.",
                 "Area Tools", key: "Enabled");
@@ -208,6 +215,11 @@ namespace NorseSense
             MaxHoeSize = Bind(farming, "Max hoe size", 4, "Largest hoe and cultivator area, in tiles per side (each tile adds about one hoe radius).",
                 "Area Tools", new AcceptableValueRange<int>(1, 4), true);
 
+            MapWards = Bind(map, "Map: wards and stations", true,
+                "On the large map: ward areas (green = you may build, red = you may not, grey = off) and crafting stations' build range. Also a toggle on the map.",
+                map);
+            MapPortals = Bind(map, "Map: portals", true,
+                "On the large map: a line between each pair of portals, unpaired ones in orange, tags when zoomed in. Also a toggle on the map.", map);
             ShowPortalPairing = Bind(map, "Portal pairing", true, "Where a portal leads, or why it isn't connected.", "Portals", key: "Show pairing");
             ShowTeleportBlockers = Bind(map, "Teleport blockers", true, "The items that stop you from using a portal.", "Portals", key: "Show teleport blockers");
             EnableMarkerManager = Bind(map, "Marker manager", true, "Hold the modifier and use a cartography table to edit its markers.", "Cartography Table");
@@ -245,6 +257,7 @@ namespace NorseSense
             DontDestroyOnLoad(_spawnViewObject);
             _spawnViewObject.AddComponent<SpawnView>();
             _spawnViewObject.AddComponent<MapOverlay>();
+            _spawnViewObject.AddComponent<MapLayers>();
             _spawnViewObject.AddComponent<RepairView>();
             _spawnViewObject.AddComponent<ComfortView>();
             _spawnViewObject.AddComponent<BuildHelpers>();

@@ -1,6 +1,9 @@
 # Changelog
 
 ## Unreleased
+- Farm check: with the cultivator out, every crop around you gets its grow ring, and the ones that aren't growing say why (no open sky, too close, not cultivated...).
+- Planting preview and grids also keep out of a neighbour's grow space, not only the new seed's own, so planting can't stop a bigger neighbour growing. Grid seeds sit a little further apart.
+- Map layers: two toggles on the large map. Wards and stations shows each ward's area (green where you may build, red where you may not, grey when off) and crafting stations' build range; Portals draws a line between each pair, marks unpaired ones in orange and shows tags when zoomed in. Complete when you host; on a server it fills in as you travel.
 - Layout mode (Ctrl + L): drag the legend, build info and comfort card where you want them; right-click one to put it back. Replaces fiddling with position sliders.
 - Settings in six sections (General, Base View, Building, Freecam, Farming, Map and Portals) instead of fourteen, in a sensible order, with the fiddly ones under ConfigurationManager's advanced settings. Your old values carry over.
 - Every panel has the same look: icons sit in inventory-style slots, and the legend and comfort card fade in and ease between sizes.

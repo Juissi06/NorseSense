@@ -135,7 +135,8 @@ namespace NorseSense
             {
                 var plant = ghost.GetComponent<Plant>();
                 _growRadius = plant.m_growRadius;
-                _spacing = plant.m_growRadius + FootprintRadius(ghost) + 0.05f;
+                // Just outside each other's grow space, with a little room so rounding never puts two in reach.
+                _spacing = plant.m_growRadius + PlantPreview.FootprintRadius(ghost) + 0.1f;
                 // Rows follow the ghost's rotation, so scroll, fine rotation and match rotation line them up with a
                 // fence. Pieces that re-roll their rotation each placement follow the view instead, but only once
                 // you turn well away, so the grid doesn't twitch as you look around.
@@ -180,19 +181,6 @@ namespace NorseSense
         {
             if (Location.IsInsideNoBuildLocation(p) || !PrivateArea.CheckAccess(p, 0f, false, false)) return false;
             return kind != Kind.Plant || PlantPreview.WhyWontGrow(ghost.GetComponent<Plant>(), p) == null;
-        }
-
-        // Horizontal size of the seed's own collider, so neighbours sit just outside each other's grow space.
-        static float FootprintRadius(GameObject ghost)
-        {
-            float radius = 0f;
-            foreach (var col in ghost.GetComponentsInChildren<Collider>())
-            {
-                if (col.isTrigger) continue;
-                Vector3 e = col.bounds.extents;
-                radius = Mathf.Max(radius, Mathf.Max(e.x, e.z));
-            }
-            return Mathf.Min(radius, 0.5f);
         }
 
         static Quaternion StableViewYaw()

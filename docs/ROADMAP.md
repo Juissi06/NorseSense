@@ -45,12 +45,12 @@ Holding the fine-rotation key already means "I'm placing carefully", so it shows
 6. **Removal preview**: while aiming at a piece with the hammer, pieces that would fall if you removed it are tinted red. Pairs naturally with the removal lock. Needs a support simulation, so the biggest item here.
 
 ### Planting preview
-7. **Farm check**: with the cultivator out, every crop nearby gets its grow ring, red with the reason if it isn't growing, not only the ones next to the seed you're placing.
+7. [x] **Farm check**: with the cultivator out, every crop nearby gets its grow ring, red with the reason if it isn't growing, not only the ones next to the seed you're placing.
 
 ### Map layers (grows out of the spawn map overlay)
 Small toggles on the large map instead of separate features:
-8. **Workbenches and wards**: build ranges and ward areas, and whether you're permitted on each ward.
-9. **Portals**: lines between paired portals with their tags. Complete when hosting; on a dedicated server it fills in as you travel.
+8. [x] **Workbenches and wards**: build ranges and ward areas, and whether you're permitted on each ward.
+9. [x] **Portals**: lines between paired portals with their tags. Complete when hosting; on a dedicated server it fills in as you travel.
 
 ### Smoothness
 - [x] Info box eases between sizes and fades in instead of jumping when rows change.
@@ -77,7 +77,7 @@ Small toggles on the large map instead of separate features:
 - **Repairs mode:** re-tint a piece right after the game's own build-mode highlight resets it, so hovered pieces don't flicker.
 - **Freecam:** remember the camera position between uses, and an optional setting that stops it passing through walls.
 - **Area tools:** a 1 × 3 row shape for hoe paths (road strips), and new crops lining up with rows already planted.
-- **Planting grid spacing:** every seed in a grid must have enough room to grow, also once its neighbours are planted. Today the spacing is the seed's grow radius plus its own collider, which can be too tight. Space by the full grow space instead (about twice the grow radius, or the larger radius when crops differ), re-check each spot with the game's own grow test after the neighbours are placed, and skip or warn about spots that would end up "too close".
+- [x] **Planting grid spacing:** every seed in a grid must have enough room to grow, also once its neighbours are planted. Today the spacing is the seed's grow radius plus its own collider, which can be too tight. Space by the full grow space instead (about twice the grow radius, or the larger radius when crops differ), re-check each spot with the game's own grow test after the neighbours are placed, and skip or warn about spots that would end up "too close".
 
 ### UI and HUD
 - **Layout mode:** press a key, drag the info box, legend and comfort card where you want them, and it saves. Replaces the X/Y position sliders and solves most "it covers my other mod" cases.

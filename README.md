@@ -63,6 +63,8 @@ In build mode, press **F10** to detach the camera and fly around your build. You
 ### Farming
 - **Planting preview:** while planting with the cultivator, shows whether the seed will grow where you're aiming, and if not, why: *won't grow, too close to Carrot seedling*, *no open sky*, *wrong biome*, *too cold*...
 - **Plant spacing rings:** the grow space of the seed and of nearby plants is drawn on the ground. Plants that aren't growing are red.
+- **Two-way spacing:** the game only checks the new seed's own grow space, so you can plant inside a bigger neighbour's and stop *it* growing. The preview catches that too: *Won't grow, Turnip seedling would stop growing*.
+- **Farm check:** with the cultivator out, every crop within 20 m gets its ring, and each one that isn't growing says why under it: *no open sky*, *too close*, *not cultivated*.
 - **Crop info while farming:** the game hides hover text while the cultivator or hammer is out, so the build info box shows the crop you look at instead: *Growing, ready in about 12 min*, or why it isn't growing. Fires show their fuel and why they burn low.
 
 ### Area tools (Left Ctrl + scroll)
@@ -76,6 +78,13 @@ Hold **Left Ctrl** and scroll with the cultivator or hoe to work on more than on
 - **Where it leads:** looking at a connected portal shows how far its partner is, in which direction and in which biome, e.g. *Leads to: 1.4 km north-east, Swamp*.
 - **Why it isn't connected:** no other portal with the tag, every match already paired, or 3 or more portals sharing one tag (only two can pair).
 - **Teleport blockers:** lists exactly which items in your inventory stop you from teleporting, e.g. *Can't teleport: Copper ore x30, Tin x12*.
+
+### Map layers
+Two toggles on the large map, next to the game's own *public position* one:
+- **Wards and stations:** each ward's area, green where you may build, red where you may not, grey when it's switched off; and the build range of workbenches and other crafting stations.
+- **Portals:** a line between each pair of portals, unpaired portals in orange, and their tags once you zoom in.
+
+When you host, the whole world shows. On someone else's server the map shows what you've been near this session and fills in as you travel.
 
 ### Fires
 - Looking at a fire that has fuel but won't burn, or burns low, tells you why: *something is too close above the flames, the smoke can't get out*, *rain and no roof above*, *strong wind and not enough cover*.
