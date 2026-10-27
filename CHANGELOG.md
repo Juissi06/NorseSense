@@ -1,6 +1,7 @@
 # Changelog
 
 ## Unreleased
+- Planting grids space seeds so their grow rings touch instead of overlapping, which looked cramped.
 - Raise ground works with the area sizes too: every tile is raised, then the area is levelled to one height for a flat platform (two hoe uses per tile).
 - Harvest an area: hold Left Alt while picking a crop to pick every ripe crop of the same kind within 5 m. With a cultivator and seeds on you, they're replanted, paid like planting by hand. Turns itself off next to Plant Easily or Mass Farming; servers can cap or turn it off.
 - Cleaner look throughout:

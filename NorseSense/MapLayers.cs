@@ -361,9 +361,7 @@ namespace NorseSense
                         if (t == null) continue;
                         t.text = portal.Tag;
                         t.color = portal.Paired ? Color.white : UnpairedColor;
-                        var rt = t.rectTransform;
-                        rt.anchorMin = rt.anchorMax = Vector2.zero;
-                        rt.anchoredPosition = a + new Vector2(0f, -DotSize);
+                        t.rectTransform.anchoredPosition = a + new Vector2(0f, -DotSize - 2f);
                     }
                 }
             }
@@ -430,23 +428,39 @@ namespace NorseSense
         {
             while (_labels.Count <= index)
             {
-                var prefab = PinNamePrefab(_map);
-                if (prefab == null) return null;
-                // The game's own pin name, so tags look like marker names.
-                var go = Instantiate(prefab, _root);
-                go.name = "NorseSense_PortalTag";
-                var text = go.GetComponentInChildren<TMP_Text>(true);
-                if (text == null)
-                {
-                    Destroy(go);
-                    return null;
-                }
+                // A plain label in the font of the game's pin names, so tags look like marker names. (The pin
+                // name prefab itself has its own layout and delayed activation, which put copies in odd places.)
+                var font = PinNameFont();
+                if (font == null) return null;
+                var go = new GameObject("NorseSense_PortalTag", typeof(RectTransform), typeof(TextMeshProUGUI));
+                go.transform.SetParent(_root, false);
+                var text = go.GetComponent<TextMeshProUGUI>();
+                text.font = font.font;
+                text.fontSharedMaterial = font.fontSharedMaterial;
+                text.fontSize = Mathf.Max(14f, font.fontSize * 0.85f);
+                text.alignment = TextAlignmentOptions.Top;
+                text.textWrappingMode = TextWrappingModes.NoWrap;
                 text.raycastTarget = false;
+                var rt = text.rectTransform;
+                rt.anchorMin = rt.anchorMax = Vector2.zero;
+                rt.pivot = new Vector2(0.5f, 1f);
+                rt.sizeDelta = new Vector2(200f, 30f);
                 _labels.Add(text);
             }
             var label = _labels[index];
             if (!label.gameObject.activeSelf) label.gameObject.SetActive(true);
             return label;
+        }
+
+        TMP_Text _pinFont;
+
+        // The text style of the game's pin names, read once from its prefab.
+        TMP_Text PinNameFont()
+        {
+            if (_pinFont != null) return _pinFont;
+            var prefab = PinNamePrefab(_map);
+            _pinFont = prefab != null ? prefab.GetComponentInChildren<TMP_Text>(true) : null;
+            return _pinFont;
         }
 
         static void Place(RawImage image, Vector2 center, float size, Color color)

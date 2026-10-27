@@ -140,8 +140,9 @@ namespace NorseSense
             {
                 var plant = ghost.GetComponent<Plant>();
                 _growRadius = plant.m_growRadius;
-                // Just outside each other's grow space, with a little room so rounding never puts two in reach.
-                _spacing = plant.m_growRadius + PlantPreview.FootprintRadius(ghost) + 0.1f;
+                // Grow rings side by side, touching but not overlapping. The game would let them sit closer
+                // (just outside each other's grow space), but that reads as cramped and leaves no room to walk.
+                _spacing = plant.m_growRadius * 2f + 0.05f;
                 // Rows follow the ghost's rotation, so scroll, fine rotation and match rotation line them up with a
                 // fence. Pieces that re-roll their rotation each placement follow the view instead, but only once
                 // you turn well away, so the grid doesn't twitch as you look around.
