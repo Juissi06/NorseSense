@@ -111,7 +111,7 @@ namespace NorseSense
             if (!Game.Available(out string error))
             {
                 Debug.LogError("[Norse Sense] Marker manager unavailable on this game version: " + error);
-                player.Message(MessageHud.MessageType.Center, "Norse Sense: marker manager doesn't work on this game version");
+                Plugin.Tell("Marker manager", "doesn't work on this game version", Tone.Bad, true);
                 return;
             }
 

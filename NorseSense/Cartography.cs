@@ -58,9 +58,9 @@ namespace NorseSense
             if (_skippedType > 0) parts.Add($"{_skippedType} filtered types");
             int skipped = _skippedChecked + _skippedDuplicate + _skippedType + _skippedAll;
 
-            string text = skipped > 0 ? $"Map table: skipped {skipped} markers ({string.Join(", ", parts)})" : null;
-            if (_updated > 0) text = (text == null ? "Map table: " : text + ", ") + $"updated {_updated}";
-            if (text != null) Player.m_localPlayer.Message(MessageHud.MessageType.TopLeft, text);
+            string text = skipped > 0 ? $"skipped {skipped} markers ({string.Join(", ", parts)})" : null;
+            if (_updated > 0) text = (text == null ? "" : text + ", ") + $"updated {_updated}";
+            if (text != null) Plugin.Tell("Map table", text);
         }
 
         // Returns true if anything was removed from the table's list.

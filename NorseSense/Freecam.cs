@@ -69,12 +69,12 @@ namespace NorseSense
         {
             if (Compat.FreecamDisabled)
             {
-                player.Message(MessageHud.MessageType.TopLeft, $"Freecam is off because {Compat.FreecamDisabledBy} provides one.");
+                Plugin.Tell("Freecam", $"off, {Compat.FreecamDisabledBy} provides one", Tone.Warn);
                 return;
             }
             if (!player.InPlaceMode() || GameCamera.instance == null)
             {
-                player.Message(MessageHud.MessageType.TopLeft, "Freecam works in build mode: equip a hammer, hoe or cultivator.");
+                Plugin.Tell("Freecam", "works in build mode: equip a hammer, hoe or cultivator", Tone.Warn);
                 return;
             }
             if (WhyStop(player) != null) return;

@@ -135,7 +135,7 @@ namespace NorseSense
 
             if (Plugin.ShowCompatWarnings.Value && Player.m_localPlayer != null)
                 foreach (var note in notes)
-                    Player.m_localPlayer.Message(MessageHud.MessageType.TopLeft, "Norse Sense: " + note);
+                    Plugin.Tell("Norse Sense", note, Tone.Warn);
         }
 
         static MethodBase Method(Type type, string name) => AccessTools.Method(type, name);

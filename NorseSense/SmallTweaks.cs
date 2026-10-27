@@ -50,8 +50,7 @@ namespace NorseSense
             if (Time.time - _lastMessage > 1f)
             {
                 _lastMessage = Time.time;
-                __instance.Message(MessageHud.MessageType.Center,
-                    $"Piece removal is locked ({Plugin.RemovalLockKey.Value} to unlock)");
+                Plugin.Tell("Piece removal", $"locked, {Ui.KeyName(Plugin.RemovalLockKey.Value)} to unlock", Tone.Warn, true);
             }
             __result = false;
             return false;

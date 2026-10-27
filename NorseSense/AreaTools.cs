@@ -375,7 +375,7 @@ namespace NorseSense
                     tool.m_durability -= GetPlaceDurability(player, tool) * Game.m_durabilityRate;
             }
             if (stopped != null)
-                player.Message(MessageHud.MessageType.TopLeft, $"Area: placed {placed + 1} of {PendingCells.Count + 1}, {stopped}");
+                Plugin.Tell("Area", $"placed {placed + 1} of {PendingCells.Count + 1}, {stopped}", Tone.Warn);
         }
     }
 

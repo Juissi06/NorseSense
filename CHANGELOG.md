@@ -4,6 +4,7 @@
 - Layout mode (Ctrl + L): drag the legend, build info and comfort card where you want them; right-click one to put it back. Replaces fiddling with position sliders.
 - Settings in six sections (General, Base View, Building, Freecam, Farming, Map and Portals) instead of fourteen, in a sensible order, with the fiddly ones under ConfigurationManager's advanced settings. Your old values carry over.
 - Every panel has the same look: icons sit in inventory-style slots, and the legend and comfort card fade in and ease between sizes.
+- All messages in one style: the subject in gold, then a short phrase coloured by how much it matters ("Rotation: matched, 45°", "Area: placed 9 of 16, out of stamina").
 - Clearer wording: "Open behind and to the left" and "71% covered, needs 80%" for shelter, monsters throughout the spawn legend, and the raid line says the base value it needs.
 
 ## 0.12.0

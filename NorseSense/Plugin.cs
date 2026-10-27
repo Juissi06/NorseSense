@@ -388,9 +388,17 @@ namespace NorseSense
         }
 
         // Toggle feedback in one consistent style: "Spawn view: on".
-        internal static void Notify(string what, string state, bool on) =>
-            Player.m_localPlayer?.Message(MessageHud.MessageType.TopLeft,
-                $"<color={Ui.Gold}>{what}</color>: <color={(on ? Ui.Good : Ui.Muted)}>{state}</color>");
+        // Every message the mod shows looks the same: the gold subject, then a short phrase, coloured by how much
+        // it matters. In the corner, like the game's own pickup messages; Center only for a blocked action.
+        internal static void Tell(string what, string text, Tone tone = Tone.None, bool center = false)
+        {
+            string colour = tone == Tone.Good ? Ui.Good : tone == Tone.Warn ? Ui.Warn : tone == Tone.Bad ? Ui.Bad : Ui.Muted;
+            Player.m_localPlayer?.Message(center ? MessageHud.MessageType.Center : MessageHud.MessageType.TopLeft,
+                $"<color={Ui.Gold}>{what}</color>: <color={colour}>{text}</color>");
+        }
+
+        // A switch turned on or off.
+        internal static void Notify(string what, string state, bool on) => Tell(what, state, on ? Tone.Good : Tone.None);
 
         internal static bool IsTyping() =>
             (Chat.instance != null && Chat.instance.HasFocus()) ||

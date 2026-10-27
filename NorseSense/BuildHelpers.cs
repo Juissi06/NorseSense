@@ -94,12 +94,12 @@ namespace NorseSense
                 int steps = Mathf.RoundToInt(yaw / step);
                 PlaceRotation(player) = steps;
                 FineOffset = yaw - steps * step;
-                player.Message(MessageHud.MessageType.TopLeft, $"Rotation matched: {yaw:0.#}°");
+                Plugin.Tell("Rotation", $"matched, {yaw:0.#}°", Tone.Good);
             }
             else
             {
                 FineOffset = 0f;
-                player.Message(MessageHud.MessageType.TopLeft, "Fine rotation reset");
+                Plugin.Tell("Rotation", "fine steps reset");
             }
         }
 
