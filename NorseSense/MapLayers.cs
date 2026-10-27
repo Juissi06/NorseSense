@@ -20,11 +20,11 @@ namespace NorseSense
         const float DotSize = 10f;
 
         static readonly Color StationColor = new Color(Ui.GoldColor.r, Ui.GoldColor.g, Ui.GoldColor.b, 0.85f);
-        static readonly Color WardYoursColor = new Color(0.35f, 0.9f, 0.4f, 0.9f);
-        static readonly Color WardOtherColor = new Color(1f, 0.3f, 0.2f, 0.9f);
+        static readonly Color WardYoursColor = Ui.Alpha(Ui.GoodColor, 0.9f);
+        static readonly Color WardOtherColor = Ui.Alpha(Ui.BadColor, 0.9f);
         static readonly Color WardOffColor = new Color(0.75f, 0.75f, 0.75f, 0.6f);
-        static readonly Color PortalColor = new Color(0.7f, 0.5f, 1f, 0.9f);
-        static readonly Color UnpairedColor = new Color(1f, 0.6f, 0.15f, 0.95f);
+        static readonly Color PortalColor = new Color(1f, 1f, 1f, 0.85f);
+        static readonly Color UnpairedColor = Ui.Alpha(Ui.WarnColor, 0.95f);
         const float FillAlpha = 0.12f;
 
         static readonly AccessTools.FieldRef<ZDOMan, List<ZDO>[]> Sectors =

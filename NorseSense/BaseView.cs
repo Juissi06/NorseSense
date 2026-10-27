@@ -48,7 +48,7 @@ namespace NorseSense
                 break;
             }
             Plugin.BaseViewMode.Value = next;
-            Plugin.Notify("Base view", next == ViewMode.Off ? "off" : Name(next), next != ViewMode.Off);
+            // No message: the legend's tabs already show the mode, and it disappears when off.
         }
 
         internal static string Name(ViewMode mode) => mode.ToString();

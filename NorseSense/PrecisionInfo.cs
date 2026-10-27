@@ -15,9 +15,9 @@ namespace NorseSense
         const float SnappedDistance = 0.02f;
         const float DotSize = 7f, SnappedDotSize = 12f;
 
-        static readonly Color GhostDotColor = new Color(0.35f, 0.85f, 1f, 0.95f);
+        static readonly Color GhostDotColor = Ui.Alpha(Ui.GoldColor, 0.95f);
         static readonly Color PieceDotColor = new Color(1f, 1f, 1f, 0.75f);
-        static readonly Color SnappedColor = new Color(0.45f, 1f, 0.45f, 1f);
+        static readonly Color SnappedColor = Ui.GoodColor;
 
         static readonly AccessTools.FieldRef<Player, GameObject> PlacementGhost =
             AccessTools.FieldRefAccess<Player, GameObject>("m_placementGhost");
@@ -84,7 +84,7 @@ namespace NorseSense
             else if (_snapped)
                 SnapLine = new InfoRow("Snap", "Snapped", $"{_ghostPoints.Count} snap points on this piece", Tone.Good);
             else
-                SnapLine = new InfoRow("Snap", "Free", _piecePoints.Count > 0 ? "move a cyan point onto a white one" : "no snap points nearby");
+                SnapLine = new InfoRow("Snap", "Free", _piecePoints.Count > 0 ? "move a gold point onto a white one" : "no snap points nearby");
         }
 
         // Height of the ghost's lowest point above whatever is under it.

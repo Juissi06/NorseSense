@@ -14,12 +14,11 @@ namespace NorseSense
         const float GridRefreshInterval = 2f;
         const float MarkerRefreshInterval = 1.5f;
 
-        static readonly Color BaseRingColor = new Color(0.35f, 0.65f, 1f, 0.9f);
-        static readonly Color PlayerRingColor = new Color(1f, 1f, 1f, 0.5f);
-        static readonly Color NestTriggerColor = new Color(1f, 0.9f, 0.2f, 0.8f);
-        static readonly Color NestSpawnColor = new Color(1f, 0.2f, 0.1f, 0.9f);
-        static readonly Color SpawnerActiveColor = new Color(1f, 0.45f, 0.1f, 0.9f);
-        static readonly Color SpawnerBlockedColor = new Color(0.35f, 0.65f, 1f, 0.9f);
+        static readonly Color BaseRingColor = Ui.Alpha(Ui.GoodColor, 0.85f);
+        static readonly Color NestTriggerColor = Ui.Alpha(Ui.WarnColor, 0.8f);
+        static readonly Color NestSpawnColor = Ui.Alpha(Ui.BadColor, 0.9f);
+        static readonly Color SpawnerActiveColor = Ui.Alpha(Ui.BadColor, 0.8f);
+        static readonly Color SpawnerBlockedColor = Ui.Alpha(Ui.GoodColor, 0.8f);
 
         static readonly AccessTools.FieldRef<Player, GameObject> PlacementGhost =
             AccessTools.FieldRefAccess<Player, GameObject>("m_placementGhost");
@@ -39,12 +38,18 @@ namespace NorseSense
         float _markerTimer;
         Vector3 _gridCenter;
         int _protected, _exposed, _steep, _preview, _exposedLeft, _water, _raidOnly;
+        bool _noBase; // nothing protects any ground in view: the ground isn't painted, the legend says so
 
-        LineRenderer _playerRing;
         LineRenderer _ghostRing;
         LineRenderer _raidRing;
         RandomEvent _raidRingEvent;
-        readonly Dictionary<EffectArea, LineRenderer> _baseRings = new Dictionary<EffectArea, LineRenderer>();
+        // The outer edge of everything your base pieces protect, as arcs: one ring per fire or workbench turned
+        // a village into a tangle of circles.
+        readonly List<LineRenderer> _outline = new List<LineRenderer>();
+        readonly List<Vector3> _sphereCenters = new List<Vector3>();
+        readonly List<float> _sphereRadii = new List<float>();
+        readonly List<Vector3> _arc = new List<Vector3>();
+        int _outlineKey;
         readonly Dictionary<SpawnArea, GameObject> _nestMarkers = new Dictionary<SpawnArea, GameObject>();
         readonly Dictionary<CreatureSpawner, LineRenderer> _spawnerMarkers = new Dictionary<CreatureSpawner, LineRenderer>();
         readonly List<Object> _toRemove = new List<Object>();
@@ -77,7 +82,6 @@ namespace NorseSense
             mr.shadowCastingMode = ShadowCastingMode.Off;
             mr.receiveShadows = false;
 
-            _playerRing = CreateLine(_viewRoot.transform, "PlayerRing", PlayerRingColor, 0.15f);
             _raidRing = CreateLine(_viewRoot.transform, "RaidRing", SpawnRules.RaidColor, 0.4f);
             _raidRing.gameObject.SetActive(false);
             _ghostRing = CreateLine(transform, "GhostRing", SpawnRules.PreviewColor, 0.25f);
@@ -145,7 +149,6 @@ namespace NorseSense
             {
                 _colorTimer = 0.1f;
                 UpdateColors();
-                DrawRing(_playerRing, pos, SpawnRules.PlayerNoSpawnRadius);
             }
 
             _markerTimer -= dt;
@@ -305,6 +308,11 @@ namespace NorseSense
             preview.a *= 0.6f + 0.4f * Mathf.Sin(Time.time * 6f);
             _protected = _exposed = _steep = _preview = _exposedLeft = _water = _raidOnly = 0;
 
+            // Out in the open with no base, painting every patch of meadow red says nothing new.
+            _noBase = !_ghostActive;
+            for (int c = 0; c < _cells.Length && _noBase; c++)
+                if (_cells[c] == SpawnCell.Protected) _noBase = false;
+
             for (int c = 0; c < _cells.Length; c++)
             {
                 Color col;
@@ -330,6 +338,7 @@ namespace NorseSense
                     _exposedLeft++;
                 }
 
+                if (_noBase) col = Color.clear;
                 int v = c * 4;
                 _colors[v] = _colors[v + 1] = _colors[v + 2] = _colors[v + 3] = col;
             }
@@ -340,37 +349,91 @@ namespace NorseSense
 
         void RefreshBaseRings(Vector3 playerPos)
         {
-            float maxDist = Plugin.MaxDisplayDistance.Value;
+            _sphereCenters.Clear();
+            _sphereRadii.Clear();
             if (Plugin.ShowBaseRings.Value)
             {
+                float maxDist = Plugin.MaxDisplayDistance.Value;
                 foreach (var area in EffectArea.GetAllAreas())
                 {
                     if (area == null || (area.m_type & EffectArea.Type.PlayerBase) == 0) continue;
                     var col = area.GetComponent<Collider>();
                     if (col == null || !col.enabled || !area.gameObject.activeInHierarchy) continue; // skips build ghosts
-
-                    bool inRange = Utils.DistanceXZ(area.transform.position, playerPos) <= maxDist;
-                    _baseRings.TryGetValue(area, out var ring);
-                    if (ring == null)
-                    {
-                        if (!inRange || !TryGetSphere(area, out Vector3 center, out float radius)) continue;
-                        ring = CreateLine(_viewRoot.transform, "BaseRing", BaseRingColor, 0.12f);
-                        DrawRing(ring, center, radius);
-                        _baseRings[area] = ring;
-                    }
-                    ring.gameObject.SetActive(inRange);
+                    if (Utils.DistanceXZ(area.transform.position, playerPos) > maxDist) continue;
+                    if (!TryGetSphere(area, out Vector3 center, out float radius)) continue;
+                    _sphereCenters.Add(center);
+                    _sphereRadii.Add(radius);
                 }
             }
 
-            _toRemove.Clear();
-            foreach (var kv in _baseRings)
-                if (kv.Key == null || !Plugin.ShowBaseRings.Value) _toRemove.Add(kv.Key);
-            foreach (var key in _toRemove)
+            // Only redraw when the set of areas changed.
+            int key = _sphereCenters.Count;
+            for (int i = 0; i < _sphereCenters.Count; i++)
+                key = key * 31 + _sphereCenters[i].GetHashCode() * 7 + _sphereRadii[i].GetHashCode();
+            if (key == _outlineKey) return;
+            _outlineKey = key;
+
+            int used = 0;
+            for (int i = 0; i < _sphereCenters.Count; i++)
             {
-                var area = (EffectArea)key;
-                if (_baseRings[area] != null) Destroy(_baseRings[area].gameObject);
-                _baseRings.Remove(area);
+                Vector3 c = _sphereCenters[i];
+                float r = _sphereRadii[i];
+                int segments = Mathf.Clamp(Mathf.CeilToInt(r * 2f), 24, 200);
+                // Start the walk at a hidden point if there is one, so a visible arc is never split at the seam.
+                int startAt = 0;
+                for (int s = 0; s < segments; s++)
+                    if (!OnOutline(i, Point(c, r, s, segments))) { startAt = s; break; }
+
+                _arc.Clear();
+                for (int s = 0; s <= segments; s++)
+                {
+                    Vector3 p = Point(c, r, (startAt + s) % segments, segments);
+                    if (OnOutline(i, p)) _arc.Add(Grounded(p));
+                    else used = FlushArc(used);
+                }
+                used = FlushArc(used);
             }
+            for (int i = used; i < _outline.Count; i++)
+                if (_outline[i].gameObject.activeSelf) _outline[i].gameObject.SetActive(false);
+        }
+
+        static Vector3 Point(Vector3 c, float r, int s, int segments)
+        {
+            float a = s * Mathf.PI * 2f / segments;
+            return new Vector3(c.x + Mathf.Cos(a) * r, c.y, c.z + Mathf.Sin(a) * r);
+        }
+
+        // Not inside any other protected area.
+        bool OnOutline(int self, Vector3 p)
+        {
+            for (int j = 0; j < _sphereCenters.Count; j++)
+                if (j != self && Utils.DistanceXZ(p, _sphereCenters[j]) < _sphereRadii[j] - 0.05f) return false;
+            return true;
+        }
+
+        static Vector3 Grounded(Vector3 p)
+        {
+            var zs = ZoneSystem.instance;
+            if (zs != null && zs.GetGroundHeight(p, out float h)) p.y = Mathf.Max(h, zs.m_waterLevel);
+            p.y += 0.3f;
+            return p;
+        }
+
+        int FlushArc(int used)
+        {
+            if (_arc.Count < 2)
+            {
+                _arc.Clear();
+                return used;
+            }
+            if (used >= _outline.Count) _outline.Add(CreateLine(_viewRoot.transform, "BaseOutline", BaseRingColor, 0.12f));
+            var lr = _outline[used];
+            lr.loop = false;
+            lr.positionCount = _arc.Count;
+            lr.SetPositions(_arc.ToArray());
+            lr.gameObject.SetActive(true);
+            _arc.Clear();
+            return used + 1;
         }
 
         void RefreshSpawners(Vector3 playerPos)
@@ -454,10 +517,11 @@ namespace NorseSense
 
         void ClearMarkers()
         {
-            foreach (var ring in _baseRings.Values) if (ring != null) Destroy(ring.gameObject);
+            foreach (var line in _outline) if (line != null) Destroy(line.gameObject);
+            _outline.Clear();
+            _outlineKey = 0;
             foreach (var marker in _nestMarkers.Values) if (marker != null) Destroy(marker);
             foreach (var ring in _spawnerMarkers.Values) if (ring != null) Destroy(ring.gameObject);
-            _baseRings.Clear();
             _nestMarkers.Clear();
             _spawnerMarkers.Clear();
             _raidRingEvent = null;
@@ -517,19 +581,28 @@ namespace NorseSense
             _legend.Clear();
             void Add(Color c, string text) => _legend.Add(c, text);
 
-            Add(SpawnRules.ProtectedColor, "Protected: nothing spawns");
-            Add(SpawnRules.ExposedColor, "Exposed: monsters can spawn");
-            Add(SpawnRules.SteepColor, "Too steep for most monsters");
-            if (_raidOnly > 0) Add(SpawnRules.RaidOnlyColor, "Water: only raids can spawn here");
-            if (_water > 0) Add(SpawnRules.WaterColor, "Water: only serpents");
-            if (_ghostActive) Add(SpawnRules.PreviewColor, "Protected once placed");
-            Add(PlayerRingColor, "Nothing spawns within 40 m of a player");
-            if (Plugin.ShowSpawners.Value) Add(NestSpawnColor, "Nest: ignores workbenches, destroy it");
+            // Only the colours that are on the ground right now.
+            if (_noBase)
+            {
+                _legend.BarFraction = -1f;
+                _legend.Add($"<color={Ui.Muted}>No base here. A workbench, fire or bed protects the ground around it.</color>");
+            }
+            else
+            {
+                if (_protected > 0) Add(SpawnRules.ProtectedColor, "Safe: nothing spawns");
+                if (_exposedLeft > 0) Add(SpawnRules.ExposedColor, "Monsters can spawn");
+                if (_raidOnly > 0) Add(SpawnRules.RaidOnlyColor, "Only raids can spawn");
+                if (_steep > 0) Add(SpawnRules.SteepColor, "Too steep for most monsters");
+                if (_water > 0) Add(SpawnRules.WaterColor, "Water, only serpents");
+                if (_ghostActive) Add(SpawnRules.PreviewColor, "Safe once placed");
+            }
+            if (Plugin.ShowSpawners.Value && _nestMarkers.Count > 0) Add(NestSpawnColor, "Nest: workbenches don't stop it");
 
             // Coverage bar: share of spawnable ground around you that's protected.
             // Nothing spawnable at all (only open water, say) isn't "100% protected": it says so instead.
             int spawnable = _protected + _exposed + _steep;
-            if (spawnable == 0)
+            if (_noBase) { }
+            else if (spawnable == 0)
             {
                 _legend.BarFraction = 0f;
                 _legend.BarText = $"<color={Ui.Muted}>No ground to protect in view</color>";
@@ -540,24 +613,18 @@ namespace NorseSense
                 int pct = Mathf.RoundToInt(100f * (_protected + _preview) / spawnable);
                 float coverage = pct / 100f;
                 _legend.BarFraction = coverage;
-                _legend.BarText = $"Protected <b>{pct}%</b>{(_preview > 0 ? $" <size=12><color={Ui.Muted}>(with preview)</color></size>" : "")}";
+                _legend.BarText = $"<b>{pct}%</b> safe{(_preview > 0 ? $" <size=12><color={Ui.Muted}>once placed</color></size>" : "")}";
                 Color barColor = coverage >= 0.999f ? SpawnRules.ProtectedColor : Color.Lerp(SpawnRules.ExposedColor, SpawnRules.ProtectedColor, coverage);
                 barColor.a = 0.95f;
                 _legend.BarColor = barColor;
             }
 
-            float cell = Plugin.OverlayCellSize.Value;
-            _legend.Add(_exposedLeft > 0
-                ? $"Exposed ground: <color={Ui.Bad}>~{_exposedLeft * cell * cell:0} m²</color>"
-                : $"<color={Ui.Info}>No exposed ground in view</color>");
-
-            // Raids: RandEventSystem.CheckBase needs base value >= 3 (base pieces within 20 m of you).
-            if (_unlockedRaids == 0)
-                _legend.Add($"Raids: <color={Ui.Info}>none unlocked yet</color>");
-            else if (_baseValue >= SpawnRules.RaidBaseValue)
-                _legend.Add($"Raids: <color={Ui.Warn}>can target you here</color> <color={Ui.Muted}>(base {_baseValue}, needs {SpawnRules.RaidBaseValue})</color>");
-            else
-                _legend.Add($"Raids: <color={Ui.Info}>not here</color> <color={Ui.Muted}>(base {_baseValue}, needs {SpawnRules.RaidBaseValue})</color>");
+            // Raids: RandEventSystem.CheckBase needs base value >= 3 (base pieces within 20 m of you). Said only once
+            // a raid could happen at all, in plain words.
+            if (_unlockedRaids > 0 && !_noBase)
+                _legend.Add(_baseValue >= SpawnRules.RaidBaseValue
+                    ? $"<color={Ui.Warn}>Raids can come here</color>"
+                    : $"Raids won't come here <color={Ui.Muted}>(needs {SpawnRules.RaidBaseValue}+ base pieces like fires and beds)</color>");
 
             if (Compat.SpawnRulesChangedBy != null)
                 _legend.Add($"<color={Ui.Warn}>Spawn rules changed by {Compat.SpawnRulesChangedBy}: may be off</color>");

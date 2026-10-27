@@ -43,7 +43,7 @@ namespace NorseSense
         {
             Active = true;
             _dragging = null;
-            Plugin.Notify("Layout", "drag the panels, Esc when done", true);
+            // No message: layout mode shows its own instructions at the top.
         }
 
         void Stop()
@@ -52,7 +52,6 @@ namespace NorseSense
             Active = false;
             _dragging?.Save(_dragging.Rect, _sw, _sh); // a drag still in progress counts
             _dragging = null;
-            Plugin.Notify("Layout", "saved", false);
         }
 
         void OnDisable() => Active = false;

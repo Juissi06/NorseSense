@@ -15,11 +15,12 @@ namespace NorseSense
         const float Healthy = 0.995f;
 
         const float Badly = 0.5f;
-        // Two bands, not a gradient: on brown wood a red-to-yellow blend all reads as orange.
+        // Two bands, not a gradient: on brown wood a red-to-yellow blend all reads as orange. Deeper than the
+        // palette's red, since it's multiplied onto the piece's own colour. Weather (rain or water) is one blue.
         static readonly Color BadColor = new Color(0.62f, 0.03f, 0.03f);
         static readonly Color WornColor = new Color(1f, 0.92f, 0.12f);
         static readonly Color RainColor = new Color(0.35f, 0.62f, 1f);
-        static readonly Color WaterColor = new Color(0.2f, 0.9f, 0.85f);
+        static readonly Color WaterColor = RainColor;
 
         static readonly int ColorId = Shader.PropertyToID("_Color");
         static readonly int EmissionId = Shader.PropertyToID("_EmissionColor");
@@ -176,14 +177,14 @@ namespace NorseSense
             _legend.BarText = _damaged == 0
                 ? $"All {_pieces} pieces at full health"
                 : $"<b>{_damaged}</b> of {_pieces} need repair <size=12><color={Ui.Muted}>(lowest {_lowest * 100f:0}%)</color></size>";
-            _legend.BarColor = Color.Lerp(BadColor, new Color(0.45f, 0.85f, 0.4f), _legend.BarFraction);
+            _legend.BarColor = Color.Lerp(Ui.BadColor, Ui.GoodColor, _legend.BarFraction);
 
-            _legend.Add(BadColor, "Under 50% health");
-            _legend.Add(WornColor, "Damaged");
-            _legend.Add(RainColor, $"No roof, rain wears to 50% <size=12><color={Ui.Muted}>({_rain})</color></size>");
-            _legend.Add(WaterColor, $"In water, wears to 50% <size=12><color={Ui.Muted}>({_water})</color></size>");
+            if (_damaged > 0 && _lowest < Badly) _legend.Add(BadColor, "Badly damaged");
+            if (_damaged > 0) _legend.Add(WornColor, "Damaged");
+            if (_rain + _water > 0)
+                _legend.Add(RainColor, $"Rain or water wears it down <size=12><color={Ui.Muted}>(to half, {_rain + _water})</color></size>");
             if (EnvMan.IsWet() && _rain > 0)
-                _legend.Add($"<color={Ui.Warn}>Raining: {_rain} pieces wearing now</color>");
+                _legend.Add($"<color={Ui.Warn}>Raining now</color>");
             if (!string.IsNullOrEmpty(_materialsText))
                 _legend.Add($"<size=13><color={Ui.Muted}>{_materialsText}</color></size>");
         }

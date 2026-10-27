@@ -98,7 +98,6 @@ namespace NorseSense
             Position = GameCamera.instance.transform.position;
             if (_hasLast && Vector3.Distance(player.transform.position, _lastBody) < ResumeDistance)
                 Position = Sweep(Position, _lastCamera); // through the same walls as flying there would
-            Plugin.Notify("Freecam", "on", true);
         }
 
         internal static void Exit(string why)
@@ -114,8 +113,9 @@ namespace NorseSense
             if (_player != null) _player.m_maxPlaceDistance = _savedPlaceDistance;
             _player = null;
             PlayerTweaks.Apply(); // a build distance setting wins over what freecam saved
-            if (Player.m_localPlayer != null)
-                Plugin.Notify("Freecam", why != null ? "off, " + why : "off", false);
+            // Only when it ended by itself: turning it off with the key needs no message.
+            if (Player.m_localPlayer != null && why != null)
+                Plugin.Tell("Freecam", "off, " + why, Tone.Warn);
         }
 
         static string WhyStop(Player player)

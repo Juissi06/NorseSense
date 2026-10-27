@@ -11,11 +11,12 @@ namespace NorseSense
         const float RefreshInterval = 5f;
         const int CellsPerFrame = 1500;
 
-        static readonly Color32 ProtectedPixel = new Color32(50, 130, 255, 140);
-        static readonly Color32 ExposedPixel = new Color32(255, 60, 25, 170);
-        static readonly Color32 SteepPixel = new Color32(255, 215, 50, 70);
-        static readonly Color32 RaidOnlyPixel = new Color32(255, 150, 25, 150); // as on the ground grid: only raids
-        static readonly Color32 WaterPixel = new Color32(205, 205, 205, 45); // as on the ground grid: grey, only fish and serpents
+        // The ground grid's colours, a bit stronger so they read on the map.
+        static readonly Color32 ProtectedPixel = Ui.Alpha(Ui.GoodColor, 0.5f);
+        static readonly Color32 ExposedPixel = Ui.Alpha(Ui.BadColor, 0.55f);
+        static readonly Color32 SteepPixel = Ui.Alpha(Ui.WarnColor, 0.25f);
+        static readonly Color32 RaidOnlyPixel = Ui.Alpha(Ui.WarnColor, 0.5f); // only raids
+        static readonly Color32 WaterPixel = new Color32(205, 205, 205, 40); // grey, only fish and serpents
         static readonly Color32 ClearPixel = new Color32(0, 0, 0, 0);
 
         Texture2D _texture;
@@ -127,7 +128,7 @@ namespace NorseSense
             float originZ = Mathf.Floor(center.z / cell) * cell - n / 2 * cell;
             var pixels = new Color32[n * n];
 
-            int done = 0;
+            int done = 0, safe = 0;
             for (int z = 0; z < n; z++)
             for (int x = 0; x < n; x++)
             {
@@ -143,7 +144,7 @@ namespace NorseSense
                 {
                     switch (SpawnRules.Classify(ref p, raids))
                     {
-                        case SpawnCell.Protected: color = ProtectedPixel; break;
+                        case SpawnCell.Protected: color = ProtectedPixel; safe++; break;
                         case SpawnCell.Exposed: color = ExposedPixel; break;
                         case SpawnCell.Steep: color = SteepPixel; break;
                         case SpawnCell.Water: color = WaterPixel; break;
@@ -154,6 +155,9 @@ namespace NorseSense
 
                 if (++done % CellsPerFrame == 0) yield return null;
             }
+
+            // No base in reach: nothing to show, like the ground grid.
+            if (safe == 0) for (int i = 0; i < pixels.Length; i++) pixels[i] = ClearPixel;
 
             if (_texture == null || _texture.width != n)
             {

@@ -17,9 +17,10 @@ namespace NorseSense
         const float RefreshInterval = 3f;
         const int CellsPerFrame = 60;
 
-        internal static readonly Color NoShelterColor = new Color(1f, 0.55f, 0.2f, 0.28f);
-        internal static readonly Color LowColor = new Color(1f, 0.85f, 0.3f, 0.5f);
-        internal static readonly Color HighColor = new Color(0.3f, 1f, 0.45f, 0.6f);
+        // Unsheltered floor stays unpainted: comfort only counts under a roof, and the legend says so.
+        internal static readonly Color NoShelterColor = Color.clear;
+        internal static readonly Color LowColor = Ui.Alpha(Ui.WarnColor, 0.35f);
+        internal static readonly Color HighColor = Ui.Alpha(Ui.GoodColor, 0.45f);
 
         static int _floorMask;
 
@@ -221,10 +222,13 @@ namespace NorseSense
                 _legend.BarText = $"Here <b>{_here}</b>, best <b>{_best}</b> <size=12><color={Ui.Muted}>(Rested {ComfortInfo.RestedMinutes(_best):0} min)</color></size>";
                 _legend.BarColor = Color.Lerp(LowColor, HighColor, _legend.BarFraction);
             }
-            _legend.Add(HighColor, "Best (ringed)");
-            _legend.Add(LowColor, "Less comfort");
-            _legend.Add(NoShelterColor, "Not sheltered");
-            if (_sheltered == 0) _legend.Add($"<color={Ui.Warn}>No sheltered floor nearby</color>");
+            if (_sheltered == 0)
+                _legend.Add($"<color={Ui.Muted}>No sheltered floor nearby. Comfort only counts under a roof.</color>");
+            else
+            {
+                _legend.Add(HighColor, "Most comfort (ringed)");
+                _legend.Add(LowColor, "Less comfort");
+            }
         }
     }
 }

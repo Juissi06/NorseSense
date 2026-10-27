@@ -1,6 +1,15 @@
 # Changelog
 
 ## Unreleased
+- Cleaner look throughout:
+  - One set of colours for every overlay: green safe, yellow needs attention, red danger. Safe ground is green now instead of blue.
+  - Softer ground colours, and no painting at all out in the open with no base nearby: the legend just says so.
+  - One outline around the edge of your protected area instead of a ring around every fire and workbench.
+  - The legend lists only the colours in view, in plain words ("Raids can come here"), without square metres or base values.
+  - Comfort mode only paints sheltered floor.
+  - No more pop-up messages for things already on screen (base view mode, freecam on/off, layout mode).
+  - The build info box stays quiet unless something matters: support only when it's weak, "sheltered" only while placing comfort pieces. Hold Left Alt to see everything.
+  - Fine-tuning settings moved under Configuration Manager's advanced settings, leaving about 25 everyday ones.
 - Server limits: a server or host can cap freecam (or turn it off), area tool sizes, stamina multipliers, build distance and pickup range for every player with the mod. Players can pick less, never more. No effect on vanilla players or servers.
 - Removal preview: hold Left Alt (or lock removal with F6) and aim at a piece to see which pieces would fall if you removed it, tinted red, with a count in the info box.
 - Area tools: a 1 × 3 strip for the hoe and cultivator, along where you look, for paths and roads.

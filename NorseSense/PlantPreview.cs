@@ -18,10 +18,10 @@ namespace NorseSense
         const float RefreshInterval = 0.2f;
         const float NeighbourReach = 3f; // widest grow space of any vanilla seed plus a seed's footprint
 
-        static readonly Color GrowColor = new Color(0.45f, 1f, 0.45f, 0.9f);
-        static readonly Color BlockedColor = new Color(1f, 0.25f, 0.15f, 0.95f);
-        static readonly Color HealthyPlantColor = new Color(0.45f, 1f, 0.45f, 0.45f);
-        static readonly Color UnhealthyPlantColor = new Color(1f, 0.4f, 0.2f, 0.8f);
+        static readonly Color GrowColor = Ui.Alpha(Ui.GoodColor, 0.9f);
+        static readonly Color BlockedColor = Ui.Alpha(Ui.BadColor, 0.95f);
+        static readonly Color HealthyPlantColor = Ui.Alpha(Ui.GoodColor, 0.45f);
+        static readonly Color UnhealthyPlantColor = Ui.Alpha(Ui.BadColor, 0.8f);
 
         static readonly AccessTools.FieldRef<Player, GameObject> PlacementGhost =
             AccessTools.FieldRefAccess<Player, GameObject>("m_placementGhost");

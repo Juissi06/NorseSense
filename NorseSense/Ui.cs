@@ -17,6 +17,13 @@ namespace NorseSense
         internal const string Gold = "#e8c77e";
 
         internal static readonly Color GoldColor = new Color(0.91f, 0.78f, 0.49f);
+
+        // One colour language for every overlay: green = safe or good, yellow = needs attention, red = danger or a
+        // problem, gold = information. A mode adds at most one colour of its own (rain, water).
+        internal static readonly Color GoodColor = new Color(0.4f, 0.9f, 0.35f);
+        internal static readonly Color WarnColor = new Color(1f, 0.8f, 0.2f);
+        internal static readonly Color BadColor = new Color(1f, 0.25f, 0.15f);
+        internal static Color Alpha(Color c, float a) => new Color(c.r, c.g, c.b, a);
         static readonly Color ShadowColor = new Color(0f, 0f, 0f, 0.85f);
 
         static bool _ready;

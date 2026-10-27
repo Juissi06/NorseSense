@@ -177,9 +177,13 @@ namespace NorseSense
             lines.Add(PrecisionInfo.SnapLine, piece);
             lines.Add(PrecisionInfo.HeightLine, piece);
             if (_showComfort) AddComfort(lines);
+            // Quiet unless it matters: "sheltered, yes" only while placing comfort, support only when it's weak.
+            // Holding the careful key shows everything.
+            bool careful = FineModifierHeld();
+            if (shelterLine != null && shelterLine.Tone == Tone.Good && !_showComfort && !careful) shelterLine = null;
             lines.Add(shelterLine);
             lines.Add(_hoverLine);
-            lines.Add(_supportLine);
+            if (_supportLine != null && (careful || _supportLine.Tone == Tone.Warn || _supportLine.Tone == Tone.Bad)) lines.Add(_supportLine);
             lines.Add(RemovalPreview.Line);
 
             if (Freecam.Active) Freecam.AddHints(lines);

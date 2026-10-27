@@ -137,11 +137,11 @@ namespace NorseSense
                 new AcceptableValueRange<float>(0.5f, 2f));
             LayoutKey = Bind(general, "Layout key", new KeyboardShortcut(KeyCode.L, KeyCode.LeftControl),
                 "Move the panels: drag the legend, build info and comfort card where you want them. The key again or Esc when done.", "General");
-            ShowKeyTips = Bind(general, "Key tips", true, "Lists the mod's keys for a few seconds the first time you build each session.", "Building");
+            ShowKeyTips = Bind(general, "Key tips", true, "Lists the mod's keys for a few seconds the first time you build each session.", "Building", advanced: true);
             ShowComfortBreakdown = Bind(general, "Comfort breakdown", true,
                 "While sitting, a small card shows what adds to your comfort and how long Rested lasts.", "Resting");
             PickupRange = Bind(general, "Auto pickup range", 0f, "Item pickup radius (m). 0 = vanilla.", "Player",
-                new AcceptableValueRange<float>(0f, 10f));
+                new AcceptableValueRange<float>(0f, 10f), advanced: true);
             ComfortX = Bind(general, "Comfort card position X", -1f, "Set by layout mode. -1 = automatic, under the status effects.", "General",
                 new AcceptableValueRange<float>(-1f, 1f), true);
             ComfortY = Bind(general, "Comfort card position Y", -1f, "Set by layout mode. -1 = automatic, under the status effects.", "General",
@@ -156,17 +156,17 @@ namespace NorseSense
                 "They can still pick less. No effect on players without the mod.", general);
 
             ToggleKey = Bind(view, "Toggle key", new KeyboardShortcut(KeyCode.F7), "Steps through the base view modes, then off.", "Base View");
-            BaseViewModes = Bind(view, "Modes in cycle", ViewModes.All, "Which modes the toggle key steps through before switching off.", "Base View");
+            BaseViewModes = Bind(view, "Modes in cycle", ViewModes.All, "Which modes the toggle key steps through before switching off.", "Base View", advanced: true);
             BaseViewMode = Bind(view, "Mode", ViewMode.Off,
                 "What the base view shows. Spawns = where monsters can spawn, Repairs = damaged and weathering pieces, Comfort = comfort on the floor around you.",
-                "Base View");
+                "Base View", advanced: true);
             ShowLegend = Bind(view, "Show legend", true, "Colour key and stats while the base view is on.", "Base View");
             MaxDisplayDistance = Bind(view, "Max display distance", 100f, "How far away rings, nests and damaged pieces show up (m).", "Base View",
                 new AcceptableValueRange<float>(20f, 500f), true);
-            ShowBaseRings = Bind(view, "Show base coverage rings", true, "Spawns: rings around workbenches, fires and other pieces that stop spawns.", "Spawn Display");
-            ShowSpawners = Bind(view, "Show nests and spawners", true, "Spawns: marks greydwarf nests, bone piles and other spawners.", "Spawn Display");
-            PreviewWhileBuilding = Bind(view, "Preview while building", true, "Spawns: the area a workbench or fire will protect, while you place it.", "Spawn Display");
-            ShowOnMap = Bind(view, "Show on map", true, "Spawns: safe and unsafe ground on the minimap and map too.", "Spawn Display");
+            ShowBaseRings = Bind(view, "Show base coverage rings", true, "Spawns: rings around workbenches, fires and other pieces that stop spawns.", "Spawn Display", advanced: true);
+            ShowSpawners = Bind(view, "Show nests and spawners", true, "Spawns: marks greydwarf nests, bone piles and other spawners.", "Spawn Display", advanced: true);
+            PreviewWhileBuilding = Bind(view, "Preview while building", true, "Spawns: the area a workbench or fire will protect, while you place it.", "Spawn Display", advanced: true);
+            ShowOnMap = Bind(view, "Show on map", true, "Spawns: safe and unsafe ground on the minimap and map too.", "Spawn Display", advanced: true);
             OverlayRadius = Bind(view, "Overlay radius", 32f, "Size of the ground overlay around you (m). Bigger costs more FPS.", "Spawn Display",
                 new AcceptableValueRange<float>(10f, 64f), true);
             OverlayCellSize = Bind(view, "Overlay cell size", 2f, "Size of each overlay square (m). Smaller is more precise but costs more FPS.", "Spawn Display",
@@ -184,15 +184,15 @@ namespace NorseSense
             MatchRotationKey = Bind(build, "Match rotation key", new KeyboardShortcut(KeyCode.T, KeyCode.LeftAlt),
                 "Copies the rotation of the piece you look at. Look at nothing to reset.", "Building");
             RemovalLockKey = Bind(build, "Removal lock toggle key", new KeyboardShortcut(KeyCode.F6), "Locks the hammer so it can't remove pieces. Starts unlocked.", "Building");
-            ShowComfortPreview = Bind(build, "Comfort preview", true, "The comfort you'd get after placing a comfort piece.", "Building");
-            ShowShelterInfo = Bind(build, "Shelter readout", true, "Whether your spot counts as shelter, and if not, which sides are open.", "Building");
-            ShowSupportInfo = Bind(build, "Support readout", true, "The exact support of the piece you look at and when it breaks.", "Building");
+            ShowComfortPreview = Bind(build, "Comfort preview", true, "The comfort you'd get after placing a comfort piece.", "Building", advanced: true);
+            ShowShelterInfo = Bind(build, "Shelter readout", true, "Whether your spot counts as shelter, and if not, which sides are open.", "Building", advanced: true);
+            ShowSupportInfo = Bind(build, "Support readout", true, "The exact support of the piece you look at and when it breaks.", "Building", advanced: true);
             ShowRemovalPreview = Bind(build, "Removal preview", true,
-                "Hold the fine-rotation key (or lock removal) and aim at a piece: the pieces that would fall if you removed it are tinted red.", build);
-            ShowStationInfo = Bind(build, "Station readout", true, "A crafting station's level, which extensions count and why others don't.", "Building");
-            ShowPlacementReasons = Bind(build, "Placement reasons", true, "Why a piece can't be placed, e.g. what it overlaps.", "Building");
-            ShowTerrainLimits = Bind(build, "Terrain limits", true, "How much more you can dig or raise the ground (the limit is 8 m).", "Building");
-            ShowFireStatus = Bind(build, "Fire status", true, "Why a fire won't burn or burns low.", "Fires", key: "Show fire status");
+                "Hold the fine-rotation key (or lock removal) and aim at a piece: the pieces that would fall if you removed it are tinted red.", build, advanced: true);
+            ShowStationInfo = Bind(build, "Station readout", true, "A crafting station's level, which extensions count and why others don't.", "Building", advanced: true);
+            ShowPlacementReasons = Bind(build, "Placement reasons", true, "Why a piece can't be placed, e.g. what it overlaps.", "Building", advanced: true);
+            ShowTerrainLimits = Bind(build, "Terrain limits", true, "How much more you can dig or raise the ground (the limit is 8 m).", "Building", advanced: true);
+            ShowFireStatus = Bind(build, "Fire status", true, "Why a fire won't burn or burns low.", "Fires", key: "Show fire status", advanced: true);
             BuildStaminaMultiplier = Bind(build, "Stamina multiplier", 1f, "Stamina cost of building, removing and repairing. 0 = free, 1 = vanilla.",
                 "Stamina", new AcceptableValueRange<float>(0f, 1f), key: "Building multiplier");
             BuildDistance = Bind(build, "Build distance", 0f, "How far you can build (m). 0 = vanilla.", "Player", new AcceptableValueRange<float>(0f, 20f));
@@ -209,10 +209,10 @@ namespace NorseSense
             FreecamReach = Bind(freecam, "Reach", 8f, "How far from the camera you can place and remove pieces (m).", "Freecam",
                 new AcceptableValueRange<float>(3f, 15f), true);
 
-            ShowPlantingPreview = Bind(farming, "Planting preview", true, "Whether a seed will grow where you aim, and why not.", "Farming");
-            ShowPlantSpacing = Bind(farming, "Show plant spacing", true, "The grow space of nearby plants. Red = not growing.", "Farming");
+            ShowPlantingPreview = Bind(farming, "Planting preview", true, "Whether a seed will grow where you aim, and why not.", "Farming", advanced: true);
+            ShowPlantSpacing = Bind(farming, "Show plant spacing", true, "The grow space of nearby plants. Red = not growing.", "Farming", advanced: true);
             ShowFarmCheck = Bind(farming, "Farm check", true,
-                "With the cultivator out, every crop around you gets its grow ring, and the ones that aren't growing say why.", farming);
+                "With the cultivator out, every crop around you gets its grow ring, and the ones that aren't growing say why.", farming, advanced: true);
             AreaToolsEnabled = Bind(farming, "Area tools", true,
                 "Plant rows and grids of seeds, or hoe a bigger area, in one click. Each seed or tile costs the same as placing it yourself.",
                 "Area Tools", key: "Enabled");
@@ -229,19 +229,19 @@ namespace NorseSense
 
             MapWards = Bind(map, "Map: wards and stations", true,
                 "On the large map: ward areas (green = you may build, red = you may not, grey = off) and crafting stations' build range. Also a toggle on the map.",
-                map);
+                map, advanced: true);
             MapPortals = Bind(map, "Map: portals", true,
-                "On the large map: a line between each pair of portals, unpaired ones in orange, tags when zoomed in. Also a toggle on the map.", map);
-            ShowPortalPairing = Bind(map, "Portal pairing", true, "Where a portal leads, or why it isn't connected.", "Portals", key: "Show pairing");
-            ShowTeleportBlockers = Bind(map, "Teleport blockers", true, "The items that stop you from using a portal.", "Portals", key: "Show teleport blockers");
+                "On the large map: a line between each pair of portals, unpaired ones in orange, tags when zoomed in. Also a toggle on the map.", map, advanced: true);
+            ShowPortalPairing = Bind(map, "Portal pairing", true, "Where a portal leads, or why it isn't connected.", "Portals", key: "Show pairing", advanced: true);
+            ShowTeleportBlockers = Bind(map, "Teleport blockers", true, "The items that stop you from using a portal.", "Portals", key: "Show teleport blockers", advanced: true);
             EnableMarkerManager = Bind(map, "Marker manager", true, "Hold the modifier and use a cartography table to edit its markers.", "Cartography Table");
-            ManagerModifier = Bind(map, "Marker manager modifier", KeyCode.LeftShift, "Hold this when using a table to open the marker manager.", "Cartography Table");
+            ManagerModifier = Bind(map, "Marker manager modifier", KeyCode.LeftShift, "Hold this when using a table to open the marker manager.", "Cartography Table", advanced: true);
             MarkerImportMode = Bind(map, "Import markers", MarkerImport.Filtered,
                 "Which shared markers you take from a table. All = vanilla, Filtered = use the filters below, None = map only.", "Cartography Table");
-            SkipCrossedOutMarkers = Bind(map, "Skip crossed-out markers", true, "Filtered: skips crossed-out markers.", "Cartography Table");
+            SkipCrossedOutMarkers = Bind(map, "Skip crossed-out markers", true, "Filtered: skips crossed-out markers.", "Cartography Table", advanced: true);
             UpdateSharedMarkers = Bind(map, "Update existing markers", true,
-                "Updates shared markers you already have when they change. Your own markers are never touched.", "Cartography Table");
-            ShowImportSummary = Bind(map, "Show import summary", true, "How many markers were skipped or updated.", "Cartography Table");
+                "Updates shared markers you already have when they change. Your own markers are never touched.", "Cartography Table", advanced: true);
+            ShowImportSummary = Bind(map, "Show import summary", true, "How many markers were skipped or updated.", "Cartography Table", advanced: true);
             DuplicateMergeDistance = Bind(map, "Merge duplicates within", 20f, "Filtered: skips a marker if one with the same icon is this close (m). 0 = off.",
                 "Cartography Table", new AcceptableValueRange<float>(0f, 200f), true);
             SkipMarkerTypes = Bind(map, "Skip marker types", "", "Filtered: icons to never take, comma-separated (fire, house, hammer, dot, rune, Boss...).",

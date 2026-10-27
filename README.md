@@ -13,24 +13,28 @@ Vanilla balance: most features only show you information the game already uses. 
 ### Base view (F7)
 One key for three overlays. **F7** steps through **Spawns → Repairs → Comfort → off**, and the legend shows which mode you're in. You can leave modes out of the cycle in the config.
 
+Every overlay uses the same colours: **green** is safe or good, **yellow** needs attention, **red** is danger or a problem. The legend only lists the colours you can see right now.
+
 #### Spawns
 Shows where mobs can and can't spawn, using the same checks the game itself uses, so you can spawn-proof without guessing distances.
 
 - **Ground overlay** around you:
-  - 🟦 **Protected:** inside the range of a workbench, fire or other base piece. Mobs can't spawn here.
-  - 🟥 **Exposed:** mobs can spawn here.
-  - 🟨 **Steep:** too steep for most mobs.
+  - 🟩 **Safe:** inside the range of a workbench, fire or other base piece. Mobs can't spawn here.
+  - 🟥 **Monsters can spawn** here.
+  - 🟨 **Steep:** too steep for most mobs (faint), or water where only an unlocked raid could spawn something.
   - No colour: covered by a building or rock, so nothing spawns there.
+  - Out in the open with no base nearby, the ground isn't painted at all; the legend just says there's no base here.
+  - Nothing ever spawns within 40 m of a player, so the danger is while you're away.
 - **Map overlay:** the same colours on the minimap and the large map.
-- **Placement preview:** while holding a workbench, fire or other base piece, the area it will protect pulses cyan, even with the base view off.
-- **Base rings** around every piece that blocks spawns.
+- **Placement preview:** while holding a workbench, fire or other base piece, the area it will protect pulses green, even with the base view off.
+- **Base outline:** one line around the outer edge of everything your base pieces protect.
 - **Nests, bone piles and creature spawners** are marked. Nests ignore workbenches, so you'll need to destroy them.
 - **Raid check:** tells you whether raids can target you where you stand. Raids need at least 3 base pieces within 20 m of you. During a raid, its area is shown as an orange ring.
-- **Legend** with coverage % and how much exposed ground is left.
+- **Legend** with how much of the ground around you is safe.
 
 #### Repairs
 - **Damaged pieces** glow yellow, or deep red below 50% health, with a count and the lowest health in the legend, so a repair round misses nothing.
-- **Weathering:** pieces with no roof above are marked blue, because rain wears them down to 50% health. Pieces standing in water are marked teal. The game never tells you which pieces are exposed.
+- **Weathering:** pieces with no roof above, or standing in water, are marked blue, because rain and water wear them down to 50% health. The game never tells you which pieces are exposed.
 - **Base summary:** how many pieces are around you and the three materials they use most, e.g. *830 Wood, 96 Stone, 40 Core wood*.
 
 #### Comfort
@@ -40,7 +44,7 @@ Shows where mobs can and can't spawn, using the same checks the game itself uses
 ### Building
 - **Fine rotation:** hold **Left Alt** and scroll to rotate in 5° steps instead of 22.5°. Snapping still works.
 - **Match rotation:** **Left Alt + T** copies the exact rotation of the piece you're looking at. Looking at nothing resets fine rotation.
-- **Precision helpers:** while you hold **Left Alt**, the snap points of the piece you're placing (cyan) and of the pieces around it (white) are shown, the pair that snaps turns green, and the info box says how high the piece sits: *0.50 m above Wood floor*.
+- **Precision helpers:** while you hold **Left Alt**, the snap points of the piece you're placing (gold) and of the pieces around it (white) are shown, the pair that snaps turns green, and the info box says how high the piece sits: *0.50 m above Wood floor*.
 - **Comfort preview:** when placing a chair, banner, rug and so on, shows the comfort level you'd have after placing it, or why it wouldn't add any, e.g. *Raven throne (+3) already counts as your chair*.
 - **Shelter readout:** while building under a roof or placing a comfort piece, shows whether your spot counts as shelter, and if not, why: *no roof above* or *open*, with a small compass lighting up the open sides and the open sky, and *71% covered, needs 80%*. The compass turns with where you look.
 - **Terrain limits:** with the hoe or pickaxe, shows how much further the ground can be dug or raised where you aim, e.g. *Ground: 6.2 m below original. Can dig 1.8 m deeper*. The game silently stops at 8 m above or below the original height.

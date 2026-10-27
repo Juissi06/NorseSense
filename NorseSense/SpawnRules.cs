@@ -16,13 +16,14 @@ namespace NorseSense
 
         static readonly float MinNormalY = Mathf.Cos(DefaultMaxTilt * Mathf.Deg2Rad);
 
-        internal static readonly Color ProtectedColor = new Color(0.2f, 0.5f, 1f, 0.35f);
-        internal static readonly Color ExposedColor = new Color(1f, 0.25f, 0.1f, 0.4f);
-        internal static readonly Color SteepColor = new Color(1f, 0.85f, 0.2f, 0.22f);
-        internal static readonly Color PreviewColor = new Color(0.3f, 1f, 0.85f, 0.5f);
-        internal static readonly Color RaidColor = new Color(1f, 0.55f, 0f, 0.9f);
-        internal static readonly Color RaidOnlyColor = new Color(1f, 0.6f, 0.1f, 0.4f); // orange: exposed, but only to raids
-        internal static readonly Color WaterColor = new Color(0.8f, 0.8f, 0.8f, 0.16f); // neutral grey: not blue, so it never reads as protected
+        // Light washes, so the ground still shows through.
+        internal static readonly Color ProtectedColor = Ui.Alpha(Ui.GoodColor, 0.13f);
+        internal static readonly Color ExposedColor = Ui.Alpha(Ui.BadColor, 0.22f);
+        internal static readonly Color SteepColor = Ui.Alpha(Ui.WarnColor, 0.1f);
+        internal static readonly Color PreviewColor = Ui.Alpha(Ui.GoodColor, 0.45f); // pulses: protected once placed
+        internal static readonly Color RaidColor = Ui.Alpha(Ui.BadColor, 0.9f);
+        internal static readonly Color RaidOnlyColor = Ui.Alpha(Ui.WarnColor, 0.24f); // exposed, but only to raids
+        internal static readonly Color WaterColor = new Color(0.8f, 0.8f, 0.8f, 0.12f); // neutral grey: only serpents
 
         // Unknown = terrain not loaded here, so the game itself can't evaluate the point either.
         // raids: the ones that could start where you are (UnlockedRaids), taken once per scan so a scan that runs
