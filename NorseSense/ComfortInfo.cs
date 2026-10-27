@@ -175,22 +175,24 @@ namespace NorseSense
             GUI.matrix = oldMatrix;
         }
 
-        // Right side, under the status effect list and lined up with its right edge, so it follows the list as
-        // effects come and go. Keeps clear of the base view legend, which also defaults to the right.
+        internal const float Margin = 10f;
+
         internal static void SavePlace(Rect r, float sw, float sh)
         {
-            const float margin = 10f;
-            Plugin.ComfortX.Value = sw - r.width - margin * 2f > 0f ? Mathf.Clamp01((r.x - margin) / (sw - r.width - margin * 2f)) : 1f;
-            Plugin.ComfortY.Value = sh - r.height - margin * 2f > 0f ? Mathf.Clamp01((r.y - margin) / (sh - r.height - margin * 2f)) : 0.5f;
+            Ui.ToFraction(r, sw, sh, Margin, out float fx, out float fy);
+            Plugin.ComfortX.Value = fx;
+            Plugin.ComfortY.Value = fy;
         }
 
         // Where the card goes; layout mode uses the same function, so its box sits exactly where the card would.
+        // Once moved in layout mode it stays there. Otherwise on the right, under the status effect list and lined
+        // up with its right edge, so it follows the list as effects come and go, keeping clear of the base view
+        // legend, which also defaults to the right.
         internal static Rect Place(float w, float h, float sw, float sh, float scale)
         {
-            const float margin = 10f;
-            // Put somewhere with layout mode: stays there.
+            const float margin = Margin;
             if (Plugin.ComfortX.Value >= 0f && Plugin.ComfortY.Value >= 0f)
-                return new Rect(Plugin.ComfortX.Value * (sw - w - margin * 2f) + margin, Plugin.ComfortY.Value * (sh - h - margin * 2f) + margin, w, h);
+                return Ui.FromFraction(Plugin.ComfortX.Value, Plugin.ComfortY.Value, w, h, sw, sh, margin);
             float right = sw - 24f, top = sh * 0.4f;
             var hud = Hud.instance;
             if (hud != null && hud.m_statusEffectListRoot != null &&

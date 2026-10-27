@@ -116,7 +116,7 @@ namespace NorseSense
         IEnumerator Scan(Vector3 center)
         {
             // The water check needs to know which raids you've unlocked.
-            SpawnRules.RefreshUnlockedRaids(Player.m_localPlayer);
+            var raids = SpawnRules.UnlockedRaids(Player.m_localPlayer);
             _scanning = true;
             _scanCenter = center;
 
@@ -141,7 +141,7 @@ namespace NorseSense
                 Color32 color = ClearPixel;
                 if (Utils.DistanceXZ(p, center) <= radius)
                 {
-                    switch (SpawnRules.Classify(ref p))
+                    switch (SpawnRules.Classify(ref p, raids))
                     {
                         case SpawnCell.Protected: color = ProtectedPixel; break;
                         case SpawnCell.Exposed: color = ExposedPixel; break;

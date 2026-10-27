@@ -17,11 +17,13 @@ namespace NorseSense
             internal System.Func<float, float, Rect> Where; // current place on screen, from the settings
             internal System.Action<Rect, float, float> Save;
             internal System.Action Reset;
+            internal float Margin; // how close to the screen edge the panel itself goes
         }
 
         Box[] _boxes;
         Box _dragging;
         Vector2 _grab;
+        float _sw, _sh; // the scaled screen size of the last OnGUI, to save a drag cut short by Esc
 
         void Update()
         {
@@ -48,6 +50,7 @@ namespace NorseSense
         {
             if (!Active) return;
             Active = false;
+            _dragging?.Save(_dragging.Rect, _sw, _sh); // a drag still in progress counts
             _dragging = null;
             Plugin.Notify("Layout", "saved", false);
         }
@@ -62,6 +65,7 @@ namespace NorseSense
                 new Box
                 {
                     Name = "Legend",
+                    Margin = BaseView.Edge,
                     Where = (sw, sh) =>
                     {
                         Vector2 size = Size(BaseView.LegendRect, 320f, 250f);
@@ -80,7 +84,7 @@ namespace NorseSense
                     Where = (sw, sh) =>
                     {
                         Vector2 size = Size(InfoBox.LastRect, 360f, 110f);
-                        return InfoBox.Place(size.x, size.y, sw, sh);
+                        return InfoBox.PlaceOnScreen(size.x, size.y, sw, sh);
                     },
                     Save = InfoBox.SavePlace,
                     Reset = () =>
@@ -92,6 +96,7 @@ namespace NorseSense
                 new Box
                 {
                     Name = "Comfort card",
+                    Margin = ComfortInfo.Margin,
                     Where = (sw, sh) =>
                     {
                         Vector2 size = Size(ComfortInfo.LastRect, 260f, 90f);
@@ -124,6 +129,8 @@ namespace NorseSense
                 return;
             }
             Matrix4x4 oldMatrix = Ui.BeginScaled(out float sw, out float sh);
+            _sw = sw;
+            _sh = sh;
             Vector2 mouse = e.mousePosition;
 
             // Dim the game a little so the panels stand out, with the instructions at the top.
@@ -144,6 +151,12 @@ namespace NorseSense
             foreach (var box in Boxes())
             {
                 if (box != _dragging) box.Rect = box.Where(sw, sh);
+                // The comfort card keeps clear of the legend, so it should see the legend box being moved here.
+                if (box.Name == "Legend")
+                {
+                    BaseView.LegendRect = box.Rect;
+                    BaseView.LegendDrawnAt = Time.unscaledTime;
+                }
                 bool hot = box == _dragging || box.Rect.Contains(mouse);
                 Ui.Panel(box.Rect);
                 if (e.type == EventType.Repaint && hot) Ui.Accent(new Rect(box.Rect.x, box.Rect.y, box.Rect.width, 2f), Ui.GoldColor);
@@ -171,8 +184,10 @@ namespace NorseSense
                     {
                         var r = _dragging.Rect;
                         r.position = mouse - _grab;
-                        r.x = Mathf.Clamp(r.x, 0f, sw - r.width);
-                        r.y = Mathf.Clamp(r.y, 0f, sh - r.height);
+                        // The same edge margin the panel keeps, so it doesn't jump when let go.
+                        float m = _dragging.Margin;
+                        r.x = Mathf.Clamp(r.x, m, Mathf.Max(m, sw - r.width - m));
+                        r.y = Mathf.Clamp(r.y, m, Mathf.Max(m, sh - r.height - m));
                         _dragging.Rect = r;
                         e.Use();
                     }

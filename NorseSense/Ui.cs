@@ -164,6 +164,18 @@ namespace NorseSense
             GUI.color = old;
         }
 
+        // Panel positions are stored as fractions of the free room on screen (0 = left/top, 1 = right/bottom),
+        // kept a margin from the edges. These two convert both ways, so every panel and layout mode agree.
+        internal static Rect FromFraction(float fx, float fy, float w, float h, float sw, float sh, float margin) =>
+            new Rect(margin + fx * Mathf.Max(0f, sw - w - margin * 2f), margin + fy * Mathf.Max(0f, sh - h - margin * 2f), w, h);
+
+        internal static void ToFraction(Rect r, float sw, float sh, float margin, out float fx, out float fy)
+        {
+            float roomX = sw - r.width - margin * 2f, roomY = sh - r.height - margin * 2f;
+            fx = roomX > 0f ? Mathf.Clamp01((r.x - margin) / roomX) : 0.5f;
+            fy = roomY > 0f ? Mathf.Clamp01((r.y - margin) / roomY) : 0.5f;
+        }
+
         // A dark square with a faint gold edge, like an inventory slot, for an icon to sit in.
         internal static void Slot(Rect r)
         {

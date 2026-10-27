@@ -96,12 +96,12 @@ namespace NorseSense
             w = Mathf.Clamp(w, 260f, sw * 0.7f);
             float h = PadY * 2f + lines.Count * RowH + (lines.HintKeys.Count > 0 ? HintH + (lines.Count > 0 ? 7f : 0f) : 0f);
 
-            var target = Place(w, h, sw, sh);
+            var target = AvoidVanillaHud(Place(w, h, sw, sh), sw, sh);
             LastRect = target;
-            Rect box = Animate(AvoidVanillaHud(target, sw, sh));
+            Rect box = Animate(target);
 
             Color oldColor = GUI.color;
-            GUI.color = new Color(oldColor.r, oldColor.g, oldColor.b, oldColor.a * _alpha);
+            GUI.color = new Color(oldColor.r, oldColor.g, oldColor.b, oldColor.a * Motion.Alpha);
             Ui.Panel(box);
             // Contents are laid out relative to the box and clipped by it, so rows slide in as it grows.
             GUI.BeginClip(box);
@@ -148,7 +148,6 @@ namespace NorseSense
 
         internal static Rect LastRect; // where it was last placed, for layout mode
         static readonly PanelMotion Motion = new PanelMotion();
-        static float _alpha => Motion.Alpha;
         static float _lastDrawn = -10f, _width, _shrinkAt;
 
         // Holds the width briefly before shrinking so changing text doesn't make it twitch; the fade, slide and
@@ -171,12 +170,16 @@ namespace NorseSense
 
         // Where the settings put a box of this size; layout mode uses the same pair.
         internal static Rect Place(float w, float h, float sw, float sh) =>
-            new Rect(Plugin.BuildInfoX.Value * (sw - w), Plugin.BuildInfoY.Value * (sh - h), w, h);
+            Ui.FromFraction(Plugin.BuildInfoX.Value, Plugin.BuildInfoY.Value, w, h, sw, sh, 0f);
+
+        // Where it really shows: the settings' place, moved up off the game's build HUD if it would cover it.
+        internal static Rect PlaceOnScreen(float w, float h, float sw, float sh) => AvoidVanillaHud(Place(w, h, sw, sh), sw, sh);
 
         internal static void SavePlace(Rect r, float sw, float sh)
         {
-            Plugin.BuildInfoX.Value = sw > r.width ? Mathf.Clamp01(r.x / (sw - r.width)) : 0.5f;
-            Plugin.BuildInfoY.Value = sh > r.height ? Mathf.Clamp01(r.y / (sh - r.height)) : 0.5f;
+            Ui.ToFraction(r, sw, sh, 0f, out float fx, out float fy);
+            Plugin.BuildInfoX.Value = fx;
+            Plugin.BuildInfoY.Value = fy;
         }
 
         static float ValueWidth(InfoRow row)

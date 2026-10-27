@@ -141,16 +141,17 @@ namespace NorseSense
             GUI.matrix = oldMatrix;
         }
 
-        const float Edge = 10f;
+        internal const float Edge = 10f;
 
         // Where the settings put a legend of this size; layout mode uses the same pair.
         internal static Rect PlaceLegend(float w, float h, float sw, float sh) =>
-            new Rect(Plugin.LegendX.Value * (sw - w - Edge * 2f) + Edge, Plugin.LegendY.Value * (sh - h - Edge * 2f) + Edge, w, h);
+            Ui.FromFraction(Plugin.LegendX.Value, Plugin.LegendY.Value, w, h, sw, sh, Edge);
 
         internal static void SaveLegendPlace(Rect r, float sw, float sh)
         {
-            Plugin.LegendX.Value = sw - r.width - Edge * 2f > 0f ? Mathf.Clamp01((r.x - Edge) / (sw - r.width - Edge * 2f)) : 1f;
-            Plugin.LegendY.Value = sh - r.height - Edge * 2f > 0f ? Mathf.Clamp01((r.y - Edge) / (sh - r.height - Edge * 2f)) : 0.5f;
+            Ui.ToFraction(r, sw, sh, Edge, out float fx, out float fy);
+            Plugin.LegendX.Value = fx;
+            Plugin.LegendY.Value = fy;
         }
 
         static float TabsWidth()

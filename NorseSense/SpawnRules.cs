@@ -25,7 +25,9 @@ namespace NorseSense
         internal static readonly Color WaterColor = new Color(0.8f, 0.8f, 0.8f, 0.16f); // neutral grey: not blue, so it never reads as protected
 
         // Unknown = terrain not loaded here, so the game itself can't evaluate the point either.
-        internal static SpawnCell Classify(ref Vector3 p)
+        // raids: the ones that could start where you are (UnlockedRaids), taken once per scan so a scan that runs
+        // over several frames judges every cell the same way.
+        internal static SpawnCell Classify(ref Vector3 p, List<RandomEvent> raids)
         {
             var zs = ZoneSystem.instance;
             zs.GetGroundData(ref p, out Vector3 normal, out Heightmap.Biome biome, out Heightmap.BiomeArea area, out Heightmap hmap);
@@ -34,7 +36,7 @@ namespace NorseSense
             if (EffectArea.IsPointInsideArea(p, EffectArea.Type.PlayerBase)) return SpawnCell.Protected;
             if (p.y < zs.m_waterLevel)
             {
-                var water = InWater(p, normal, biome, area, hmap);
+                var water = InWater(p, normal, biome, area, hmap, raids);
                 if (water != SpawnCell.Exposed) return water;
             }
             if (normal.y < MinNormalY) return SpawnCell.Steep;
@@ -56,7 +58,7 @@ namespace NorseSense
         // animals that never attack don't.
         // Exposed when a monster could spawn here normally, RaidOnly when only a raid could bring one, Water when
         // nothing but serpents could.
-        static SpawnCell InWater(Vector3 p, Vector3 normal, Heightmap.Biome biome, Heightmap.BiomeArea area, Heightmap hmap)
+        static SpawnCell InWater(Vector3 p, Vector3 normal, Heightmap.Biome biome, Heightmap.BiomeArea area, Heightmap hmap, List<RandomEvent> raids)
         {
             var list = CandidatesFor(biome, area);
             if (list == null) return SpawnCell.Exposed; // can't tell: leave it as it was
@@ -76,12 +78,12 @@ namespace NorseSense
             {
                 return SpawnCell.Exposed; // a game update changed these: can't tell, leave it as it was
             }
-            // Raids spawn through the same check with their own lists, but only the ones you've unlocked can come,
-            // and only in their biomes.
-            foreach (var ev in Raids)
+            // Raids spawn through the same check with their own lists. Whether one can start depends on the biome
+            // where you are, already settled in UnlockedRaids; here only its spawn entries' own biome counts.
+            if (raids != null)
+            foreach (var ev in raids)
             {
-                // A raid with no biome can come anywhere (RandEventSystem.InValidBiome).
-                if ((ev.m_biome != Heightmap.Biome.None && (ev.m_biome & biome) == 0) || ev.m_spawn == null) continue;
+                if (ev.m_spawn == null) continue;
                 foreach (var spawn in ev.m_spawn)
                     if (Counts(spawn) && (spawn.m_biome & biome) != 0 && (spawn.m_biomeArea & area) != 0 &&
                         CouldSpawn(spawn, p, normal, altitude, hmap, ref depth))
@@ -169,14 +171,13 @@ namespace NorseSense
 
         static readonly List<RandEventSystem.PlayerEventData> TempPlayers = new List<RandEventSystem.PlayerEventData>();
 
-        // The raids this player has unlocked, anywhere, for the water check. Refreshed before each scan.
-        static readonly List<RandomEvent> Raids = new List<RandomEvent>();
-
-        internal static void RefreshUnlockedRaids(Player player)
+        // The raids that could start where the player is: unlocked (world keys, or the player's own with player
+        // events on) and in a biome they can start in (RandEventSystem.InValidBiome). Base value isn't part of it.
+        internal static List<RandomEvent> UnlockedRaids(Player player)
         {
-            Raids.Clear();
+            var raids = new List<RandomEvent>();
             var events = RandEventSystem.instance;
-            if (events == null || ZoneSystem.instance == null || player == null) return;
+            if (events == null || ZoneSystem.instance == null || player == null) return raids;
 
             var ready = ReadyEvents(player);
             var data = new RandEventSystem.PlayerEventData
@@ -194,19 +195,13 @@ namespace NorseSense
                 if (!ev.m_enabled || !ev.m_random || !ev.m_nearBaseOnly) continue;
                 if (!HaveGlobalKeys(events, ev, TempPlayers)) continue;
                 if (playerEvents && !data.possibleEvents.Contains(ev.m_name)) continue;
-                Raids.Add(ev);
+                if (!InValidBiome(events, ev, data.position)) continue;
+                raids.Add(ev);
             }
+            return raids;
         }
 
         // Number of random raids that could pick this player at their current spot, ignoring base value.
-        internal static int CountUnlockedRaids(Player player)
-        {
-            RefreshUnlockedRaids(player);
-            var events = RandEventSystem.instance;
-            int count = 0;
-            foreach (var ev in Raids)
-                if (InValidBiome(events, ev, player.transform.position)) count++;
-            return count;
-        }
+        internal static int CountUnlockedRaids(Player player) => UnlockedRaids(player).Count;
     }
 }

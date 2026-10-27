@@ -217,7 +217,7 @@ namespace NorseSense
             try
             {
                 // The water check needs to know which raids you've unlocked before it starts.
-                SpawnRules.RefreshUnlockedRaids(Player.m_localPlayer);
+                var raids = SpawnRules.UnlockedRaids(Player.m_localPlayer);
                 var zs = ZoneSystem.instance;
                 float cell = Plugin.OverlayCellSize.Value;
                 float radius = Plugin.OverlayRadius.Value;
@@ -249,7 +249,7 @@ namespace NorseSense
                     if (ZoneSystem.instance == null) yield break;
                     int c = z * n + x;
                     var p = new Vector3(originX + x * cell + cell * 0.5f, playerPos.y, originZ + z * cell + cell * 0.5f);
-                    cells[c] = Utils.DistanceXZ(p, playerPos) > radius ? SpawnCell.Unknown : SpawnRules.Classify(ref p);
+                    cells[c] = Utils.DistanceXZ(p, playerPos) > radius ? SpawnCell.Unknown : SpawnRules.Classify(ref p, raids);
                     points[c] = p;
                     if (++work % CellsPerFrame == 0) yield return null;
                 }
