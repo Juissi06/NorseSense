@@ -22,6 +22,12 @@ namespace NorseSense
 
         static Player _player;
         static float _savedPlaceDistance;
+
+        // Where the camera was when you last left freecam, and where you stood then. Going back in without
+        // having moved picks up from there, so you can hop out to grab something and carry on.
+        const float ResumeDistance = 2f;
+        static bool _hasLast;
+        static Vector3 _lastCamera, _lastBody;
         Vector3 _velocity;
         float _lastHealth;
 
@@ -85,6 +91,8 @@ namespace NorseSense
             _lastHealth = player.GetHealth();
             _velocity = Vector3.zero;
             Position = GameCamera.instance.transform.position;
+            if (_hasLast && Vector3.Distance(player.transform.position, _lastBody) < ResumeDistance)
+                Position = Sweep(Position, _lastCamera); // through the same walls as flying there would
             Plugin.Notify("Freecam", "on", true);
         }
 
@@ -92,6 +100,12 @@ namespace NorseSense
         {
             if (!Active) return;
             Active = false;
+            _hasLast = _player != null;
+            if (_hasLast)
+            {
+                _lastCamera = Position;
+                _lastBody = _player.transform.position;
+            }
             if (_player != null) _player.m_maxPlaceDistance = _savedPlaceDistance;
             _player = null;
             PlayerTweaks.Apply(); // a build distance setting wins over what freecam saved

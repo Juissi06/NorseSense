@@ -123,7 +123,7 @@ namespace NorseSense
             int skipped = 0;
             foreach (var e in _entries) skipped += e.Skipped.Count;
             string foot = !_inShelter
-                ? _shelterReason?.Value
+                ? (_shelterReason != null ? char.ToUpper(ShelterInfo.Summary[0]) + ShelterInfo.Summary.Substring(1) : null)
                 : skipped > 0 ? $"{skipped} more nearby don't count (same kind)" : null;
 
             // Cells: shelter first, then every comfort slot.

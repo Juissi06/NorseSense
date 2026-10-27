@@ -42,7 +42,7 @@ Shows where mobs can and can't spawn, using the same checks the game itself uses
 - **Match rotation:** **Left Alt + T** copies the exact rotation of the piece you're looking at. Looking at nothing resets fine rotation.
 - **Precision helpers:** while you hold **Left Alt**, the snap points of the piece you're placing (cyan) and of the pieces around it (white) are shown, the pair that snaps turns green, and the info box says how high the piece sits: *0.50 m above Wood floor*.
 - **Comfort preview:** when placing a chair, banner, rug and so on, shows the comfort level you'd have after placing it, or why it wouldn't add any, e.g. *Raven throne (+3) already counts as your chair*.
-- **Shelter readout:** while building under a roof or placing a comfort piece, shows whether your spot counts as shelter, and if not, why: *no roof above* or *open behind and to the left, 71% covered, needs 80%*. Directions are relative to where you look.
+- **Shelter readout:** while building under a roof or placing a comfort piece, shows whether your spot counts as shelter, and if not, why: *no roof above* or *open*, with a small compass lighting up the open sides and the open sky, and *71% covered, needs 80%*. The compass turns with where you look.
 - **Terrain limits:** with the hoe or pickaxe, shows how much further the ground can be dug or raised where you aim, e.g. *Ground: 6.2 m below original. Can dig 1.8 m deeper*. The game silently stops at 8 m above or below the original height.
 - **Support readout:** looking at a piece that isn't on the ground shows its exact support, e.g. *Wood beam: support 34 / 100 (wood falls below 10)*. The game only tints pieces blue to red.
 - **Placement reasons:** when a piece turns red, says why instead of just *Invalid placement*: *overlaps Wood beam*, *surface too steep (42°, max 37°)*, *Bed can't hold other pieces*, *too close to Chopping block*, *only in Plains*.
@@ -57,6 +57,7 @@ In build mode, press **F10** to detach the camera and fly around your build. You
 - Your character stays where it is. The piece must be inside a workbench's range (not just you), wards still apply, and resources still come from your inventory.
 - The camera stays within 25 m of you, and you can place and remove pieces up to 8 m from the camera.
 - Freecam ends when you leave build mode or take damage.
+- Press **F10** again without walking off and the camera picks up where you left it.
 
 ### Resting
 - **Comfort breakdown:** while you sit, a small card under the status effects on the right (below Resting and Rested) shows your comfort, how long Rested will last, each piece that adds to it as an icon with its value, and how many nearby pieces don't count because a better one of the same kind already does. If you're not sheltered, it says which sides are open.

@@ -21,7 +21,8 @@ namespace NorseSense
         };
 
         static int _mask;
-        static readonly List<string> Open = new List<string>();
+        static readonly List<int> Open = new List<int>(); // side index, see Sides; Above for straight up
+        const int Above = 8;
 
         // Null when out in the open with nothing to explain, unless always is set.
         internal static InfoRow Describe(Player player, bool always)
@@ -38,43 +39,39 @@ namespace NorseSense
             foreach (var ray in Rays)
             {
                 if (Physics.Raycast(start + ray * MinDistance, ray, RayDistance - MinDistance, _mask)) hits++;
-                else Open.Add(DirectionName(view * ray));
+                else Open.Add(Direction(view * ray));
             }
             float cover = (float)hits / Rays.Length;
             string coverText = $"{cover * 100f:0}% covered, needs {NeedCover * 100f:0}%";
             if (cover >= NeedCover && roof)
                 return new InfoRow("Shelter", "Yes", coverText, Tone.Good, Icon);
 
-            // Without a roof the open sky is already said, so it's not counted again as an open side.
-            string sides = OpenList(!roof);
-            string value = !roof ? "No roof above" : "Open " + sides;
-            if (!roof && cover < NeedCover && sides.Length > 0) value += ", open " + sides;
-            return new InfoRow("Shelter", value, coverText, Tone.Warn, Icon);
+            // A small compass shows the open sides; words only when it's one side, which reads quicker.
+            int compass = 0;
+            foreach (int side in Open) compass |= 1 << side;
+            var sides = new List<int>();
+            foreach (int side in Open) if (side != Above && !sides.Contains(side)) sides.Add(side);
+            string value = !roof ? "No roof above" : sides.Count == 1 ? "Open " + Sides[sides[0]] : "Open";
+            // In words, for places without the compass (the comfort card).
+            Summary = !roof ? "no roof above" : sides.Count == 0 ? "open" :
+                sides.Count <= 2 ? "open " + string.Join(" and ", sides.ConvertAll(s => Sides[s])) : $"open on {sides.Count} sides";
+            return new InfoRow("Shelter", value, coverText, Tone.Warn, Icon) { Compass = compass };
         }
+
+        // The last answer in words, e.g. "open behind and to the left".
+        internal static string Summary;
 
         static Sprite Icon => Ui.StatusIcon(SEMan.s_statusEffectShelter);
 
-        // Short: "behind", "behind and to the left", or "on 4 sides" once it's more than two; the cover % next to
-        // it says how far off it is.
-        static string OpenList(bool skipAbove)
-        {
-            var sides = new List<string>();
-            foreach (var o in Open) if (!sides.Contains(o) && !(skipAbove && o == "above")) sides.Add(o);
-            if (sides.Count == 0) return "";
-            if (sides.Count == 1) return sides[0];
-            if (sides.Count == 2) return sides[0] + " and " + sides[1];
-            return $"on {sides.Count} sides";
-        }
-
         static readonly string[] Sides = { "ahead", "ahead right", "to the right", "behind right", "behind", "behind left", "to the left", "ahead left" };
 
-        // Relative to where the camera looks, so "left" is your left. Rays angled up and level both count for
-        // their side; only straight up is its own.
-        static string DirectionName(Vector3 local)
+        // Relative to where the camera looks, so "left" is your left: 0 = ahead, clockwise in eighths. Rays angled
+        // up and level both count for their side; only straight up is its own.
+        static int Direction(Vector3 local)
         {
-            if (Mathf.Abs(local.x) < 0.01f && Mathf.Abs(local.z) < 0.01f) return "above";
+            if (Mathf.Abs(local.x) < 0.01f && Mathf.Abs(local.z) < 0.01f) return Above;
             float angle = Mathf.Repeat(Mathf.Atan2(local.x, local.z) * Mathf.Rad2Deg, 360f);
-            return Sides[Mathf.RoundToInt(angle / 45f) % 8];
+            return Mathf.RoundToInt(angle / 45f) % 8;
         }
     }
 }

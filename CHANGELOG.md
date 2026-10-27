@@ -1,6 +1,9 @@
 # Changelog
 
 ## Unreleased
+- Shelter readout: a small compass lights up the open sides and the sky instead of a long list of directions.
+- The build info box keeps the most pressing rows when a lot is going on and folds the rest into one "More" row, so it doesn't grow tall.
+- Freecam picks up where you left it if you go back in without walking off.
 - Precision helpers while holding Left Alt: snap points of the piece you place and of the pieces around it, the snapped pair in green, and the piece's height above the ground or the piece below.
 - Farm check: with the cultivator out, every crop around you gets its grow ring, and the ones that aren't growing say why (no open sky, too close, not cultivated...).
 - Planting preview and grids also keep out of a neighbour's grow space, not only the new seed's own, so planting can't stop a bigger neighbour growing. Grid seeds sit a little further apart.

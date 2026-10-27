@@ -56,7 +56,7 @@ Small toggles on the large map instead of separate features:
 - [x] Info box eases between sizes and fades in instead of jumping when rows change.
 - [x] Key tips the first time you build each session.
 - [x] Remember the base view mode between sessions.
-- Remember the freecam position between uses.
+- [x] Remember the freecam position between uses.
 - One "Norse Sense" section at the top of ConfigurationManager with the most-used toggles; the rest grouped under it.
 
 ### Containers
@@ -71,9 +71,9 @@ Small toggles on the large map instead of separate features:
 12. **Server-enforced settings.** Let a server admin set and lock the balance options for everyone: freecam range and reach, area tool sizes, stamina multipliers, build distance and pickup range. Today each player uses their own config. Needs a sync library (ServerSync or the ConditionalConfigSync already in the mod list). Players without the mod are unaffected, and the readouts stay client-side.
 
 ### Improvements to existing features
-- **Shelter row:** a small compass graphic with the open sides lit, instead of "Open ahead-right (up), behind-right (up), behind (up)…", which is the longest line in the box.
+- [x] **Shelter row:** a small compass graphic with the open sides lit, instead of "Open ahead-right (up), behind-right (up), behind (up)…", which is the longest line in the box.
 - **Support row:** a small bar coloured like the game's blue-to-red support tint, next to or instead of "80 / 100".
-- **Info box priority:** when many rows are active (freecam, shelter, support, station, placement), keep the urgent ones and fold the rest into one line so the box doesn't grow tall.
+- [x] **Info box priority:** when many rows are active (freecam, shelter, support, station, placement), keep the urgent ones and fold the rest into one line so the box doesn't grow tall.
 - **Repairs mode:** re-tint a piece right after the game's own build-mode highlight resets it, so hovered pieces don't flicker.
 - **Freecam:** remember the camera position between uses, and an optional setting that stops it passing through walls.
 - **Area tools:** a 1 × 3 row shape for hoe paths (road strips), and new crops lining up with rows already planted.

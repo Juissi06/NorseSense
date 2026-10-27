@@ -17,6 +17,9 @@ namespace NorseSense
         internal Tone Tone;
         internal float Bar = -1f; // 0..1: a small bar after the value, e.g. support; < 0 for none
         internal Color BarColor;
+        // A small compass after the value, for shelter: bit n = side n open (0 = ahead, clockwise in eighths),
+        // bit 8 = open above. 0 for none.
+        internal int Compass;
 
         internal InfoRow(string label, string value, string detail = null, Tone tone = Tone.None, Sprite icon = null)
         {
@@ -66,6 +69,11 @@ namespace NorseSense
     {
         const float RowH = 26f, PadX = 14f, PadY = 9f, IconSize = 20f, Gap = 8f, AccentW = 3f, RowBarW = 64f, RowBarH = 8f;
         const float HintH = 24f, KeyH = 18f, ObstacleRefresh = 0.5f, Margin = 10f;
+        const float CompassSize = 22f;
+        // More rows than this and the calm ones fold into one "More" row, so the box doesn't grow tall.
+        const int MaxRows = 7;
+        static readonly List<InfoRow> Kept = new List<InfoRow>(MaxRows);
+        static readonly List<string> Folded = new List<string>();
 
         static readonly List<Rect> Obstacles = new List<Rect>();
         static readonly List<Graphic> TempGraphics = new List<Graphic>();
@@ -77,6 +85,7 @@ namespace NorseSense
         internal static void Draw(InfoLines lines)
         {
             if (lines.Count == 0 && lines.HintKeys.Count == 0) return;
+            Fold(lines);
             Matrix4x4 oldMatrix = Ui.BeginScaled(out float sw, out float sh);
 
             bool anyIcon = false;
@@ -125,6 +134,11 @@ namespace NorseSense
                 {
                     Ui.Bar(new Rect(cx + valueW + 10f, y + (RowH - RowBarH) * 0.5f, RowBarW, RowBarH), row.Bar, row.BarColor);
                     valueW += 10f + RowBarW;
+                }
+                if (row.Compass != 0)
+                {
+                    DrawCompass(new Rect(cx + valueW + 10f, y + (RowH - CompassSize) * 0.5f, CompassSize, CompassSize), row.Compass);
+                    valueW += 10f + CompassSize;
                 }
                 if (!string.IsNullOrEmpty(row.Detail) && cx + valueW + 10f < right)
                     Ui.Label(new Rect(cx + valueW + 10f, y + 1f, right - cx - valueW - 10f, RowH), row.Detail, Ui.Small);
@@ -182,10 +196,59 @@ namespace NorseSense
             Plugin.BuildInfoY.Value = fy;
         }
 
+        // Keeps the most pressing rows (bad, then warnings, then good news) in their original order and folds
+        // the rest into a last "More" row naming them.
+        static void Fold(InfoLines lines)
+        {
+            var rows = lines.Rows;
+            if (rows.Count <= MaxRows) return;
+            Kept.Clear();
+            for (int rank = 3; rank >= 0 && Kept.Count < MaxRows - 1; rank--)
+                foreach (var row in rows)
+                    if ((int)row.Tone == ToneRank(rank) && Kept.Count < MaxRows - 1) Kept.Add(row);
+            Folded.Clear();
+            foreach (var row in rows)
+                if (!Kept.Contains(row)) Folded.Add(row.Label ?? row.Value);
+            rows.RemoveAll(r => !Kept.Contains(r));
+            rows.Add(new InfoRow("More", $"<color={Ui.Muted}>{string.Join(", ", Folded)}</color>"));
+        }
+
+        // Most pressing first: Bad, Warn, Good, None.
+        static int ToneRank(int rank)
+        {
+            switch (rank)
+            {
+                case 3: return (int)Tone.Bad;
+                case 2: return (int)Tone.Warn;
+                case 1: return (int)Tone.Good;
+                default: return (int)Tone.None;
+            }
+        }
+
+        // Eight marks around a centre, lit where that side is open; the centre lights when the sky is open.
+        // Top is the way you look.
+        static void DrawCompass(Rect r, int open)
+        {
+            Vector2 c = r.center;
+            float radius = r.width * 0.5f - 3f;
+            Color lit = ToneColor(Tone.Warn), dim = new Color(1f, 1f, 1f, 0.18f);
+            for (int side = 0; side < 8; side++)
+            {
+                float a = side * 45f * Mathf.Deg2Rad;
+                var p = new Vector2(c.x + Mathf.Sin(a) * radius, c.y - Mathf.Cos(a) * radius);
+                bool on = (open & (1 << side)) != 0;
+                float s = on ? 5f : 4f;
+                Ui.Swatch(new Rect(p.x - s * 0.5f, p.y - s * 0.5f, s, s), on ? lit : dim);
+            }
+            bool sky = (open & (1 << 8)) != 0;
+            Ui.Swatch(new Rect(c.x - 2.5f, c.y - 2.5f, 5f, 5f), sky ? lit : dim);
+        }
+
         static float ValueWidth(InfoRow row)
         {
             float width = Ui.LineWidth(row.Value, Ui.Text);
             if (row.Bar >= 0f) width += 10f + RowBarW;
+            if (row.Compass != 0) width += 10f + CompassSize;
             if (!string.IsNullOrEmpty(row.Detail)) width += 10f + Ui.LineWidth(row.Detail, Ui.Small);
             return width;
         }
