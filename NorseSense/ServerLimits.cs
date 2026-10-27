@@ -19,7 +19,8 @@ namespace NorseSense
         {
             Plugin.FreecamAllowed, Plugin.FreecamRange, Plugin.FreecamReach,
             Plugin.AreaToolsEnabled, Plugin.AreaTerrain, Plugin.MaxPlantGrid, Plugin.MaxHoeSize,
-            Plugin.BuildStaminaMultiplier, Plugin.SowStaminaMultiplier, Plugin.BuildDistance, Plugin.PickupRange
+            Plugin.BuildStaminaMultiplier, Plugin.SowStaminaMultiplier, Plugin.BuildDistance, Plugin.PickupRange,
+            Plugin.HarvestArea, Plugin.HarvestRadius, Plugin.Replant
         };
 
         // The server's values while connected to one that sets limits; empty otherwise.
@@ -44,6 +45,9 @@ namespace NorseSense
             Plugin.SowStaminaMultiplier.SettingChanged += (s, e) => Broadcast();
             Plugin.BuildDistance.SettingChanged += (s, e) => Broadcast();
             Plugin.PickupRange.SettingChanged += (s, e) => Broadcast();
+            Plugin.HarvestArea.SettingChanged += (s, e) => Broadcast();
+            Plugin.HarvestRadius.SettingChanged += (s, e) => Broadcast();
+            Plugin.Replant.SettingChanged += (s, e) => Broadcast();
         }
 
         void Update()

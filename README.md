@@ -72,12 +72,14 @@ In build mode, press **F10** to detach the camera and fly around your build. You
 - **Plant spacing rings:** the grow space of the seed and of nearby plants is drawn on the ground. Plants that aren't growing are red.
 - **Two-way spacing:** the game only checks the new seed's own grow space, so you can plant inside a bigger neighbour's and stop *it* growing. The preview catches that too: *Won't grow, Turnip seedling would stop growing*.
 - **Farm check:** with the cultivator out, every crop within 20 m gets its ring, and each one that isn't growing says why under it: *no open sky*, *too close*, *not cultivated*.
+- **Harvest an area:** hold **Left Alt** while picking a crop and every ripe crop of the same kind within 5 m is picked too, each through the game's own pick. Works on berry bushes and mushrooms as well.
+- **Replant:** if you carry a cultivator and seeds, the crops you harvest with Left Alt are planted again where they stood, paying seeds, stamina, durability and skill like planting them yourself. A normal pick never replants, so you can still clear a field.
 - **Crop info while farming:** the game hides hover text while the cultivator or hammer is out, so the build info box shows the crop you look at instead: *Growing, ready in about 12 min*, or why it isn't growing. Fires show their fuel and why they burn low.
 
 ### Area tools (Left Ctrl + scroll)
 Hold **Left Ctrl** and scroll with the cultivator or hoe to work on more than one spot per click.
 - **Planting:** a single seed, a row of 3 or 5, or a 3 × 3 or 5 × 5 grid. Seeds are spaced as close as the game still lets them grow. Each spot gets a green or red ring, and red spots are skipped. Rows turn with the piece, so scroll, fine rotation and Left Alt + T (match rotation) line them up with a fence.
-- **Hoe and cultivator:** level ground, paths, paving and cultivate grow in steps from a single spot to a 1 × 3 strip along where you look (for paths and roads), then 2 × 2, 3 × 3 and 4 × 4 tiles, each step about one hoe radius wider. Even sizes grow forward and to the right of where you aim. Levelling flattens the whole area to the height you aim at. Raise ground always stays single, because overlapping raises leave bumps.
+- **Hoe and cultivator:** level ground, paths, paving and cultivate grow in steps from a single spot to a 1 × 3 strip along where you look (for paths and roads), then 2 × 2, 3 × 3 and 4 × 4 tiles, each step about one hoe radius wider. Even sizes grow forward and to the right of where you aim. Levelling flattens the whole area to the height you aim at. **Raise ground** raises every tile and then levels the area to one height, so you get a flat platform instead of bumps; that's two hoe uses per tile, and the info box says so.
 - **Same cost as clicking:** every seed or tile takes its own seed, stamina, durability and skill gain. If you run out, it places what you can afford, nearest first.
 - Each tile is an ordinary vanilla placement, so other players and vanilla servers see exactly the same result.
 

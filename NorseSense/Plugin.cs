@@ -83,6 +83,10 @@ namespace NorseSense
         internal static ConfigEntry<bool> ShowPlantingPreview;
         internal static ConfigEntry<bool> ShowPlantSpacing;
         internal static ConfigEntry<bool> ShowFarmCheck;
+        internal static ConfigEntry<bool> HarvestArea;
+        internal static ConfigEntry<KeyCode> HarvestKey;
+        internal static ConfigEntry<float> HarvestRadius;
+        internal static ConfigEntry<bool> Replant;
 
         // Portals
         internal static ConfigEntry<bool> ShowTeleportBlockers;
@@ -211,6 +215,13 @@ namespace NorseSense
 
             ShowPlantingPreview = Bind(farming, "Planting preview", true, "Whether a seed will grow where you aim, and why not.", "Farming", advanced: true);
             ShowPlantSpacing = Bind(farming, "Show plant spacing", true, "The grow space of nearby plants. Red = not growing.", "Farming", advanced: true);
+            HarvestArea = Bind(farming, "Harvest area", true,
+                "Hold the harvest key while picking a crop and every ripe crop of the same kind around it is picked too.", farming);
+            HarvestKey = Bind(farming, "Harvest key", KeyCode.LeftAlt, "Hold while picking to harvest an area. None = off.", farming);
+            HarvestRadius = Bind(farming, "Harvest radius", 5f, "How far around the picked crop the area harvest reaches (m).", farming,
+                new AcceptableValueRange<float>(1f, 10f), true);
+            Replant = Bind(farming, "Replant", true,
+                "After an area harvest, plant the same crop again where it was, if you carry a cultivator and seeds. Costs the same as planting.", farming);
             ShowFarmCheck = Bind(farming, "Farm check", true,
                 "With the cultivator out, every crop around you gets its grow ring, and the ones that aren't growing say why.", farming, advanced: true);
             AreaToolsEnabled = Bind(farming, "Area tools", true,
@@ -219,7 +230,7 @@ namespace NorseSense
             AreaModifier = Bind(farming, "Area size modifier", KeyCode.LeftControl,
                 "Hold while scrolling with the cultivator or hoe to change the area size. None = off.", "Area Tools", key: "Size modifier");
             AreaTerrain = Bind(farming, "Bigger hoe and cultivator", true,
-                "Lets level, path, paving and cultivate cover more tiles at once. Raise ground always stays single.", "Area Tools");
+                "Lets level, raise, path, paving and cultivate cover more tiles at once. A raised area is levelled flat afterwards.", "Area Tools");
             SowStaminaMultiplier = Bind(farming, "Stamina multiplier", 1f, "Stamina cost of planting. 0 = free, 1 = vanilla.", "Stamina",
                 new AcceptableValueRange<float>(0f, 1f), key: "Sowing multiplier");
             MaxPlantGrid = Bind(farming, "Max planting size", 5, "Largest row or grid side for planting.", "Area Tools",
@@ -281,6 +292,7 @@ namespace NorseSense
             _spawnViewObject.AddComponent<ComfortInfo>();
             _spawnViewObject.AddComponent<Freecam>();
             _spawnViewObject.AddComponent<AreaTools>();
+            _spawnViewObject.AddComponent<MassFarming>();
             _spawnViewObject.AddComponent<MarkerManager>();
             _spawnViewObject.AddComponent<LayoutMode>();
             _spawnViewObject.AddComponent<ServerLimits>();

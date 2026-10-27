@@ -49,11 +49,13 @@ namespace NorseSense
         static Quaternion _gridRotation;
         static int _centerIndex;
         static float _spacing, _tileRadius, _growRadius, _stableYaw = float.NaN, _scrollReadyAt;
+        static bool _raiseGrid; // raise ground: each tile is raised, then the area levelled flat
 
         // A click that placed the centre piece; the extras follow once vanilla has paid for it.
         static Piece _pending;
         static readonly List<Vector3> PendingCells = new List<Vector3>(25);
         static Quaternion _pendingRotation;
+        static Vector3 _pendingCenter;
 
         readonly List<LineRenderer> _rings = new List<LineRenderer>();
         readonly List<Vector3> _ringDrawnAt = new List<Vector3>();
@@ -112,7 +114,7 @@ namespace NorseSense
                 return Compat.AreaPlantingDisabledBy == null ? Kind.Plant : Kind.None;
             // Read the prefab: the game strips terrain components from the ghost.
             var op = piece.GetComponent<TerrainOp>();
-            if (op != null && ServerLimits.Allowed(Plugin.AreaTerrain) && Compat.AreaTerrainDisabledBy == null && !op.m_settings.m_raise)
+            if (op != null && ServerLimits.Allowed(Plugin.AreaTerrain) && Compat.AreaTerrainDisabledBy == null)
                 return Kind.Terrain;
             return Kind.None;
         }
@@ -154,6 +156,7 @@ namespace NorseSense
             }
 
             bool level = Current == Kind.Terrain && piece.GetComponent<TerrainOp>().m_settings.m_level;
+            _raiseGrid = Current == Kind.Terrain && piece.GetComponent<TerrainOp>().m_settings.m_raise;
             for (int r = 0; r < Rows; r++)
             for (int c = 0; c < Columns; c++)
             {
@@ -175,6 +178,7 @@ namespace NorseSense
         // smoothing around it, or strips between tiles would stay unlevelled.
         static float CoverRadius(TerrainOp.Settings s)
         {
+            if (s.m_raise) return s.m_raiseRadius;
             if (s.m_level) return s.m_levelRadius;
             if (s.m_paintCleared) return s.m_paintRadius;
             if (s.m_smooth) return s.m_smoothRadius;
@@ -297,7 +301,8 @@ namespace NorseSense
                 lines.Add(null, "Area", $"{shape}, {Valid} of {Cells.Count} can grow", "one seed and stamina each",
                     Valid == Cells.Count ? Tone.Good : Tone.Warn);
             else
-                lines.Add(null, "Area", $"{shape}, {Cells.Count} tiles", "stamina and durability per tile",
+                lines.Add(null, "Area", $"{shape}, {Cells.Count} tiles",
+                    _raiseGrid ? "raised, then levelled flat: two hoe uses per tile" : "stamina and durability per tile",
                     Valid == Cells.Count ? Tone.None : Tone.Warn);
         }
 
@@ -323,6 +328,7 @@ namespace NorseSense
             // Nearest first, so running out of seeds or stamina leaves a tidy patch.
             PendingCells.Sort((a, b) => (a - center).sqrMagnitude.CompareTo((b - center).sqrMagnitude));
             _pending = piece;
+            _pendingCenter = center;
             _pendingRotation = PlacementGhost(player).transform.rotation;
         }
 
@@ -342,33 +348,70 @@ namespace NorseSense
             string stopped = null;
             foreach (var cell in PendingCells)
             {
-                bool free = player.PlacementCostDisabled;
-                if (!free && !player.HaveRequirements(piece, Player.RequirementMode.CanBuild)) { stopped = "out of materials"; break; }
-                // GetBuildStamina already has the stamina setting in it; HaveStamina would apply it again here,
-                // since this runs inside UpdatePlacement.
-                float stamina = GetBuildStamina(player);
-                if (player.GetStamina() < stamina) { stopped = "out of stamina"; break; }
-                if (tool != null && tool.m_shared.m_useDurability && tool.m_durability <= 0f) { stopped = "tool broken"; break; }
                 if (ghost == null || !CellAllowed(kind, ghost, cell)) continue;
-
                 Quaternion rotation = kind == Kind.Plant ? Quaternion.Euler(0f, UnityEngine.Random.Range(0f, 360f), 0f) : _pendingRotation;
-                player.PlacePiece(piece, cell, rotation, doAttack: false);
+                stopped = PlaceOne(player, piece, cell, rotation, tool, table);
+                if (stopped != null) break;
                 placed++;
+            }
 
-                // The same costs vanilla charges for a click (Player.UpdatePlacement).
-                if (!free && !ZoneSystem.instance.GetGlobalKey(piece.FreeBuildKey())) player.ConsumeResources(piece.m_resources, 0);
-                player.UseStamina(stamina);
-                // As vanilla: removing pieces runs up a debt that placing pays off before any skill is gained.
-                if (table != null && table.m_skill != 0)
+            // Raise grid: raises side by side leave bumps, so level every tile to the height the middle one
+            // reached. Levelling also lifts ground up to that height, which turns the bumps into one flat top.
+            // Each level is an ordinary vanilla placement, paid like a click.
+            var raise = piece.GetComponent<TerrainOp>();
+            var level = raise != null && raise.m_settings.m_raise && stopped == null ? LevelPiece(table) : null;
+            if (level != null)
+            {
+                float top = _pendingCenter.y + raise.m_settings.m_raiseDelta;
+                var tiles = new List<Vector3>(PendingCells.Count + 1) { _pendingCenter };
+                tiles.AddRange(PendingCells);
+                foreach (var cell in tiles)
                 {
-                    if (BuildRemoveDebt(player) > 0) BuildRemoveDebt(player)--;
-                    else player.RaiseSkill(table.m_skill);
+                    if (!CellAllowed(Kind.Terrain, ghost, cell)) continue;
+                    stopped = PlaceOne(player, level, new Vector3(cell.x, top, cell.z), _pendingRotation, tool, table);
+                    if (stopped != null) break;
                 }
-                if (tool != null && tool.m_shared.m_useDurability)
-                    tool.m_durability -= GetPlaceDurability(player, tool) * Game.m_durabilityRate;
             }
             if (stopped != null)
                 Plugin.Tell("Area", $"placed {placed + 1} of {PendingCells.Count + 1}, {stopped}", Tone.Warn);
+        }
+
+        // One extra placement, with the same checks and costs vanilla has for a click (Player.UpdatePlacement).
+        // Returns why it stopped, or null when placed.
+        static string PlaceOne(Player player, Piece piece, Vector3 pos, Quaternion rotation, ItemDrop.ItemData tool, PieceTable table)
+        {
+            bool free = player.PlacementCostDisabled;
+            if (!free && !player.HaveRequirements(piece, Player.RequirementMode.CanBuild)) return "out of materials";
+            // GetBuildStamina already has the stamina setting in it; HaveStamina would apply it again here,
+            // since this runs inside UpdatePlacement.
+            float stamina = GetBuildStamina(player);
+            if (player.GetStamina() < stamina) return "out of stamina";
+            if (tool != null && tool.m_shared.m_useDurability && tool.m_durability <= 0f) return "tool broken";
+
+            player.PlacePiece(piece, pos, rotation, doAttack: false);
+            if (!free && !ZoneSystem.instance.GetGlobalKey(piece.FreeBuildKey())) player.ConsumeResources(piece.m_resources, 0);
+            player.UseStamina(stamina);
+            // As vanilla: removing pieces runs up a debt that placing pays off before any skill is gained.
+            if (table != null && table.m_skill != 0)
+            {
+                if (BuildRemoveDebt(player) > 0) BuildRemoveDebt(player)--;
+                else player.RaiseSkill(table.m_skill);
+            }
+            if (tool != null && tool.m_shared.m_useDurability)
+                tool.m_durability -= GetPlaceDurability(player, tool) * Game.m_durabilityRate;
+            return null;
+        }
+
+        // The tool's own "level ground" piece.
+        static Piece LevelPiece(PieceTable table)
+        {
+            if (table == null) return null;
+            foreach (var go in table.m_pieces)
+            {
+                var op = go != null ? go.GetComponent<TerrainOp>() : null;
+                if (op != null && op.m_settings.m_level && !op.m_settings.m_raise) return go.GetComponent<Piece>();
+            }
+            return null;
         }
     }
 

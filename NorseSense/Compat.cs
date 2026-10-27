@@ -67,7 +67,7 @@ namespace NorseSense
             if (plantingMod != null && auto)
             {
                 AreaPlantingDisabledBy = plantingMod;
-                notes.Add($"Area planting is off because {plantingMod} plants in grids.");
+                notes.Add($"Area planting and harvesting are off because {plantingMod} does them.");
             }
             string terrainMod = FindPlugin(TerrainRadiusMods);
             if (terrainMod != null && auto)
