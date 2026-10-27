@@ -24,7 +24,8 @@ namespace NorseSense
         static readonly int ColorId = Shader.PropertyToID("_Color");
         static readonly int EmissionId = Shader.PropertyToID("_EmissionColor");
 
-        readonly Dictionary<WearNTear, Color> _tinted = new Dictionary<WearNTear, Color>();
+        // Static so the highlight patch below can find a piece's tint.
+        static readonly Dictionary<WearNTear, Color> _tinted = new Dictionary<WearNTear, Color>();
         readonly Dictionary<WearNTear, Color> _next = new Dictionary<WearNTear, Color>();
         readonly List<WearNTear> _batch = new List<WearNTear>();
         readonly Dictionary<string, int> _materials = new Dictionary<string, int>();
@@ -141,6 +142,13 @@ namespace NorseSense
             }
         }
 
+        // The game's build-mode highlight resets a piece's colour when you look away; put the tint back at once
+        // instead of waiting for the next scan, so hovered pieces don't flicker.
+        internal static void Retint(WearNTear wnt)
+        {
+            if (_tinted.TryGetValue(wnt, out Color color)) Tint(wnt, color);
+        }
+
         static void Tint(WearNTear wnt, Color color)
         {
             MaterialMan.instance.SetValue(wnt.gameObject, ColorId, color);
@@ -179,5 +187,11 @@ namespace NorseSense
             if (!string.IsNullOrEmpty(_materialsText))
                 _legend.Add($"<size=13><color={Ui.Muted}>{_materialsText}</color></size>");
         }
+    }
+
+    [HarmonyLib.HarmonyPatch(typeof(WearNTear), "ResetHighlight")]
+    static class RepairRetintPatch
+    {
+        static void Postfix(WearNTear __instance) => RepairView.Retint(__instance);
     }
 }

@@ -72,7 +72,7 @@ In build mode, press **F10** to detach the camera and fly around your build. You
 ### Area tools (Left Ctrl + scroll)
 Hold **Left Ctrl** and scroll with the cultivator or hoe to work on more than one spot per click.
 - **Planting:** a single seed, a row of 3 or 5, or a 3 × 3 or 5 × 5 grid. Seeds are spaced as close as the game still lets them grow. Each spot gets a green or red ring, and red spots are skipped. Rows turn with the piece, so scroll, fine rotation and Left Alt + T (match rotation) line them up with a fence.
-- **Hoe and cultivator:** level ground, paths, paving and cultivate grow in steps from a single spot to 2 × 2, 3 × 3 and 4 × 4 tiles, each step about one hoe radius wider. Even sizes grow forward and to the right of where you aim. Levelling flattens the whole area to the height you aim at. Raise ground always stays single, because overlapping raises leave bumps.
+- **Hoe and cultivator:** level ground, paths, paving and cultivate grow in steps from a single spot to a 1 × 3 strip along where you look (for paths and roads), then 2 × 2, 3 × 3 and 4 × 4 tiles, each step about one hoe radius wider. Even sizes grow forward and to the right of where you aim. Levelling flattens the whole area to the height you aim at. Raise ground always stays single, because overlapping raises leave bumps.
 - **Same cost as clicking:** every seed or tile takes its own seed, stamina, durability and skill gain. If you run out, it places what you can afford, nearest first.
 - Each tile is an ordinary vanilla placement, so other players and vanilla servers see exactly the same result.
 

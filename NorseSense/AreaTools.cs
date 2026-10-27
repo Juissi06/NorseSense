@@ -22,7 +22,8 @@ namespace NorseSense
 
         // Shapes the size key steps through: columns across, rows forward.
         static readonly int[,] PlantShapes = { { 1, 1 }, { 1, 3 }, { 1, 5 }, { 3, 3 }, { 5, 5 } };
-        static readonly int[,] TerrainShapes = { { 1, 1 }, { 2, 2 }, { 3, 3 }, { 4, 4 } };
+        // 1 × 3 is a strip along where you look, for paths and roads.
+        static readonly int[,] TerrainShapes = { { 1, 1 }, { 1, 3 }, { 2, 2 }, { 3, 3 }, { 4, 4 } };
 
         static readonly AccessTools.FieldRef<Player, GameObject> PlacementGhost =
             AccessTools.FieldRefAccess<Player, GameObject>("m_placementGhost");
@@ -146,7 +147,8 @@ namespace NorseSense
             {
                 _tileRadius = CoverRadius(piece.GetComponent<TerrainOp>().m_settings);
                 _spacing = _tileRadius * TileSpacing;
-                _gridRotation = Quaternion.Euler(0f, ghost.transform.eulerAngles.y, 0f);
+                // Hoe pieces don't rotate, so a strip follows the view instead (steadied like a seed row).
+                _gridRotation = Columns == 1 && Rows > 1 ? StableViewYaw() : Quaternion.Euler(0f, ghost.transform.eulerAngles.y, 0f);
             }
 
             bool level = Current == Kind.Terrain && piece.GetComponent<TerrainOp>().m_settings.m_level;
@@ -218,7 +220,8 @@ namespace NorseSense
 
             bool outline = show && Current == Kind.Terrain;
             if (_outline.gameObject.activeSelf != outline) _outline.gameObject.SetActive(outline);
-            if (outline) DrawSquare(_outline, AreaCenter(), (Columns - 1) * 0.5f * _spacing + _tileRadius, _gridRotation);
+            if (outline)
+                DrawSquare(_outline, AreaCenter(), (Columns - 1) * 0.5f * _spacing + _tileRadius, (Rows - 1) * 0.5f * _spacing + _tileRadius, _gridRotation);
         }
 
         // Middle of the whole area, which for even sizes isn't the aimed spot.
@@ -244,13 +247,13 @@ namespace NorseSense
         }
 
         // Square outline that follows the ground, for the area a hoe click will cover.
-        static void DrawSquare(LineRenderer lr, Vector3 center, float half, Quaternion rotation)
+        static void DrawSquare(LineRenderer lr, Vector3 center, float halfX, float halfZ, Quaternion rotation)
         {
             const int perSide = 12;
             lr.positionCount = perSide * 4;
             Vector3[] corners =
             {
-                new Vector3(-half, 0f, -half), new Vector3(-half, 0f, half), new Vector3(half, 0f, half), new Vector3(half, 0f, -half)
+                new Vector3(-halfX, 0f, -halfZ), new Vector3(-halfX, 0f, halfZ), new Vector3(halfX, 0f, halfZ), new Vector3(halfX, 0f, -halfZ)
             };
             for (int side = 0; side < 4; side++)
             for (int i = 0; i < perSide; i++)
@@ -268,17 +271,17 @@ namespace NorseSense
         internal static void StepSize(int direction)
         {
             if (Current == Kind.Plant)
-                _plantShape = Mathf.Clamp(_plantShape + direction, 0, MaxPlantShape());
+                _plantShape = Mathf.Clamp(_plantShape + direction, 0, MaxShape(PlantShapes, Plugin.MaxPlantGrid.Value));
             else if (Current == Kind.Terrain)
-                _terrainShape = Mathf.Clamp(_terrainShape + direction, 0, Mathf.Clamp(Plugin.MaxHoeSize.Value, 1, TerrainShapes.GetLength(0)) - 1);
+                _terrainShape = Mathf.Clamp(_terrainShape + direction, 0, MaxShape(TerrainShapes, Plugin.MaxHoeSize.Value));
         }
 
-        // The largest planting shape allowed by the "Max planting grid" setting.
-        static int MaxPlantShape()
+        // The largest shape whose sides fit the size setting ("Max planting size" or "Max hoe size").
+        static int MaxShape(int[,] shapes, int maxSide)
         {
             int max = 0;
-            for (int i = 0; i < PlantShapes.GetLength(0); i++)
-                if (PlantShapes[i, 0] <= Plugin.MaxPlantGrid.Value && PlantShapes[i, 1] <= Plugin.MaxPlantGrid.Value) max = i;
+            for (int i = 0; i < shapes.GetLength(0); i++)
+                if (shapes[i, 0] <= maxSide && shapes[i, 1] <= maxSide) max = i;
             return max;
         }
 

@@ -1,6 +1,8 @@
 # Changelog
 
 ## Unreleased
+- Area tools: a 1 × 3 strip for the hoe and cultivator, along where you look, for paths and roads.
+- Repairs mode: pieces keep their tint while you hover them with the hammer instead of flickering back to normal.
 - Shelter readout: a small compass lights up the open sides and the sky instead of a long list of directions.
 - The build info box keeps the most pressing rows when a lot is going on and folds the rest into one "More" row, so it doesn't grow tall.
 - Freecam picks up where you left it if you go back in without walking off.
