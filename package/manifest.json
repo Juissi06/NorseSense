@@ -1,8 +1,8 @@
 {
   "name": "Norse_Sense",
   "version_number": "$version$",
-  "website_url": "",
-  "description": "See what Valheim hides: spawn, repair and comfort overlays, why pieces won't place, station and portal info. Freecam building, planting grids and a cartography marker manager. Client-side, vanilla-balanced.",
+  "website_url": "https://github.com/Juissi06/NorseSense",
+  "description": "See what Valheim hides: spawn, repair and comfort overlays, map layers for wards and portals, why pieces won't place. Freecam building, planting grids, area harvest and a cartography marker manager. Client-side, vanilla-balanced.",
   "dependencies": [
     "denikson-BepInExPack_Valheim-5.4.2351"
   ]

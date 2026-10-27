@@ -1,5 +1,16 @@
 # Nexus drafts
 
+## Changelog / file description (0.13.0)
+- Map layers on the large map: ward areas (green where you may build, red where you can't), workbench ranges and lines between your portals
+- Hold Left Alt while picking a crop to harvest the whole patch. Carry a cultivator and seeds and it replants them too
+- Farm check: with the cultivator out every crop shows if it's growing and why not
+- Hold Left Alt while building: snap points, how high the piece sits, and which pieces would fall if you removed the one you aim at
+- Raise ground works with the bigger hoe sizes and comes out flat, and there's a 1x3 strip for paths
+- Server limits: server owners can cap freecam, area sizes, stamina and so on for everyone with the mod
+- Much cleaner look: one set of colours, softer overlays, no ground painting when there's no base, the box only talks when something matters
+- Layout mode (Ctrl + L) to drag the panels where you want them
+- Planting grids aren't as cramped anymore
+
 ## Changelog / file description (0.11.2)
 - Comfort breakdown is now a small card on the right under your status effects, instead of a big box in the middle of the screen
 - It only shows while you sit, not every time you walk around your base
@@ -25,7 +36,7 @@
 - Hull readout and hull warnings moved to Seaworthy (my sailing mod), so all the ship stuff is in one place. You can delete the old Ships settings from NorseSense.cfg
 
 ## Summary (short text under the title)
-See what Valheim hides: where mobs can spawn, which pieces need repair, where comfort is best, why a piece won't place, plus freecam building, planting grids and a cartography table marker manager. Client-side, vanilla-balanced.
+See what Valheim hides: spawn, repair and comfort overlays, map layers for wards and portals, why pieces won't place. Freecam building, planting grids, area harvest and a cartography marker manager. Client-side, vanilla-balanced.
 
 ## Description (your wording, do not reword)
 THIS MOD IS STILL IN ALPHA

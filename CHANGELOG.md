@@ -1,35 +1,36 @@
 # Changelog
 
-## Unreleased
-- Planting grids space seeds so their grow rings touch instead of overlapping, which looked cramped.
-- Raise ground works with the area sizes too: every tile is raised, then the area is levelled to one height for a flat platform (two hoe uses per tile).
-- Harvest an area: hold Left Alt while picking a crop to pick every ripe crop of the same kind within 5 m. With a cultivator and seeds on you, they're replanted, paid like planting by hand. Turns itself off next to Plant Easily or Mass Farming; servers can cap or turn it off.
-- Cleaner look throughout:
-  - One set of colours for every overlay: green safe, yellow needs attention, red danger. Safe ground is green now instead of blue.
-  - Softer ground colours, and no painting at all out in the open with no base nearby: the legend just says so.
-  - One outline around the edge of your protected area instead of a ring around every fire and workbench.
-  - The legend lists only the colours in view, in plain words ("Raids can come here"), without square metres or base values.
-  - Comfort mode only paints sheltered floor.
-  - No more pop-up messages for things already on screen (base view mode, freecam on/off, layout mode).
-  - The build info box stays quiet unless something matters: support only when it's weak, "sheltered" only while placing comfort pieces. Hold Left Alt to see everything.
-  - Fine-tuning settings moved under Configuration Manager's advanced settings, leaving about 25 everyday ones.
-- Server limits: a server or host can cap freecam (or turn it off), area tool sizes, stamina multipliers, build distance and pickup range for every player with the mod. Players can pick less, never more. No effect on vanilla players or servers.
-- Removal preview: hold Left Alt (or lock removal with F6) and aim at a piece to see which pieces would fall if you removed it, tinted red, with a count in the info box.
-- Area tools: a 1 × 3 strip for the hoe and cultivator, along where you look, for paths and roads.
-- Repairs mode: pieces keep their tint while you hover them with the hammer instead of flickering back to normal.
-- Shelter readout: a small compass lights up the open sides and the sky instead of a long list of directions.
-- The build info box keeps the most pressing rows when a lot is going on and folds the rest into one "More" row, so it doesn't grow tall.
-- Freecam picks up where you left it if you go back in without walking off.
-- Precision helpers while holding Left Alt: snap points of the piece you place and of the pieces around it, the snapped pair in green, and the piece's height above the ground or the piece below.
+## 0.13.0
+
+New features
+- Map layers: two toggles on the large map. Wards and stations shows each ward's area (green where you may build, red where you may not, grey when off) and crafting stations' build range. Portals draws a line between each pair, marks unpaired ones in yellow and shows their tags when zoomed in. Complete when you host; on a server it fills in as you travel.
+- Harvest an area: hold Left Alt while picking a crop to pick every ripe crop of the same kind within 5 m. With a cultivator and seeds on you, they're replanted, paid like planting by hand.
 - Farm check: with the cultivator out, every crop around you gets its grow ring, and the ones that aren't growing say why (no open sky, too close, not cultivated...).
-- Planting preview and grids also keep out of a neighbour's grow space, not only the new seed's own, so planting can't stop a bigger neighbour growing. Grid seeds sit a little further apart.
-- Map layers: two toggles on the large map. Wards and stations shows each ward's area (green where you may build, red where you may not, grey when off) and crafting stations' build range; Portals draws a line between each pair, marks unpaired ones in orange and shows tags when zoomed in. Complete when you host; on a server it fills in as you travel.
-- Layout mode (Ctrl + L): drag the legend, build info and comfort card where you want them; right-click one to put it back. Replaces fiddling with position sliders.
-- Settings in six sections (General, Base View, Building, Freecam, Farming, Map and Portals) instead of fourteen, in a sensible order, with the fiddly ones under ConfigurationManager's advanced settings. Your old values carry over.
-- Every panel has the same look: icons sit in inventory-style slots, and the legend and comfort card fade in and ease between sizes.
-- A one-time welcome the first time you load into a world, with the keys for the base view, build info, freecam and layout mode.
-- All messages in one style: the subject in gold, then a short phrase coloured by how much it matters ("Rotation: matched, 45°", "Area: placed 9 of 16, out of stamina").
-- Clearer wording: "Open behind and to the left" and "71% covered, needs 80%" for shelter, monsters throughout the spawn legend, and the raid line says the base value it needs.
+- Removal preview: hold Left Alt (or lock removal with F6) and aim at a piece to see which pieces would fall if you removed it, tinted red, with a count in the info box.
+- Precision helpers while holding Left Alt: snap points of the piece you place and of the pieces around it, the snapped pair in green, and the piece's height above the ground or the piece below.
+- Raise ground works with the area sizes: every tile is raised, then the area is levelled to one height for a flat platform (two hoe uses per tile).
+- A 1 × 3 strip for the hoe and cultivator, along where you look, for paths and roads.
+- Server limits: a server or host can cap freecam (or turn it off), area tool and harvest sizes, stamina multipliers, build distance and pickup range for every player with the mod. Players can pick less, never more. No effect on vanilla players or servers.
+- Layout mode (Ctrl + L): drag the legend, build info and comfort card where you want them; right-click one to put it back.
+- A one-time welcome the first time you load into a world, with the main keys.
+
+Cleaner look
+- One set of colours for every overlay: green safe, yellow needs attention, red danger. Safe ground is green now instead of blue.
+- Softer ground colours, and no painting at all out in the open with no base nearby: the legend just says so.
+- One outline around the edge of your protected area instead of a ring around every fire and workbench.
+- The legend lists only the colours in view, in plain words ("Raids can come here").
+- Comfort mode only paints sheltered floor.
+- The build info box stays quiet unless something matters: support only when it's weak, "sheltered" only while placing comfort pieces. Hold Left Alt to see everything. With a lot going on, it keeps the pressing rows and folds the rest into one "More" row.
+- Shelter readout: a small compass lights up the open sides and the sky instead of a long list of directions.
+- Every panel has the same look: icons in inventory-style slots, and panels fade in and ease between sizes.
+- All messages in one style, and no pop-ups for things already on screen (base view mode, freecam on/off, layout mode).
+- Settings in six sections (General, Base View, Building, Freecam, Farming, Map and Portals) instead of fourteen, with the fine-tuning ones under Configuration Manager's advanced settings, leaving about 25 everyday ones. Your old values carry over.
+
+Improvements
+- Planting grids space seeds so their grow rings touch instead of overlapping, and the preview also keeps out of a bigger neighbour's grow space, so planting can't stop it growing.
+- Freecam picks up where you left it if you go back in without walking off.
+- Repairs mode: pieces keep their tint while you hover them with the hammer instead of flickering.
+- Area planting and harvesting turn themselves off next to Plant Easily or Mass Farming.
 
 ## 0.12.0
 - The comfort card no longer shows while you sit on a ship.

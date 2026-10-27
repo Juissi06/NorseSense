@@ -131,6 +131,8 @@ Reading also **updates shared markers you already have** when someone renamed, r
 | Left Shift + E at a cartography table | Open the marker manager |
 | Left Alt + scroll | Fine rotation while building |
 | Left Alt + T | Match or reset rotation |
+| Hold Left Alt while building | Snap points, height and the removal preview |
+| Left Alt + E on a crop | Harvest the area (and replant with a cultivator and seeds) |
 | Left Ctrl + scroll | Area size with the cultivator or hoe |
 | Left Ctrl + L | Layout mode: drag the legend, build info and comfort card where you want them |
 
