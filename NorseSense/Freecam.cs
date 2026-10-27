@@ -12,6 +12,7 @@ namespace NorseSense
         const float RunMultiplier = 3f;
         const float GroundClearance = 0.4f;
         const float CameraRadius = 0.3f;
+        static readonly int SolidMask = LayerMask.GetMask("Default", "static_solid", "Default_small", "piece", "terrain", "vehicle");
 
         internal static bool Active;
         internal static Vector3 Position;
@@ -147,7 +148,8 @@ namespace NorseSense
         static Vector3 Sweep(Vector3 from, Vector3 to)
         {
             if (GameCamera.instance == null) return to;
-            int mask = GameCamera.instance.m_blockCameraMask;
+            // The game camera's own mask, plus building pieces and solid world objects in case it leaves any out.
+            int mask = GameCamera.instance.m_blockCameraMask | SolidMask;
             for (int i = 0; i < 3; i++)
             {
                 Vector3 move = to - from;
