@@ -31,7 +31,7 @@ namespace NorseSense
             if (hmap == null) return SpawnCell.Unknown;
             if (zs.IsBlocked(p)) return SpawnCell.Blocked;
             if (EffectArea.IsPointInsideArea(p, EffectArea.Type.PlayerBase)) return SpawnCell.Protected;
-            if (p.y < zs.m_waterLevel && OnlySeaCreatures(p, biome, area, hmap)) return SpawnCell.Water;
+            if (p.y < zs.m_waterLevel && OnlySeaCreatures(p, normal, biome, area, hmap)) return SpawnCell.Water;
             if (normal.y < MinNormalY) return SpawnCell.Steep;
             return SpawnCell.Exposed;
         }
@@ -49,28 +49,28 @@ namespace NorseSense
         // line) and ocean depth checks as SpawnSystem.IsSpawnPointGood. Read from the game's own lists, so modded
         // spawns count too. Leeches and necks count, since they're right by your base; fish, seagulls and other
         // animals that never attack don't.
-        static bool OnlySeaCreatures(Vector3 p, Heightmap.Biome biome, Heightmap.BiomeArea area, Heightmap hmap)
+        static bool OnlySeaCreatures(Vector3 p, Vector3 normal, Heightmap.Biome biome, Heightmap.BiomeArea area, Heightmap hmap)
         {
             var list = CandidatesFor(biome, area);
             if (list == null) return false; // can't tell: leave it as it was
             float altitude = p.y - ZoneSystem.instance.m_waterLevel;
             float depth = -1f;
             foreach (var spawn in list)
-                if (CouldSpawn(spawn, p, altitude, hmap, ref depth)) return false; // a monster other than a serpent
+                if (CouldSpawn(spawn, p, normal, altitude, hmap, ref depth)) return false; // a monster other than a serpent
             // Raids spawn through the same check with their own lists, but only the ones you've unlocked can come,
             // and only in their biomes.
             foreach (var ev in Raids)
             {
                 if ((ev.m_biome & biome) == 0 || ev.m_spawn == null) continue;
                 foreach (var spawn in ev.m_spawn)
-                    if (Counts(spawn) && (spawn.m_biome & biome) != 0 && CouldSpawn(spawn, p, altitude, hmap, ref depth)) return false;
+                    if (Counts(spawn) && (spawn.m_biome & biome) != 0 && CouldSpawn(spawn, p, normal, altitude, hmap, ref depth)) return false;
             }
             // Zones that border another biome also spawn from that biome's list (SpawnSystem.UpdateSpawning).
             try
             {
                 foreach (var alt in hmap.m_cornerAltBiomes)
                 foreach (var spawn in alt.m_spawn)
-                    if (Counts(spawn) && (spawn.m_biome & biome) != 0 && (spawn.m_biomeArea & area) != 0 && CouldSpawn(spawn, p, altitude, hmap, ref depth))
+                    if (Counts(spawn) && (spawn.m_biome & biome) != 0 && (spawn.m_biomeArea & area) != 0 && CouldSpawn(spawn, p, normal, altitude, hmap, ref depth))
                         return false;
             }
             catch (Exception)
@@ -80,9 +80,27 @@ namespace NorseSense
             return true;
         }
 
-        static bool CouldSpawn(SpawnSystem.SpawnData spawn, Vector3 p, float altitude, Heightmap hmap, ref float depth)
+        // SpawnSystem.IsSpawnPointGood's own checks for one entry, minus the ones that change from moment to moment
+        // (players nearby) and the ward check, which Classify has already made.
+        static bool CouldSpawn(SpawnSystem.SpawnData spawn, Vector3 p, Vector3 normal, float altitude, Heightmap hmap, ref float depth)
         {
             if (altitude < spawn.m_minAltitude || altitude > spawn.m_maxAltitude) return false;
+            if (normal.y < Mathf.Cos(Mathf.Deg2Rad * spawn.m_maxTilt) || normal.y > Mathf.Cos(Mathf.Deg2Rad * spawn.m_minTilt)) return false;
+            if (spawn.m_minDistanceFromCenter > 0f || spawn.m_maxDistanceFromCenter > 0f)
+            {
+                float fromCenter = Utils.LengthXZ(p);
+                if (spawn.m_minDistanceFromCenter > 0f && fromCenter < spawn.m_minDistanceFromCenter) return false;
+                if (spawn.m_maxDistanceFromCenter > 0f && fromCenter > spawn.m_maxDistanceFromCenter) return false;
+            }
+            if (!spawn.m_inForest || !spawn.m_outsideForest)
+            {
+                bool forest = WorldGenerator.InForest(p);
+                if (!spawn.m_inForest && forest || !spawn.m_outsideForest && !forest) return false;
+            }
+            if (!spawn.m_inLava || !spawn.m_outsideLava)
+            {
+                if (!spawn.m_inLava && ZoneSystem.instance.IsLava(p, true) || !spawn.m_outsideLava && !ZoneSystem.instance.IsLava(p)) return false;
+            }
             if (spawn.m_minOceanDepth == spawn.m_maxOceanDepth) return true;
             if (depth < 0f) depth = hmap.GetOceanDepth(p);
             return depth >= spawn.m_minOceanDepth && depth <= spawn.m_maxOceanDepth;
