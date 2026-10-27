@@ -2,7 +2,7 @@
 
 ## 0.12.0
 - The comfort card no longer shows while you sit on a ship.
-- Spawn view: water where only fish and sea serpents can spawn shows grey instead of red, on the ground and on the map, and no longer counts as exposed ground or against the protected %. Read from the game's own spawn lists and raids, so shallow water where necks, leeches or raiders can spawn stays red. With only water in view the bar says so instead of "Protected 100%".
+- Spawn view: water where no monster but a sea serpent can spawn shows grey instead of red, on the ground and on the map, and no longer counts as exposed ground or against the protected %. Read from the game's own spawn lists and the raids you've unlocked, so shallow water where necks, leeches or raiders can spawn stays red; fish, seagulls and other animals that never attack don't count. With only water in view the bar says so instead of "Protected 100%".
 - Area tools: the extra tiles now wear down the hoe or cultivator like the clicked one, stop when it breaks, use the right stamina check, and pay off the skill debt from removing pieces before raising the skill, as vanilla does.
 - Freecam stops at walls, pieces and rocks like the game's own camera, so it can't look into sealed rooms or other bases; it turns off if you walk away with a wall between you and it.
 - Marker manager: follows the game's ward rule for writing to a table, "keep one per duplicate group" only groups markers that are all close to each other (no more chains along a road), long names are no longer cut and rewritten, and saving on a table someone else owns shows what you saved instead of the old list.

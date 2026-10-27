@@ -44,10 +44,11 @@ namespace NorseSense
         static readonly List<SpawnSystem.SpawnData> Candidates = new List<SpawnSystem.SpawnData>();
         static readonly Dictionary<int, List<SpawnSystem.SpawnData>> ByBiome = new Dictionary<int, List<SpawnSystem.SpawnData>>();
 
-        // Underwater ground where nothing but fish and sea serpents could spawn: every other entry in the world's
-        // spawn lists and in the raids is put through the same altitude (height above the water line) and ocean
-        // depth checks as SpawnSystem.IsSpawnPointGood. Read from the game's own lists, so modded spawns count too.
-        // Leeches and other swamp-water mobs count as a threat, since they're right by your base.
+        // Underwater ground where no monster but a sea serpent could spawn: every other monster in the world's
+        // spawn lists, and in the raids you've unlocked, is put through the same altitude (height above the water
+        // line) and ocean depth checks as SpawnSystem.IsSpawnPointGood. Read from the game's own lists, so modded
+        // spawns count too. Leeches and necks count, since they're right by your base; fish, seagulls and other
+        // animals that never attack don't.
         static bool OnlySeaCreatures(Vector3 p, Heightmap.Biome biome, Heightmap.BiomeArea area, Heightmap hmap)
         {
             var list = CandidatesFor(biome, area);
@@ -55,7 +56,15 @@ namespace NorseSense
             float altitude = p.y - ZoneSystem.instance.m_waterLevel;
             float depth = -1f;
             foreach (var spawn in list)
-                if (CouldSpawn(spawn, p, altitude, hmap, ref depth)) return false; // something other than fish or a serpent
+                if (CouldSpawn(spawn, p, altitude, hmap, ref depth)) return false; // a monster other than a serpent
+            // Raids spawn through the same check with their own lists, but only the ones you've unlocked can come,
+            // and only in their biomes.
+            foreach (var ev in Raids)
+            {
+                if ((ev.m_biome & biome) == 0 || ev.m_spawn == null) continue;
+                foreach (var spawn in ev.m_spawn)
+                    if (Counts(spawn) && (spawn.m_biome & biome) != 0 && CouldSpawn(spawn, p, altitude, hmap, ref depth)) return false;
+            }
             // Zones that border another biome also spawn from that biome's list (SpawnSystem.UpdateSpawning).
             try
             {
@@ -92,9 +101,6 @@ namespace NorseSense
                 Candidates.Clear();
                 ByBiome.Clear();
                 foreach (var spawnList in system.m_spawnLists) Add(spawnList.m_spawners);
-                // Raids spawn through the same check, with their own entries.
-                if (RandEventSystem.instance != null)
-                    foreach (var ev in RandEventSystem.instance.m_events) Add(ev.m_spawn);
             }
             int key = (int)biome * 8 + (int)area;
             if (!ByBiome.TryGetValue(key, out var list))
@@ -114,9 +120,10 @@ namespace NorseSense
                 if (Counts(spawn)) Candidates.Add(spawn);
         }
 
-        // Everything but fish and serpents (out at sea only, always underwater).
+        // Monsters, but not serpents (out at sea only, always underwater). Fish have no AI, and seagulls, deer and
+        // the like have the animal AI that only runs away.
         static bool Counts(SpawnSystem.SpawnData spawn) =>
-            spawn != null && spawn.m_enabled && spawn.m_prefab != null && spawn.m_prefab.GetComponent<Fish>() == null &&
+            spawn != null && spawn.m_enabled && spawn.m_prefab != null && spawn.m_prefab.GetComponent<MonsterAI>() != null &&
             !(spawn.m_biome == Heightmap.Biome.Ocean && spawn.m_maxAltitude < 0f);
 
         // ---------- Raids ----------
@@ -133,6 +140,9 @@ namespace NorseSense
             AccessTools.FieldRefAccess<Player, List<string>>("m_readyEvents");
 
         static readonly List<RandEventSystem.PlayerEventData> TempPlayers = new List<RandEventSystem.PlayerEventData>();
+
+        // The raids this player has unlocked, anywhere; kept up to date by the spawn view for the water check.
+        static readonly List<RandomEvent> Raids = new List<RandomEvent>();
 
         // Number of random raids that could pick this player at their current spot, ignoring base value.
         internal static int CountUnlockedRaids(Player player)
@@ -152,13 +162,14 @@ namespace NorseSense
 
             bool playerEvents = ZoneSystem.instance.GetGlobalKey(GlobalKeys.PlayerEvents);
             int count = 0;
+            Raids.Clear();
             foreach (var ev in events.m_events)
             {
                 if (!ev.m_enabled || !ev.m_random || !ev.m_nearBaseOnly) continue;
                 if (!HaveGlobalKeys(events, ev, TempPlayers)) continue;
-                if (!InValidBiome(events, ev, data.position)) continue;
                 if (playerEvents && !data.possibleEvents.Contains(ev.m_name)) continue;
-                count++;
+                Raids.Add(ev);
+                if (InValidBiome(events, ev, data.position)) count++;
             }
             return count;
         }

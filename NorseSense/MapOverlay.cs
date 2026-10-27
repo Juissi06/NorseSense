@@ -114,6 +114,8 @@ namespace NorseSense
 
         IEnumerator Scan(Vector3 center)
         {
+            // The water check needs to know which raids you've unlocked.
+            if (Player.m_localPlayer != null) SpawnRules.CountUnlockedRaids(Player.m_localPlayer);
             _scanning = true;
             _scanCenter = center;
 

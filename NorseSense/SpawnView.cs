@@ -216,6 +216,8 @@ namespace NorseSense
             _rebuilding = true;
             try
             {
+                // The water check needs to know which raids you've unlocked before it starts.
+                if (Player.m_localPlayer != null) SpawnRules.CountUnlockedRaids(Player.m_localPlayer);
                 var zs = ZoneSystem.instance;
                 float cell = Plugin.OverlayCellSize.Value;
                 float radius = Plugin.OverlayRadius.Value;
@@ -516,7 +518,7 @@ namespace NorseSense
             Add(SpawnRules.ProtectedColor, "Protected: mobs can't spawn");
             Add(SpawnRules.ExposedColor, "Exposed: mobs can spawn");
             Add(SpawnRules.SteepColor, "Too steep for most mobs");
-            if (_water > 0) Add(SpawnRules.WaterColor, "Water: only fish and serpents");
+            if (_water > 0) Add(SpawnRules.WaterColor, "Water: no monsters but serpents");
             if (_ghostActive) Add(SpawnRules.PreviewColor, "Protected once placed");
             Add(PlayerRingColor, "No spawns within 40 m of a player");
             if (Plugin.ShowSpawners.Value) Add(NestSpawnColor, "Nest: ignores workbenches, destroy it");
