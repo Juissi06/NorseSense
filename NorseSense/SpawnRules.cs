@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace NorseSense
 {
-    internal enum SpawnCell : byte { Unknown, Blocked, Protected, Steep, Exposed, Water }
+    internal enum SpawnCell : byte { Unknown, Blocked, Protected, Steep, Exposed, Water, RaidOnly }
 
     // Mirrors the point checks in SpawnSystem.IsSpawnPointGood and raid eligibility in RandEventSystem.
     internal static class SpawnRules
@@ -21,6 +21,7 @@ namespace NorseSense
         internal static readonly Color SteepColor = new Color(1f, 0.85f, 0.2f, 0.22f);
         internal static readonly Color PreviewColor = new Color(0.3f, 1f, 0.85f, 0.5f);
         internal static readonly Color RaidColor = new Color(1f, 0.55f, 0f, 0.9f);
+        internal static readonly Color RaidOnlyColor = new Color(1f, 0.6f, 0.1f, 0.4f); // orange: exposed, but only to raids
         internal static readonly Color WaterColor = new Color(0.8f, 0.8f, 0.8f, 0.16f); // neutral grey: not blue, so it never reads as protected
 
         // Unknown = terrain not loaded here, so the game itself can't evaluate the point either.
@@ -31,7 +32,11 @@ namespace NorseSense
             if (hmap == null) return SpawnCell.Unknown;
             if (zs.IsBlocked(p)) return SpawnCell.Blocked;
             if (EffectArea.IsPointInsideArea(p, EffectArea.Type.PlayerBase)) return SpawnCell.Protected;
-            if (p.y < zs.m_waterLevel && OnlySeaCreatures(p, normal, biome, area, hmap)) return SpawnCell.Water;
+            if (p.y < zs.m_waterLevel)
+            {
+                var water = InWater(p, normal, biome, area, hmap);
+                if (water != SpawnCell.Exposed) return water;
+            }
             if (normal.y < MinNormalY) return SpawnCell.Steep;
             return SpawnCell.Exposed;
         }
@@ -49,35 +54,37 @@ namespace NorseSense
         // line) and ocean depth checks as SpawnSystem.IsSpawnPointGood. Read from the game's own lists, so modded
         // spawns count too. Leeches and necks count, since they're right by your base; fish, seagulls and other
         // animals that never attack don't.
-        static bool OnlySeaCreatures(Vector3 p, Vector3 normal, Heightmap.Biome biome, Heightmap.BiomeArea area, Heightmap hmap)
+        // Exposed when a monster could spawn here normally, RaidOnly when only a raid could bring one, Water when
+        // nothing but serpents could.
+        static SpawnCell InWater(Vector3 p, Vector3 normal, Heightmap.Biome biome, Heightmap.BiomeArea area, Heightmap hmap)
         {
             var list = CandidatesFor(biome, area);
-            if (list == null) return false; // can't tell: leave it as it was
+            if (list == null) return SpawnCell.Exposed; // can't tell: leave it as it was
             float altitude = p.y - ZoneSystem.instance.m_waterLevel;
             float depth = -1f;
             foreach (var spawn in list)
-                if (CouldSpawn(spawn, p, normal, altitude, hmap, ref depth)) return false; // a monster other than a serpent
-            // Raids spawn through the same check with their own lists, but only the ones you've unlocked can come,
-            // and only in their biomes.
-            foreach (var ev in Raids)
-            {
-                if ((ev.m_biome & biome) == 0 || ev.m_spawn == null) continue;
-                foreach (var spawn in ev.m_spawn)
-                    if (Counts(spawn) && (spawn.m_biome & biome) != 0 && CouldSpawn(spawn, p, normal, altitude, hmap, ref depth)) return false;
-            }
+                if (CouldSpawn(spawn, p, normal, altitude, hmap, ref depth)) return SpawnCell.Exposed; // a monster other than a serpent
             // Zones that border another biome also spawn from that biome's list (SpawnSystem.UpdateSpawning).
             try
             {
                 foreach (var alt in hmap.m_cornerAltBiomes)
                 foreach (var spawn in alt.m_spawn)
                     if (Counts(spawn) && (spawn.m_biome & biome) != 0 && (spawn.m_biomeArea & area) != 0 && CouldSpawn(spawn, p, normal, altitude, hmap, ref depth))
-                        return false;
+                        return SpawnCell.Exposed;
             }
             catch (Exception)
             {
-                return false; // a game update changed these: can't tell, leave it as it was
+                return SpawnCell.Exposed; // a game update changed these: can't tell, leave it as it was
             }
-            return true;
+            // Raids spawn through the same check with their own lists, but only the ones you've unlocked can come,
+            // and only in their biomes.
+            foreach (var ev in Raids)
+            {
+                if ((ev.m_biome & biome) == 0 || ev.m_spawn == null) continue;
+                foreach (var spawn in ev.m_spawn)
+                    if (Counts(spawn) && (spawn.m_biome & biome) != 0 && CouldSpawn(spawn, p, normal, altitude, hmap, ref depth)) return SpawnCell.RaidOnly;
+            }
+            return SpawnCell.Water;
         }
 
         // SpawnSystem.IsSpawnPointGood's own checks for one entry, minus the ones that change from moment to moment
