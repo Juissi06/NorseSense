@@ -1,4 +1,3 @@
-using BepInEx;
 using UnityEngine;
 
 namespace NorseSense
@@ -10,8 +9,6 @@ namespace NorseSense
     internal class LayoutMode : MonoBehaviour
     {
         internal static bool Active;
-
-        const float Edge = 10f;
 
         class Box
         {
@@ -37,7 +34,7 @@ namespace NorseSense
             if (player == null) return;
             bool key = Plugin.LayoutKey.Value.IsDown();
             if (!Active && key && !Plugin.IsTyping()) Start();
-            else if (Active && (key || UnityInput.Current.GetKeyDown(KeyCode.Escape))) Stop();
+            else if (Active && key) Stop();
         }
 
         void Start()
@@ -68,13 +65,9 @@ namespace NorseSense
                     Where = (sw, sh) =>
                     {
                         Vector2 size = Size(BaseView.LegendRect, 320f, 250f);
-                        return new Rect(Plugin.LegendX.Value * (sw - size.x - Edge * 2f) + Edge, Plugin.LegendY.Value * (sh - size.y - Edge * 2f) + Edge, size.x, size.y);
+                        return BaseView.PlaceLegend(size.x, size.y, sw, sh);
                     },
-                    Save = (r, sw, sh) =>
-                    {
-                        Plugin.LegendX.Value = Fraction(r.x - Edge, sw - r.width - Edge * 2f);
-                        Plugin.LegendY.Value = Fraction(r.y - Edge, sh - r.height - Edge * 2f);
-                    },
+                    Save = BaseView.SaveLegendPlace,
                     Reset = () =>
                     {
                         Plugin.LegendX.Value = (float)Plugin.LegendX.DefaultValue;
@@ -87,13 +80,9 @@ namespace NorseSense
                     Where = (sw, sh) =>
                     {
                         Vector2 size = Size(InfoBox.LastRect, 360f, 110f);
-                        return new Rect(Plugin.BuildInfoX.Value * (sw - size.x), Plugin.BuildInfoY.Value * (sh - size.y), size.x, size.y);
+                        return InfoBox.Place(size.x, size.y, sw, sh);
                     },
-                    Save = (r, sw, sh) =>
-                    {
-                        Plugin.BuildInfoX.Value = Fraction(r.x, sw - r.width);
-                        Plugin.BuildInfoY.Value = Fraction(r.y, sh - r.height);
-                    },
+                    Save = InfoBox.SavePlace,
                     Reset = () =>
                     {
                         Plugin.BuildInfoX.Value = (float)Plugin.BuildInfoX.DefaultValue;
@@ -106,15 +95,9 @@ namespace NorseSense
                     Where = (sw, sh) =>
                     {
                         Vector2 size = Size(ComfortInfo.LastRect, 260f, 90f);
-                        if (Plugin.ComfortX.Value < 0f || Plugin.ComfortY.Value < 0f)
-                            return new Rect(sw - 24f - size.x, sh * 0.4f, size.x, size.y); // automatic: under the status effects
-                        return new Rect(Plugin.ComfortX.Value * (sw - size.x - Edge * 2f) + Edge, Plugin.ComfortY.Value * (sh - size.y - Edge * 2f) + Edge, size.x, size.y);
+                        return ComfortInfo.Place(size.x, size.y, sw, sh, Screen.height / sh);
                     },
-                    Save = (r, sw, sh) =>
-                    {
-                        Plugin.ComfortX.Value = Fraction(r.x - Edge, sw - r.width - Edge * 2f);
-                        Plugin.ComfortY.Value = Fraction(r.y - Edge, sh - r.height - Edge * 2f);
-                    },
+                    Save = ComfortInfo.SavePlace,
                     Reset = () =>
                     {
                         Plugin.ComfortX.Value = -1f;
@@ -128,13 +111,19 @@ namespace NorseSense
         // The panel's real size when it has been shown, otherwise a typical one.
         static Vector2 Size(Rect last, float w, float h) => last.width > 1f ? new Vector2(last.width, last.height) : new Vector2(w, h);
 
-        static float Fraction(float offset, float room) => room > 0f ? Mathf.Clamp01(offset / room) : 0f;
-
         void OnGUI()
         {
             if (!Active) return;
-            Matrix4x4 oldMatrix = Ui.BeginScaled(out float sw, out float sh);
             var e = Event.current;
+            // Esc here rather than in Update: OnGUI runs after every Update, so the game's menu has already seen
+            // the "text box open" that layout mode reports, and doesn't open on the same key press.
+            if (e.type == EventType.KeyDown && e.keyCode == KeyCode.Escape)
+            {
+                e.Use();
+                Stop();
+                return;
+            }
+            Matrix4x4 oldMatrix = Ui.BeginScaled(out float sw, out float sh);
             Vector2 mouse = e.mousePosition;
 
             // Dim the game a little so the panels stand out, with the instructions at the top.

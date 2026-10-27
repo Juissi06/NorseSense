@@ -96,10 +96,7 @@ namespace NorseSense
                 content = Mathf.Max(content, Ui.LineWidth(line.Value, Ui.Text) + (line.Key.a > 0f ? 22f : 0f));
             float w = Mathf.Clamp(content + pad * 2f + 4f, 300f, 520f);
             float h = pad * 2 + tabsH + 6f + (bar ? barH : 0f) + legend.Lines.Count * lineH + (statLines > 0 && keyLines > 0 ? 9f : 0f);
-            float x = Plugin.LegendX.Value * (sw - w - 20f) + 10f;
-            float y = Plugin.LegendY.Value * (sh - h - 20f) + 10f;
-
-            LegendRect = new Rect(x, y, w, h);
+            LegendRect = PlaceLegend(w, h, sw, sh);
             LegendDrawnAt = Time.unscaledTime;
             Rect box = LegendMotion.Step(LegendRect);
             Color oldColor = GUI.color;
@@ -142,6 +139,18 @@ namespace NorseSense
             GUI.EndClip();
             GUI.color = oldColor;
             GUI.matrix = oldMatrix;
+        }
+
+        const float Edge = 10f;
+
+        // Where the settings put a legend of this size; layout mode uses the same pair.
+        internal static Rect PlaceLegend(float w, float h, float sw, float sh) =>
+            new Rect(Plugin.LegendX.Value * (sw - w - Edge * 2f) + Edge, Plugin.LegendY.Value * (sh - h - Edge * 2f) + Edge, w, h);
+
+        internal static void SaveLegendPlace(Rect r, float sw, float sh)
+        {
+            Plugin.LegendX.Value = sw - r.width - Edge * 2f > 0f ? Mathf.Clamp01((r.x - Edge) / (sw - r.width - Edge * 2f)) : 1f;
+            Plugin.LegendY.Value = sh - r.height - Edge * 2f > 0f ? Mathf.Clamp01((r.y - Edge) / (sh - r.height - Edge * 2f)) : 0.5f;
         }
 
         static float TabsWidth()

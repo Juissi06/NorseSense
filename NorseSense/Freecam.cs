@@ -12,7 +12,7 @@ namespace NorseSense
         const float RunMultiplier = 3f;
         const float GroundClearance = 0.4f;
         const float CameraRadius = 0.3f;
-        static readonly int SolidMask = LayerMask.GetMask("Default", "static_solid", "Default_small", "piece", "terrain", "vehicle");
+        static int _solidMask; // set on first use: Unity won't run LayerMask.GetMask while it creates the component
 
         internal static bool Active;
         internal static Vector3 Position;
@@ -149,7 +149,8 @@ namespace NorseSense
         {
             if (GameCamera.instance == null) return to;
             // The game camera's own mask, plus building pieces and solid world objects in case it leaves any out.
-            int mask = GameCamera.instance.m_blockCameraMask | SolidMask;
+            if (_solidMask == 0) _solidMask = LayerMask.GetMask("Default", "static_solid", "Default_small", "piece", "terrain", "vehicle");
+            int mask = GameCamera.instance.m_blockCameraMask | _solidMask;
             for (int i = 0; i < 3; i++)
             {
                 Vector3 move = to - from;

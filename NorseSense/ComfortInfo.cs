@@ -177,7 +177,15 @@ namespace NorseSense
 
         // Right side, under the status effect list and lined up with its right edge, so it follows the list as
         // effects come and go. Keeps clear of the base view legend, which also defaults to the right.
-        static Rect Place(float w, float h, float sw, float sh, float scale)
+        internal static void SavePlace(Rect r, float sw, float sh)
+        {
+            const float margin = 10f;
+            Plugin.ComfortX.Value = sw - r.width - margin * 2f > 0f ? Mathf.Clamp01((r.x - margin) / (sw - r.width - margin * 2f)) : 1f;
+            Plugin.ComfortY.Value = sh - r.height - margin * 2f > 0f ? Mathf.Clamp01((r.y - margin) / (sh - r.height - margin * 2f)) : 0.5f;
+        }
+
+        // Where the card goes; layout mode uses the same function, so its box sits exactly where the card would.
+        internal static Rect Place(float w, float h, float sw, float sh, float scale)
         {
             const float margin = 10f;
             // Put somewhere with layout mode: stays there.

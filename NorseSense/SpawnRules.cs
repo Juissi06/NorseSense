@@ -80,9 +80,12 @@ namespace NorseSense
             // and only in their biomes.
             foreach (var ev in Raids)
             {
-                if ((ev.m_biome & biome) == 0 || ev.m_spawn == null) continue;
+                // A raid with no biome can come anywhere (RandEventSystem.InValidBiome).
+                if ((ev.m_biome != Heightmap.Biome.None && (ev.m_biome & biome) == 0) || ev.m_spawn == null) continue;
                 foreach (var spawn in ev.m_spawn)
-                    if (Counts(spawn) && (spawn.m_biome & biome) != 0 && CouldSpawn(spawn, p, normal, altitude, hmap, ref depth)) return SpawnCell.RaidOnly;
+                    if (Counts(spawn) && (spawn.m_biome & biome) != 0 && (spawn.m_biomeArea & area) != 0 &&
+                        CouldSpawn(spawn, p, normal, altitude, hmap, ref depth))
+                        return SpawnCell.RaidOnly;
             }
             return SpawnCell.Water;
         }
@@ -166,14 +169,14 @@ namespace NorseSense
 
         static readonly List<RandEventSystem.PlayerEventData> TempPlayers = new List<RandEventSystem.PlayerEventData>();
 
-        // The raids this player has unlocked, anywhere; kept up to date by the spawn view for the water check.
+        // The raids this player has unlocked, anywhere, for the water check. Refreshed before each scan.
         static readonly List<RandomEvent> Raids = new List<RandomEvent>();
 
-        // Number of random raids that could pick this player at their current spot, ignoring base value.
-        internal static int CountUnlockedRaids(Player player)
+        internal static void RefreshUnlockedRaids(Player player)
         {
+            Raids.Clear();
             var events = RandEventSystem.instance;
-            if (events == null || ZoneSystem.instance == null) return 0;
+            if (events == null || ZoneSystem.instance == null || player == null) return;
 
             var ready = ReadyEvents(player);
             var data = new RandEventSystem.PlayerEventData
@@ -186,16 +189,23 @@ namespace NorseSense
             TempPlayers.Add(data);
 
             bool playerEvents = ZoneSystem.instance.GetGlobalKey(GlobalKeys.PlayerEvents);
-            int count = 0;
-            Raids.Clear();
             foreach (var ev in events.m_events)
             {
                 if (!ev.m_enabled || !ev.m_random || !ev.m_nearBaseOnly) continue;
                 if (!HaveGlobalKeys(events, ev, TempPlayers)) continue;
                 if (playerEvents && !data.possibleEvents.Contains(ev.m_name)) continue;
                 Raids.Add(ev);
-                if (InValidBiome(events, ev, data.position)) count++;
             }
+        }
+
+        // Number of random raids that could pick this player at their current spot, ignoring base value.
+        internal static int CountUnlockedRaids(Player player)
+        {
+            RefreshUnlockedRaids(player);
+            var events = RandEventSystem.instance;
+            int count = 0;
+            foreach (var ev in Raids)
+                if (InValidBiome(events, ev, player.transform.position)) count++;
             return count;
         }
     }

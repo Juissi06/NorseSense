@@ -408,6 +408,13 @@ namespace NorseSense
         void Welcome()
         {
             if (WelcomeShown.Value) return;
+            // Not during the Valkyrie intro or a cutscene, nor with the HUD hidden: the clock starts once it can be seen.
+            var player = Player.m_localPlayer;
+            if (player.InIntro() || player.InCutscene() || Hud.IsUserHidden())
+            {
+                _inWorldSince = -1f;
+                return;
+            }
             if (_inWorldSince < 0f) _inWorldSince = Time.time;
             if (Time.time - _inWorldSince < 6f) return;
             WelcomeShown.Value = true;

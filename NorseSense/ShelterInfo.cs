@@ -45,8 +45,10 @@ namespace NorseSense
             if (cover >= NeedCover && roof)
                 return new InfoRow("Shelter", "Yes", coverText, Tone.Good, Icon);
 
-            string value = !roof ? "No roof above" : "Open " + OpenList();
-            if (!roof && cover < NeedCover) value += ", open " + OpenList();
+            // Without a roof the open sky is already said, so it's not counted again as an open side.
+            string sides = OpenList(!roof);
+            string value = !roof ? "No roof above" : "Open " + sides;
+            if (!roof && cover < NeedCover && sides.Length > 0) value += ", open " + sides;
             return new InfoRow("Shelter", value, coverText, Tone.Warn, Icon);
         }
 
@@ -54,10 +56,11 @@ namespace NorseSense
 
         // Short: "behind", "behind and to the left", or "on 4 sides" once it's more than two; the cover % next to
         // it says how far off it is.
-        static string OpenList()
+        static string OpenList(bool skipAbove)
         {
             var sides = new List<string>();
-            foreach (var o in Open) if (!sides.Contains(o)) sides.Add(o);
+            foreach (var o in Open) if (!sides.Contains(o) && !(skipAbove && o == "above")) sides.Add(o);
+            if (sides.Count == 0) return "";
             if (sides.Count == 1) return sides[0];
             if (sides.Count == 2) return sides[0] + " and " + sides[1];
             return $"on {sides.Count} sides";

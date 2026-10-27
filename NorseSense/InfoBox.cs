@@ -96,7 +96,7 @@ namespace NorseSense
             w = Mathf.Clamp(w, 260f, sw * 0.7f);
             float h = PadY * 2f + lines.Count * RowH + (lines.HintKeys.Count > 0 ? HintH + (lines.Count > 0 ? 7f : 0f) : 0f);
 
-            var target = new Rect(Plugin.BuildInfoX.Value * (sw - w), Plugin.BuildInfoY.Value * (sh - h), w, h);
+            var target = Place(w, h, sw, sh);
             LastRect = target;
             Rect box = Animate(AvoidVanillaHud(target, sw, sh));
 
@@ -146,24 +146,18 @@ namespace NorseSense
             GUI.matrix = oldMatrix;
         }
 
-        static Rect _rect;
         internal static Rect LastRect; // where it was last placed, for layout mode
-        static float _alpha, _lastDrawn = -10f, _lastStep, _width, _shrinkAt;
+        static readonly PanelMotion Motion = new PanelMotion();
+        static float _alpha => Motion.Alpha;
+        static float _lastDrawn = -10f, _width, _shrinkAt;
 
-        // Eases the box towards its new size and place instead of jumping when a row comes or goes, fades it in
-        // when it appears, and holds the width briefly before shrinking so changing text doesn't make it twitch.
+        // Holds the width briefly before shrinking so changing text doesn't make it twitch; the fade, slide and
+        // easing are the same as every panel's (PanelMotion).
         static Rect Animate(Rect target)
         {
             float now = Time.unscaledTime;
-            if (now - _lastDrawn > 0.25f)
-            {
-                _rect = new Rect(target.x, target.y + 6f, target.width, target.height);
-                _alpha = 0f;
-                _width = target.width;
-                _lastStep = now;
-            }
+            if (now - _lastDrawn > 0.25f) _width = target.width;
             _lastDrawn = now;
-
             if (target.width >= _width - 0.5f)
             {
                 _width = target.width;
@@ -172,19 +166,17 @@ namespace NorseSense
             else if (now >= _shrinkAt) _width = target.width;
             target.x += (target.width - _width) * 0.5f;
             target.width = _width;
+            return Motion.Step(target);
+        }
 
-            if (Event.current.type == EventType.Repaint)
-            {
-                float dt = Mathf.Min(now - _lastStep, 0.1f);
-                _lastStep = now;
-                float k = 1f - Mathf.Exp(-16f * dt);
-                _rect.x = Mathf.Lerp(_rect.x, target.x, k);
-                _rect.y = Mathf.Lerp(_rect.y, target.y, k);
-                _rect.width = Mathf.Lerp(_rect.width, target.width, k);
-                _rect.height = Mathf.Lerp(_rect.height, target.height, k);
-                _alpha = Mathf.MoveTowards(_alpha, 1f, dt / 0.15f);
-            }
-            return _rect;
+        // Where the settings put a box of this size; layout mode uses the same pair.
+        internal static Rect Place(float w, float h, float sw, float sh) =>
+            new Rect(Plugin.BuildInfoX.Value * (sw - w), Plugin.BuildInfoY.Value * (sh - h), w, h);
+
+        internal static void SavePlace(Rect r, float sw, float sh)
+        {
+            Plugin.BuildInfoX.Value = sw > r.width ? Mathf.Clamp01(r.x / (sw - r.width)) : 0.5f;
+            Plugin.BuildInfoY.Value = sh > r.height ? Mathf.Clamp01(r.y / (sh - r.height)) : 0.5f;
         }
 
         static float ValueWidth(InfoRow row)

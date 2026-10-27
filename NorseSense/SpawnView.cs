@@ -217,7 +217,7 @@ namespace NorseSense
             try
             {
                 // The water check needs to know which raids you've unlocked before it starts.
-                if (Player.m_localPlayer != null) SpawnRules.CountUnlockedRaids(Player.m_localPlayer);
+                SpawnRules.RefreshUnlockedRaids(Player.m_localPlayer);
                 var zs = ZoneSystem.instance;
                 float cell = Plugin.OverlayCellSize.Value;
                 float radius = Plugin.OverlayRadius.Value;
