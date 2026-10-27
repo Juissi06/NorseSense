@@ -61,7 +61,7 @@ namespace NorseSense
         float _timer;
 
         internal static bool ModifierHeld() =>
-            Plugin.AreaToolsEnabled.Value && Plugin.AreaModifier.Value != KeyCode.None &&
+            ServerLimits.Allowed(Plugin.AreaToolsEnabled) && Plugin.AreaModifier.Value != KeyCode.None &&
             BepInEx.UnityInput.Current.GetKey(Plugin.AreaModifier.Value);
 
         void Awake()
@@ -105,14 +105,14 @@ namespace NorseSense
         {
             piece = null;
             ghost = player != null && player.InPlaceMode() ? PlacementGhost(player) : null;
-            if (!Plugin.AreaToolsEnabled.Value || ghost == null || !ghost.activeInHierarchy) return Kind.None;
+            if (!ServerLimits.Allowed(Plugin.AreaToolsEnabled) || ghost == null || !ghost.activeInHierarchy) return Kind.None;
             piece = player.GetSelectedPiece();
             if (piece == null) return Kind.None;
             if (piece.GetComponent<Plant>() != null)
                 return Compat.AreaPlantingDisabledBy == null ? Kind.Plant : Kind.None;
             // Read the prefab: the game strips terrain components from the ghost.
             var op = piece.GetComponent<TerrainOp>();
-            if (op != null && Plugin.AreaTerrain.Value && Compat.AreaTerrainDisabledBy == null && !op.m_settings.m_raise)
+            if (op != null && ServerLimits.Allowed(Plugin.AreaTerrain) && Compat.AreaTerrainDisabledBy == null && !op.m_settings.m_raise)
                 return Kind.Terrain;
             return Kind.None;
         }
@@ -127,7 +127,9 @@ namespace NorseSense
             if (Current == Kind.None) return;
 
             int[,] shapes = Current == Kind.Plant ? PlantShapes : TerrainShapes;
-            int index = Mathf.Clamp(Current == Kind.Plant ? _plantShape : _terrainShape, 0, shapes.GetLength(0) - 1);
+            // Clamped every time, so a size limit lowered meanwhile (setting or server) applies at once.
+            int max = Current == Kind.Plant ? MaxShape(PlantShapes, ServerLimits.Max(Plugin.MaxPlantGrid)) : MaxShape(TerrainShapes, ServerLimits.Max(Plugin.MaxHoeSize));
+            int index = Mathf.Clamp(Current == Kind.Plant ? _plantShape : _terrainShape, 0, max);
             Columns = shapes[index, 0];
             Rows = shapes[index, 1];
 
@@ -271,9 +273,9 @@ namespace NorseSense
         internal static void StepSize(int direction)
         {
             if (Current == Kind.Plant)
-                _plantShape = Mathf.Clamp(_plantShape + direction, 0, MaxShape(PlantShapes, Plugin.MaxPlantGrid.Value));
+                _plantShape = Mathf.Clamp(_plantShape + direction, 0, MaxShape(PlantShapes, ServerLimits.Max(Plugin.MaxPlantGrid)));
             else if (Current == Kind.Terrain)
-                _terrainShape = Mathf.Clamp(_terrainShape + direction, 0, MaxShape(TerrainShapes, Plugin.MaxHoeSize.Value));
+                _terrainShape = Mathf.Clamp(_terrainShape + direction, 0, MaxShape(TerrainShapes, ServerLimits.Max(Plugin.MaxHoeSize)));
         }
 
         // The largest shape whose sides fit the size setting ("Max planting size" or "Max hoe size").

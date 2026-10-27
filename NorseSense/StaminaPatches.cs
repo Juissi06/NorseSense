@@ -16,8 +16,8 @@ namespace NorseSense
 
             switch (item.m_shared.m_name)
             {
-                case "$item_hammer": return Plugin.BuildStaminaMultiplier.Value;
-                case "$item_cultivator": return Plugin.SowStaminaMultiplier.Value;
+                case "$item_hammer": return ServerLimits.Min(Plugin.BuildStaminaMultiplier);
+                case "$item_cultivator": return ServerLimits.Min(Plugin.SowStaminaMultiplier);
                 default: return 1f;
             }
         }

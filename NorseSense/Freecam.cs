@@ -63,16 +63,21 @@ namespace NorseSense
             _lastHealth = health;
 
             // The game's reach is measured from your eyes; freecam reach is checked from the camera instead.
-            float reach = Plugin.FreecamRange.Value + Plugin.FreecamReach.Value + 2f;
+            float reach = ServerLimits.Max(Plugin.FreecamRange) + ServerLimits.Max(Plugin.FreecamReach) + 2f;
             if (!Mathf.Approximately(player.m_maxPlaceDistance, reach)) player.m_maxPlaceDistance = reach;
 
             Move(player, Time.unscaledDeltaTime);
             // Walking away with a wall between you and the camera leaves it behind; then it's time to come back.
-            if (DistanceFromPlayer(player) > Plugin.FreecamRange.Value + 2f) Exit("too far from you");
+            if (DistanceFromPlayer(player) > ServerLimits.Max(Plugin.FreecamRange) + 2f) Exit("too far from you");
         }
 
         void Enter(Player player)
         {
+            if (!ServerLimits.Allowed(Plugin.FreecamAllowed))
+            {
+                Plugin.Tell("Freecam", ServerLimits.Active && Plugin.FreecamAllowed.Value ? "off on this server" : "turned off in the settings", Tone.Warn);
+                return;
+            }
             if (Compat.FreecamDisabled)
             {
                 Plugin.Tell("Freecam", $"off, {Compat.FreecamDisabledBy} provides one", Tone.Warn);
@@ -150,7 +155,7 @@ namespace NorseSense
 
             Vector3 anchor = player.GetCenterPoint();
             Vector3 offset = next - anchor;
-            if (offset.magnitude > Plugin.FreecamRange.Value) next = anchor + offset.normalized * Plugin.FreecamRange.Value;
+            if (offset.magnitude > ServerLimits.Max(Plugin.FreecamRange)) next = anchor + offset.normalized * ServerLimits.Max(Plugin.FreecamRange);
             if (ZoneSystem.instance != null)
                 next.y = Mathf.Max(next.y, ZoneSystem.instance.GetGroundHeight(next) + GroundClearance);
             // Walls, pieces and rocks stop it like they stop the game's own camera, so it can't look into sealed
@@ -184,8 +189,8 @@ namespace NorseSense
         internal static void AddRows(InfoLines lines, Player player)
         {
             float dist = DistanceFromPlayer(player);
-            bool atEdge = dist > Plugin.FreecamRange.Value - 0.5f;
-            lines.Add(null, "Freecam", $"{dist:0} m from you", $"max {Plugin.FreecamRange.Value:0} m, place within {Plugin.FreecamReach.Value:0} m",
+            bool atEdge = dist > ServerLimits.Max(Plugin.FreecamRange) - 0.5f;
+            lines.Add(null, "Freecam", $"{dist:0} m from you", $"max {ServerLimits.Max(Plugin.FreecamRange):0} m, place within {ServerLimits.Max(Plugin.FreecamReach):0} m",
                 atEdge ? Tone.Warn : Tone.None);
         }
 
@@ -208,7 +213,7 @@ namespace NorseSense
 
         // Placing and removing reach, measured from the camera while flying.
         internal static bool InReach(Vector3 point) =>
-            GameCamera.instance != null && Vector3.Distance(point, GameCamera.instance.transform.position) <= Plugin.FreecamReach.Value;
+            GameCamera.instance != null && Vector3.Distance(point, GameCamera.instance.transform.position) <= ServerLimits.Max(Plugin.FreecamReach);
 
         // Vanilla checks the workbench where you stand, which is fine at arm's length. With the camera far away
         // that would let you build well outside any workbench, so the piece itself must be in range too.

@@ -169,6 +169,11 @@ Settings come in six sections: **1. General**, **2. Base View**, **3. Building**
 
 **1. General → Enabled** switches the whole mod on or off without restarting. Off removes every change Norse Sense makes to the game and hides all its overlays, as if it weren't installed.
 
+### Server limits
+Running a server or hosting a world? Turn on **1. General → Server limits** (on the server, or in your own config when you host) and your values become the most anyone with Norse Sense can use: freecam on or off, its range and reach, area tools and their sizes, the stamina multipliers, build distance and pickup range. Players can still choose less for themselves (a shorter freecam range, vanilla stamina), never more. Change a value while people are on and it applies to them at once.
+
+Players without the mod and vanilla servers aren't affected, and the readouts (spawns, support, shelter and the rest) never are. Install Norse Sense on a dedicated server only if you want to set limits.
+
 ## Compatibility
 Norse Sense only adds to the game's code and never replaces it, so other mods' changes to the same code still run. When you load into a world, it checks for mods that overlap with its features:
 

@@ -115,6 +115,10 @@ namespace NorseSense
         internal static ConfigEntry<bool> AutoCompat;
         internal static ConfigEntry<bool> ShowCompatWarnings;
 
+        // Server
+        internal static ConfigEntry<bool> LimitPlayers;
+        internal static ConfigEntry<bool> FreecamAllowed;
+
         Harmony _harmony;
         GameObject _spawnViewObject;
 
@@ -146,6 +150,10 @@ namespace NorseSense
                 "Turns off features another mod already does (like fine rotation with Gizmo).", "Compatibility");
             ShowCompatWarnings = Bind(general, "Show warnings in game", true,
                 "Message in game when another mod overlaps. Always written to the log.", "Compatibility", advanced: true);
+
+            LimitPlayers = Bind(general, "Server limits", false,
+                "When you host or run a server: players with Norse Sense can't go past your freecam, area tool, stamina, build distance and pickup settings. " +
+                "They can still pick less. No effect on players without the mod.", general);
 
             ToggleKey = Bind(view, "Toggle key", new KeyboardShortcut(KeyCode.F7), "Steps through the base view modes, then off.", "Base View");
             BaseViewModes = Bind(view, "Modes in cycle", ViewModes.All, "Which modes the toggle key steps through before switching off.", "Base View");
@@ -195,6 +203,7 @@ namespace NorseSense
 
             FreecamKey = Bind(freecam, "Toggle key", new KeyboardShortcut(KeyCode.F10),
                 "In build mode, detaches the camera so you can fly around your build and place from there.", "Freecam");
+            FreecamAllowed = Bind(freecam, "Enabled", true, "Freecam on or off. With server limits, off here turns it off for everyone.", freecam);
             FreecamSpeed = Bind(freecam, "Speed", 8f, "Flying speed (m/s). Hold run for 3x.", "Freecam", new AcceptableValueRange<float>(2f, 30f));
             FreecamRange = Bind(freecam, "Max distance", 25f, "How far the camera can fly from you (m).", "Freecam", new AcceptableValueRange<float>(5f, 40f));
             FreecamReach = Bind(freecam, "Reach", 8f, "How far from the camera you can place and remove pieces (m).", "Freecam",
@@ -274,6 +283,7 @@ namespace NorseSense
             _spawnViewObject.AddComponent<AreaTools>();
             _spawnViewObject.AddComponent<MarkerManager>();
             _spawnViewObject.AddComponent<LayoutMode>();
+            _spawnViewObject.AddComponent<ServerLimits>();
 
             _harmony = new Harmony(Guid);
             ModEnabled.SettingChanged += (s, e) => ApplyEnabled();

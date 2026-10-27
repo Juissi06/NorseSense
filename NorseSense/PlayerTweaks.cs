@@ -34,8 +34,9 @@ namespace NorseSense
                 _origPickupRange = player.m_autoPickupRange;
             }
 
-            player.m_maxPlaceDistance = Plugin.BuildDistance.Value > 0f ? Plugin.BuildDistance.Value : _origPlaceDistance;
-            player.m_autoPickupRange = Plugin.PickupRange.Value > 0f ? Plugin.PickupRange.Value : _origPickupRange;
+            float build = ServerLimits.MaxOrVanilla(Plugin.BuildDistance), pickup = ServerLimits.MaxOrVanilla(Plugin.PickupRange);
+            player.m_maxPlaceDistance = build > 0f ? build : _origPlaceDistance;
+            player.m_autoPickupRange = pickup > 0f ? pickup : _origPickupRange;
         }
     }
 }

@@ -68,7 +68,7 @@ Small toggles on the large map instead of separate features:
 11. **Quick stack to nearby containers.** One key puts items into nearby chests that already hold the same item. QuickStackStore does exactly this (plus restock and sorting), and many players use it, so: off whenever QuickStackStore or a similar mod is installed, and only worth building if craft from containers is done, since they share the "find nearby chests I may use" part.
 
 ### Server settings
-12. **Server-enforced settings.** Let a server admin set and lock the balance options for everyone: freecam range and reach, area tool sizes, stamina multipliers, build distance and pickup range. Today each player uses their own config. Needs a sync library (ServerSync or the ConditionalConfigSync already in the mod list). Players without the mod are unaffected, and the readouts stay client-side.
+12. [x] **Server-enforced settings.** Let a server admin set and lock the balance options for everyone: freecam range and reach, area tool sizes, stamina multipliers, build distance and pickup range. Today each player uses their own config. Needs a sync library (ServerSync or the ConditionalConfigSync already in the mod list). Players without the mod are unaffected, and the readouts stay client-side.
 
 ### Improvements to existing features
 - [x] **Shelter row:** a small compass graphic with the open sides lit, instead of "Open ahead-right (up), behind-right (up), behind (up)…", which is the longest line in the box.
