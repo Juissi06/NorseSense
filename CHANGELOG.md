@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.12.0
 - The comfort card no longer shows while you sit on a ship.
 - Spawn view: water where only fish and sea serpents can spawn shows grey instead of red, on the ground and on the map, and no longer counts as exposed ground or against the protected %. Read from the game's own spawn lists and raids, so shallow water where necks, leeches or raiders can spawn stays red. With only water in view the bar says so instead of "Protected 100%".
 - Area tools: the extra tiles now wear down the hoe or cultivator like the clicked one, stop when it breaks, use the right stamina check, and pay off the skill debt from removing pieces before raising the skill, as vanilla does.
