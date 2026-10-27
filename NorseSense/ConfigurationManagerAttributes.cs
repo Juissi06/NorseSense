@@ -7,6 +7,7 @@ namespace NorseSense
     {
         public int? Order;
         public bool? IsAdvanced;
+        public bool? Browsable;
     }
 #pragma warning restore 0649, 0414
 }

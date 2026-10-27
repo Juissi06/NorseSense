@@ -49,6 +49,7 @@ namespace NorseSense
         internal static ConfigEntry<float> BuildInfoY, BuildInfoX;
         internal static ConfigEntry<float> ComfortX, ComfortY;
         internal static ConfigEntry<KeyboardShortcut> LayoutKey;
+        internal static ConfigEntry<bool> WelcomeShown;
         internal static ConfigEntry<KeyboardShortcut> RemovalLockKey;
         internal static ConfigEntry<bool> ShowShelterInfo;
         internal static ConfigEntry<bool> ShowTerrainLimits;
@@ -224,6 +225,10 @@ namespace NorseSense
             ManagerPermission = Bind(map, "Edit permission", EditPermission.BuilderOrWard,
                 "Who can edit a table's markers. BuilderOrWard = the builder, ward members and admins. Others can still look.", "Cartography Table", advanced: true);
 
+            WelcomeShown = Config.Bind(general, "Welcome shown", false,
+                new ConfigDescription("The one-time welcome with the main keys has been shown.", null,
+                    new ConfigurationManagerAttributes { Browsable = false }));
+
             CarryOverMovedSettings();
 
             // Until 0.11.0 this defaulted to F9, which the game also uses to switch controller layout.
@@ -369,6 +374,7 @@ namespace NorseSense
             PlayerTweaks.Update();
             if (!ModEnabled.Value || Player.m_localPlayer == null) return;
             Ui.PrepareArt(); // once: the game's UI sprites are loaded by the time a player exists
+            Welcome();
             if (IsTyping()) return;
 
             if (ToggleKey.Value.IsDown())
@@ -388,6 +394,19 @@ namespace NorseSense
         }
 
         // Toggle feedback in one consistent style: "Spawn view: on".
+        float _inWorldSince = -1f;
+
+        // Once per install, a few seconds after first arriving in a world: the three keys that open everything.
+        void Welcome()
+        {
+            if (WelcomeShown.Value) return;
+            if (_inWorldSince < 0f) _inWorldSince = Time.time;
+            if (Time.time - _inWorldSince < 6f) return;
+            WelcomeShown.Value = true;
+            Tell("Norse Sense", $"{Ui.KeyName(ToggleKey.Value)} base view, {Ui.KeyName(BuildInfoToggleKey.Value)} build info, " +
+                                $"{Ui.KeyName(FreecamKey.Value)} freecam, {Ui.KeyName(LayoutKey.Value)} move panels", Tone.Good);
+        }
+
         // Every message the mod shows looks the same: the gold subject, then a short phrase, coloured by how much
         // it matters. In the corner, like the game's own pickup messages; Center only for a blocked action.
         internal static void Tell(string what, string text, Tone tone = Tone.None, bool center = false)
