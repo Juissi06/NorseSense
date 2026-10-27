@@ -41,7 +41,7 @@ namespace NorseSense
                 else Open.Add(DirectionName(view * ray));
             }
             float cover = (float)hits / Rays.Length;
-            string coverText = $"cover {cover * 100f:0}% of {NeedCover * 100f:0}%";
+            string coverText = $"{cover * 100f:0}% covered, needs {NeedCover * 100f:0}%";
             if (cover >= NeedCover && roof)
                 return new InfoRow("Shelter", "Yes", coverText, Tone.Good, Icon);
 
@@ -52,18 +52,26 @@ namespace NorseSense
 
         static Sprite Icon => Ui.StatusIcon(SEMan.s_statusEffectShelter);
 
-        static string OpenList() =>
-            Open.Count <= 6 ? string.Join(", ", Open) : string.Join(", ", Open.GetRange(0, 6)) + $" +{Open.Count - 6} more";
+        // Short: "behind", "behind and to the left", or "on 4 sides" once it's more than two; the cover % next to
+        // it says how far off it is.
+        static string OpenList()
+        {
+            var sides = new List<string>();
+            foreach (var o in Open) if (!sides.Contains(o)) sides.Add(o);
+            if (sides.Count == 1) return sides[0];
+            if (sides.Count == 2) return sides[0] + " and " + sides[1];
+            return $"on {sides.Count} sides";
+        }
 
-        static readonly string[] Sides = { "ahead", "ahead-right", "right", "behind-right", "behind", "behind-left", "left", "ahead-left" };
+        static readonly string[] Sides = { "ahead", "ahead right", "to the right", "behind right", "behind", "behind left", "to the left", "ahead left" };
 
-        // Relative to where the camera looks, so "left" is your left.
+        // Relative to where the camera looks, so "left" is your left. Rays angled up and level both count for
+        // their side; only straight up is its own.
         static string DirectionName(Vector3 local)
         {
-            if (Mathf.Abs(local.x) < 0.01f && Mathf.Abs(local.z) < 0.01f) return "straight up";
+            if (Mathf.Abs(local.x) < 0.01f && Mathf.Abs(local.z) < 0.01f) return "above";
             float angle = Mathf.Repeat(Mathf.Atan2(local.x, local.z) * Mathf.Rad2Deg, 360f);
-            string side = Sides[Mathf.RoundToInt(angle / 45f) % 8];
-            return local.y > 0f ? side + " (up)" : side;
+            return Sides[Mathf.RoundToInt(angle / 45f) % 8];
         }
     }
 }

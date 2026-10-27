@@ -517,13 +517,13 @@ namespace NorseSense
             _legend.Clear();
             void Add(Color c, string text) => _legend.Add(c, text);
 
-            Add(SpawnRules.ProtectedColor, "Protected: mobs can't spawn");
-            Add(SpawnRules.ExposedColor, "Exposed: mobs can spawn");
-            Add(SpawnRules.SteepColor, "Too steep for most mobs");
+            Add(SpawnRules.ProtectedColor, "Protected: nothing spawns");
+            Add(SpawnRules.ExposedColor, "Exposed: monsters can spawn");
+            Add(SpawnRules.SteepColor, "Too steep for most monsters");
             if (_raidOnly > 0) Add(SpawnRules.RaidOnlyColor, "Water: only raids can spawn here");
-            if (_water > 0) Add(SpawnRules.WaterColor, "Water: no monsters but serpents");
+            if (_water > 0) Add(SpawnRules.WaterColor, "Water: only serpents");
             if (_ghostActive) Add(SpawnRules.PreviewColor, "Protected once placed");
-            Add(PlayerRingColor, "No spawns within 40 m of a player");
+            Add(PlayerRingColor, "Nothing spawns within 40 m of a player");
             if (Plugin.ShowSpawners.Value) Add(NestSpawnColor, "Nest: ignores workbenches, destroy it");
 
             // Coverage bar: share of spawnable ground around you that's protected.
@@ -555,9 +555,9 @@ namespace NorseSense
             if (_unlockedRaids == 0)
                 _legend.Add($"Raids: <color={Ui.Info}>none unlocked yet</color>");
             else if (_baseValue >= SpawnRules.RaidBaseValue)
-                _legend.Add($"Raids: <color={Ui.Warn}>can target you here</color> (base {_baseValue}/{SpawnRules.RaidBaseValue})");
+                _legend.Add($"Raids: <color={Ui.Warn}>can target you here</color> <color={Ui.Muted}>(base {_baseValue}, needs {SpawnRules.RaidBaseValue})</color>");
             else
-                _legend.Add($"Raids: <color={Ui.Info}>not here</color> (base {_baseValue}/{SpawnRules.RaidBaseValue})");
+                _legend.Add($"Raids: <color={Ui.Info}>not here</color> <color={Ui.Muted}>(base {_baseValue}, needs {SpawnRules.RaidBaseValue})</color>");
 
             if (Compat.SpawnRulesChangedBy != null)
                 _legend.Add($"<color={Ui.Warn}>Spawn rules changed by {Compat.SpawnRulesChangedBy}: may be off</color>");
