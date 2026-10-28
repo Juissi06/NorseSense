@@ -63,6 +63,7 @@ In build mode, press **F10** to detach the camera and fly around your build. You
 - The camera stays within 25 m of you, and you can place and remove pieces up to 8 m from the camera.
 - Freecam ends when you leave build mode or take damage.
 - Press **F10** again without walking off and the camera picks up where you left it.
+- The camera stops at walls, pieces and rocks like the game's own. Turn on **4. Freecam → Fly through walls** to pass through them (off by default; a server with limits can keep it off).
 
 ### Resting
 - **Comfort breakdown:** while you sit, a small card under the status effects on the right (below Resting and Rested) shows your comfort, how long Rested will last, each piece that adds to it as an icon with its value, and how many nearby pieces don't count because a better one of the same kind already does. If you're not sheltered, it says which sides are open.

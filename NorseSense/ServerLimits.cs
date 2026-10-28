@@ -17,7 +17,7 @@ namespace NorseSense
         // cap from below (lower is cheaper); switches can only be turned off.
         static ConfigEntryBase[] Capped => new ConfigEntryBase[]
         {
-            Plugin.FreecamAllowed, Plugin.FreecamRange, Plugin.FreecamReach,
+            Plugin.FreecamAllowed, Plugin.FreecamThroughWalls, Plugin.FreecamRange, Plugin.FreecamReach,
             Plugin.AreaToolsEnabled, Plugin.AreaTerrain, Plugin.MaxPlantGrid, Plugin.MaxHoeSize,
             Plugin.BuildStaminaMultiplier, Plugin.SowStaminaMultiplier, Plugin.BuildDistance, Plugin.PickupRange,
             Plugin.HarvestArea, Plugin.HarvestRadius, Plugin.Replant
@@ -35,6 +35,7 @@ namespace NorseSense
         {
             Plugin.LimitPlayers.SettingChanged += (s, e) => Broadcast();
             Plugin.FreecamAllowed.SettingChanged += (s, e) => Broadcast();
+            Plugin.FreecamThroughWalls.SettingChanged += (s, e) => Broadcast();
             Plugin.FreecamRange.SettingChanged += (s, e) => Broadcast();
             Plugin.FreecamReach.SettingChanged += (s, e) => Broadcast();
             Plugin.AreaToolsEnabled.SettingChanged += (s, e) => Broadcast();

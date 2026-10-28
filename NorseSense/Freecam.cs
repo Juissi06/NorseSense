@@ -97,7 +97,7 @@ namespace NorseSense
             _velocity = Vector3.zero;
             Position = GameCamera.instance.transform.position;
             if (_hasLast && Vector3.Distance(player.transform.position, _lastBody) < ResumeDistance)
-                Position = Sweep(Position, _lastCamera); // through the same walls as flying there would
+                Position = ThroughWalls() ? _lastCamera : Sweep(Position, _lastCamera); // as flying there would
         }
 
         internal static void Exit(string why)
@@ -159,9 +159,11 @@ namespace NorseSense
             if (ZoneSystem.instance != null)
                 next.y = Mathf.Max(next.y, ZoneSystem.instance.GetGroundHeight(next) + GroundClearance);
             // Walls, pieces and rocks stop it like they stop the game's own camera, so it can't look into sealed
-            // rooms, other bases or crypts.
-            Position = Sweep(Position, next);
+            // rooms, other bases or crypts, unless "Fly through walls" is on (and the server allows it).
+            Position = ThroughWalls() ? next : Sweep(Position, next);
         }
+
+        static bool ThroughWalls() => ServerLimits.Allowed(Plugin.FreecamThroughWalls);
 
         // Moves as far toward the target as the game camera's collision allows, sliding along what it touches.
         static Vector3 Sweep(Vector3 from, Vector3 to)

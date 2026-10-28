@@ -1,7 +1,5 @@
 # Changelog
 
-## Unreleased
-
 ## 0.13.0
 
 New features
@@ -31,6 +29,7 @@ Cleaner look
 Improvements
 - Planting grids space seeds so their grow rings touch instead of overlapping, and the preview also keeps out of a bigger neighbour's grow space, so planting can't stop it growing.
 - Freecam picks up where you left it if you go back in without walking off.
+- Freecam: new setting Fly through walls (off by default) lets the camera pass through walls, pieces and rocks.
 - Repairs mode: pieces keep their tint while you hover them with the hammer instead of flickering.
 - Area planting and harvesting turn themselves off next to Plant Easily or Mass Farming.
 

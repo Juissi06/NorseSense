@@ -122,6 +122,7 @@ namespace NorseSense
         // Server
         internal static ConfigEntry<bool> LimitPlayers;
         internal static ConfigEntry<bool> FreecamAllowed;
+        internal static ConfigEntry<bool> FreecamThroughWalls;
 
         Harmony _harmony;
         GameObject _spawnViewObject;
@@ -208,6 +209,9 @@ namespace NorseSense
             FreecamKey = Bind(freecam, "Toggle key", new KeyboardShortcut(KeyCode.F10),
                 "In build mode, detaches the camera so you can fly around your build and place from there.", "Freecam");
             FreecamAllowed = Bind(freecam, "Enabled", true, "Freecam on or off. With server limits, off here turns it off for everyone.", freecam);
+            FreecamThroughWalls = Bind(freecam, "Fly through walls", false,
+                "Lets the camera pass through walls, pieces and rocks. Off = it stops at them like the game's own camera. " +
+                "With server limits, off here keeps it off for everyone.", freecam);
             FreecamSpeed = Bind(freecam, "Speed", 8f, "Flying speed (m/s). Hold run for 3x.", "Freecam", new AcceptableValueRange<float>(2f, 30f));
             FreecamRange = Bind(freecam, "Max distance", 25f, "How far the camera can fly from you (m).", "Freecam", new AcceptableValueRange<float>(5f, 40f));
             FreecamReach = Bind(freecam, "Reach", 8f, "How far from the camera you can place and remove pieces (m).", "Freecam",
