@@ -237,6 +237,13 @@ namespace NorseSense
         {
             if (_root == null)
             {
+                // A new map (after logging out and back in): the old marks went with the old one.
+                _rings.Clear();
+                _fills.Clear();
+                _lines.Clear();
+                _dots.Clear();
+                _labels.Clear();
+                _pinFont = null;
                 var mapImage = _map.m_mapImageLarge;
                 // A masked container the size of the map, under the pins, so nothing draws past the map edge.
                 var mask = new GameObject("NorseSense_MapLayers", typeof(RectTransform), typeof(RectMask2D));
@@ -245,7 +252,7 @@ namespace NorseSense
                 _root.anchorMin = Vector2.zero;
                 _root.anchorMax = Vector2.one;
                 _root.offsetMin = _root.offsetMax = Vector2.zero;
-                MakeTextures();
+                if (_ringTextures == null) MakeTextures(); // kept across maps
             }
             if (_wardToggle == null) _wardToggle = MakeToggle("Wards and stations", 1, v => Plugin.MapWards.Value = v);
             if (_portalToggle == null) _portalToggle = MakeToggle("Portals", 2, v => Plugin.MapPortals.Value = v);
@@ -487,7 +494,7 @@ namespace NorseSense
         static void Hide(List<RawImage> pool, int used)
         {
             for (int i = used; i < pool.Count; i++)
-                if (pool[i].gameObject.activeSelf) pool[i].gameObject.SetActive(false);
+                if (pool[i] != null && pool[i].gameObject.activeSelf) pool[i].gameObject.SetActive(false);
         }
     }
 }
