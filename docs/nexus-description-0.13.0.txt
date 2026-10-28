@@ -20,6 +20,10 @@ Norse Sense shows you things that Valheim keeps hidden: where mobs can spawn and
 [*][b]Map layers:[/b] ward areas (green where you may build, red where you can't), workbench ranges and lines between your portals, with toggles on the large map
 [/list]
 
+[center][img]https://raw.githubusercontent.com/Juissi06/NorseSense/master/art/screenshots/spawns.jpg[/img][/center]
+
+[center][img]https://raw.githubusercontent.com/Juissi06/NorseSense/master/art/screenshots/repairs.jpg[/img][/center]
+
 [size=5][b][color=#e8c77e]Building[/color][/b][/size]
 [list]
 [*][b]Fine rotation:[/b] Rotate pieces with precision, or copy an existing ones rotation
@@ -33,6 +37,8 @@ Norse Sense shows you things that Valheim keeps hidden: where mobs can spawn and
 [*][b]Layout mode:[/b] drag the panels where you want them
 [/list]
 
+[center][img]https://raw.githubusercontent.com/Juissi06/NorseSense/master/art/screenshots/precision.png[/img][/center]
+
 [size=5][b][color=#e8c77e]Farming, portals and fires[/color][/b][/size]
 [list]
 [*][b]Planting preview:[/b] will the seed grow here, and if not, why
@@ -44,6 +50,10 @@ Norse Sense shows you things that Valheim keeps hidden: where mobs can spawn and
 [*][b]Portals:[/b] where the portal leads, why it isn't connected and the items stopping you from teleporting
 [*][b]Fires:[/b] tells you why a fire won't burn
 [/list]
+
+[center][img]https://raw.githubusercontent.com/Juissi06/NorseSense/master/art/screenshots/planting-grid.jpg[/img][/center]
+
+[center][img]https://raw.githubusercontent.com/Juissi06/NorseSense/master/art/screenshots/hoe-strip.jpg[/img][/center]
 
 [size=5][b][color=#e8c77e]Cartography table[/color][/b][/size]
 [list]
