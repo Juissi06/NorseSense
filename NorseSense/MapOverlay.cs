@@ -13,9 +13,9 @@ namespace NorseSense
 
         // The ground grid's colours, a bit stronger so they read on the map.
         static readonly Color32 ProtectedPixel = Ui.Alpha(Ui.GoodColor, 0.5f);
-        static readonly Color32 ExposedPixel = Ui.Alpha(Ui.BadColor, 0.55f);
-        static readonly Color32 SteepPixel = Ui.Alpha(Ui.WarnColor, 0.25f);
-        static readonly Color32 RaidOnlyPixel = Ui.Alpha(Ui.WarnColor, 0.5f); // only raids
+        static readonly Color32 ExposedPixel = Ui.Alpha(Ui.BadColor, 0.65f);
+        static readonly Color32 SteepPixel = Ui.Alpha(Ui.WarnColor, 0.35f);
+        static readonly Color32 RaidOnlyPixel = Ui.Alpha(Ui.WarnColor, 0.6f); // only raids
         static readonly Color32 WaterPixel = new Color32(205, 205, 205, 40); // grey, only fish and serpents
         static readonly Color32 ClearPixel = new Color32(0, 0, 0, 0);
 

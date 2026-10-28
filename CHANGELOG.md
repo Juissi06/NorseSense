@@ -1,7 +1,5 @@
 # Changelog
 
-## Unreleased
-
 ## 0.13.0
 
 New features
@@ -18,7 +16,7 @@ New features
 
 Cleaner look
 - One set of colours for every overlay: green safe, yellow needs attention, red danger. Safe ground is green now instead of blue.
-- Softer ground colours, and no painting at all out in the open with no base nearby: the legend just says so.
+- Ground colours the ground shows through (red and yellow strong enough for daylight), and no painting at all out in the open with no base nearby: the legend just says so.
 - One outline around the edge of your protected area instead of a ring around every fire and workbench.
 - The legend lists only the colours in view, in plain words ("Raids can come here").
 - Comfort mode only paints sheltered floor.

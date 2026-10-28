@@ -16,13 +16,13 @@ namespace NorseSense
 
         static readonly float MinNormalY = Mathf.Cos(DefaultMaxTilt * Mathf.Deg2Rad);
 
-        // Light washes, so the ground still shows through.
+        // Washes the ground still shows through. Red and yellow a bit stronger than green, so they read in daylight.
         internal static readonly Color ProtectedColor = Ui.Alpha(Ui.GoodColor, 0.13f);
-        internal static readonly Color ExposedColor = Ui.Alpha(Ui.BadColor, 0.22f);
-        internal static readonly Color SteepColor = Ui.Alpha(Ui.WarnColor, 0.1f);
+        internal static readonly Color ExposedColor = Ui.Alpha(Ui.BadColor, 0.34f);
+        internal static readonly Color SteepColor = Ui.Alpha(Ui.WarnColor, 0.2f);
         internal static readonly Color PreviewColor = Ui.Alpha(Ui.GoodColor, 0.45f); // pulses: protected once placed
         internal static readonly Color RaidColor = Ui.Alpha(Ui.BadColor, 0.9f);
-        internal static readonly Color RaidOnlyColor = Ui.Alpha(Ui.WarnColor, 0.24f); // exposed, but only to raids
+        internal static readonly Color RaidOnlyColor = Ui.Alpha(Ui.WarnColor, 0.34f); // exposed, but only to raids
         internal static readonly Color WaterColor = new Color(0.8f, 0.8f, 0.8f, 0.12f); // neutral grey: only serpents
 
         // Unknown = terrain not loaded here, so the game itself can't evaluate the point either.
