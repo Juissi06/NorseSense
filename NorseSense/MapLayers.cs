@@ -439,9 +439,12 @@ namespace NorseSense
                 // name prefab itself has its own layout and delayed activation, which put copies in odd places.)
                 var font = PinNameFont();
                 if (font == null) return null;
-                var go = new GameObject("NorseSense_PortalTag", typeof(RectTransform), typeof(TextMeshProUGUI));
+                // Built inactive, so the text doesn't go looking for TextMeshPro's default font (Valheim doesn't
+                // ship it, which logs a warning) before ours is set.
+                var go = new GameObject("NorseSense_PortalTag", typeof(RectTransform));
+                go.SetActive(false);
                 go.transform.SetParent(_root, false);
-                var text = go.GetComponent<TextMeshProUGUI>();
+                var text = go.AddComponent<TextMeshProUGUI>();
                 text.font = font.font;
                 text.fontSharedMaterial = font.fontSharedMaterial;
                 text.fontSize = Mathf.Max(14f, font.fontSize * 0.85f);

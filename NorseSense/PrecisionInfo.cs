@@ -13,7 +13,7 @@ namespace NorseSense
         const float SnapRange = 4f;       // pieces whose snap points are shown, around the ghost
         const int MaxPoints = 120;
         const float SnappedDistance = 0.02f;
-        const float DotSize = 7f, SnappedDotSize = 12f;
+        const float DotSize = 8f, SnappedDotSize = 13f;
 
         static readonly Color GhostDotColor = Ui.Alpha(Ui.GoldColor, 0.95f);
         static readonly Color PieceDotColor = new Color(1f, 1f, 1f, 0.75f);
@@ -127,18 +127,21 @@ namespace NorseSense
             if (cam == null) return;
             if (_dot == null) _dot = MakeDot();
 
+            // Sized for 1080p and grown with the screen, so they stay visible at 1440p and 4K.
+            float scale = Mathf.Max(1f, Screen.height / 1080f);
+            float dot = DotSize * scale, snapped = SnappedDotSize * scale;
             int shown = 0;
             foreach (var t in _piecePoints)
             {
                 if (t == null || ++shown > MaxPoints) break;
-                Dot(cam, t.position, DotSize, PieceDotColor);
+                Dot(cam, t.position, dot, PieceDotColor);
             }
             foreach (var t in _ghostPoints)
-                if (t != null) Dot(cam, t.position, DotSize, GhostDotColor);
+                if (t != null) Dot(cam, t.position, dot, GhostDotColor);
             if (_snapped)
             {
-                Dot(cam, _snapA, SnappedDotSize, SnappedColor);
-                Dot(cam, _snapB, SnappedDotSize, SnappedColor);
+                Dot(cam, _snapA, snapped, SnappedColor);
+                Dot(cam, _snapB, snapped, SnappedColor);
             }
         }
 
