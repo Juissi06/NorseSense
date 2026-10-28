@@ -1,6 +1,4 @@
-[size=4][b][color=#ff6f55]THIS MOD IS STILL WIP[/color][/b][/size]
-
-Norse Sense shows you the annoying things that Valheim keeps hidden: where mobs can spawn, how much of your base is protected, if raids can reach you, which pieces need repair, how much comfort a piece adds and why a portal won't let you through. Building helpers included for precise building, freecam building and planting grids, and it even has a cartography table manager!
+Norse Sense shows you things that Valheim keeps hidden: where mobs can spawn and which pieces need repair. Building helpers included for precise building, freecam building and planting grids, and it even has a cartography table manager.
 
 [b]Client-side, vanilla-balanced and fully customisable.[/b]
 
@@ -15,7 +13,7 @@ Norse Sense shows you the annoying things that Valheim keeps hidden: where mobs 
 [size=5][b][color=#e8c77e]Base view[/color][/b][/size]
 [list]
 [*][b]Spawns:[/b] see where mobs can and can't spawn, on the ground and on the map
-[*]Rings around workbenches and fires, nests and spawners marked
+[*]An outline around your protected area, nests and spawners marked
 [*][b]Raid check:[/b] can raids target you here?
 [*][b]Repairs:[/b] damaged pieces glow yellow or red under 50%, pieces with no roof or in water are marked
 [*][b]Comfort:[/b] the floor is coloured by how much comfort you'd get standing there, and the best spot for your bed is ringed
@@ -25,7 +23,7 @@ Norse Sense shows you the annoying things that Valheim keeps hidden: where mobs 
 [size=5][b][color=#e8c77e]Building[/color][/b][/size]
 [list]
 [*][b]Fine rotation:[/b] Rotate pieces with precision, or copy an existing ones rotation
-[*][b]Freecam building:[/b] fly the camera around your build and place pieces from there, stays within 25 m of you and the workbench rules still apply
+[*][b]Freecam building:[/b] fly the camera around your build and place pieces from there, stays within 25 m of you and the workbench rules still apply, Fly through walls for easier building (optional, off by default)
 [*][b]Placement reasons:[/b] tells you why a piece can't be placed, like what it overlaps or that the ground is too steep
 [*][b]Crafting stations:[/b] shows the level, which extensions count and which are too far or doubled up
 [*]Comfort preview before you place a chair, banner etc.
@@ -38,7 +36,7 @@ Norse Sense shows you the annoying things that Valheim keeps hidden: where mobs 
 [size=5][b][color=#e8c77e]Farming, portals and fires[/color][/b][/size]
 [list]
 [*][b]Planting preview:[/b] will the seed grow here, and if not, why
-[*][b]Area tools:[/b] Left Ctrl + scroll plants a row or grid of seeds in one click, or levels, paths and cultivates a 3x3 area.
+[*][b]Area tools:[/b] Left Ctrl + scroll plants a row or grid of seeds in one click, or levels, paths and cultivates a bigger area.
 [*]Raise ground in a grid too, it comes out flat, and a 1x3 strip for paths
 [*][b]Farm check:[/b] with the cultivator out every crop shows if it's growing and why not
 [*][b]Harvest an area:[/b] Left Alt + E picks the whole patch, and replants it if you carry a cultivator and seeds
@@ -58,7 +56,9 @@ Norse Sense shows you the annoying things that Valheim keeps hidden: where mobs 
 [*]Customisable building and planting stamina, longer build distance and pickup range
 [*][b]Server limits:[/b] server owners can cap freecam, area sizes, stamina and so on for everyone with the mod
 [/list]
-[color=#b9ad98]Every feature can be turned off and fully tuned.[/color]
+
+[color=#b9ad98]Every feature can be turned on/off and fully tuned.[/color]
+
 [color=#b9ad98]No mod conflicts from my experience, mods changing same things might clash.[/color]
 
 [line]
